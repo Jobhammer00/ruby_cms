@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <%= tag.meta name: "viewport", content: "width=device-width,initial-scale=1" %>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" if respond_to?(:stylesheet_link_tag, true) %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" if respond_to?(:stylesheet_link_tag, true) %>
+    <%= tag.style do %>
+      body{font-family:system-ui,-apple-system,sans-serif;font-size:1rem;line-height:1.5;margin:0;}
+    <% end %>
+  </head>
+  <%= tag.body(
+    data: {
+      controller: "ruby-cms--page-preview",
+      "ruby-cms--page-preview-nonce-value": @nonce,
+      "ruby-cms--page-preview-allowed-origin-value": @allowed_origin
+    }
+  ) do %>
+    <%= yield %>
+  <% end %>
+</html>

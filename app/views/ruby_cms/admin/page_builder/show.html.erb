@@ -1,0 +1,186 @@
+<%= content_for :title, "Page Builder: #{@page.title.presence || @page.key}" %>
+
+<%= tag.div(
+  data: {
+    controller: "ruby-cms--page-builder",
+    ruby_cms__page_builder_page_id_value: @page.id,
+    ruby_cms__page_builder_csrf_token_value: form_authenticity_token,
+    ruby_cms__page_builder_base_path_value: builder_ruby_cms_admin_page_path(@page),
+    ruby_cms__page_builder_api_base_path_value: ruby_cms_admin_page_builder_path
+  },
+  class: "ruby_cms-page-builder"
+) do %>
+
+  <%= tag.div class: "ruby_cms-page-builder-main" do %>
+    <%# Component Palette (Left Sidebar) %>
+    <%= tag.aside class: "ruby_cms-component-palette" do %>
+      <%= tag.div class: "ruby_cms-component-palette-header" do %>
+        <%= tag.div class: "ruby_cms-component-palette-title" do %>
+          <%= tag.h2 "Components" %>
+          <%= tag.span @components.values.sum(&:count), class: "ruby_cms-component-count" %>
+        <% end %>
+        <%= tag.input type: "search",
+            placeholder: "Search components...",
+            class: "ruby_cms-component-search",
+            data: {
+              action: "input->ruby-cms--page-builder#filterComponents",
+              ruby_cms__page_builder_target: "componentSearch"
+            } %>
+      <% end %>
+      <%= tag.div class: "ruby_cms-component-list", data: { ruby_cms__page_builder_target: "componentPalette" } do %>
+        <% @components.each do |category, components| %>
+          <%= tag.div class: "ruby_cms-component-category", data: { category: category.downcase } do %>
+            <%= tag.div class: "ruby_cms-component-category-title" do %>
+              <%= tag.h3 category %>
+            <% end %>
+            <%= tag.div class: "ruby_cms-component-items" do %>
+              <% components.each do |component| %>
+                <%= tag.div(
+                  class: "ruby_cms-component-item component-item",
+                  draggable: "true",
+                  data: {
+                    component_key: component.key,
+                    component_name: component.name,
+                    component_category: category.downcase,
+                    action: "dragstart->ruby-cms--page-builder#handleDragStart dragend->ruby-cms--page-builder#handleDragEnd"
+                  }
+                ) do %>
+                  <%= tag.div class: "ruby_cms-component-item-header" do %>
+                    <%= tag.span component.name, class: "ruby_cms-component-item-name" %>
+                    <svg class="ruby_cms-component-item-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                  <% end %>
+                  <% if component.description.present? %>
+                    <%= tag.p component.description, class: "ruby_cms-component-item-description" %>
+                  <% end %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%# Canvas (Center) %>
+    <%= tag.main class: "ruby_cms-page-canvas" do %>
+      <%= tag.div(
+        id: "builder-canvas",
+        class: "ruby_cms-page-canvas-inner",
+        data: { 
+          ruby_cms__page_builder_target: "canvas",
+          action: "drop->ruby-cms--page-builder#handleDrop dragover->ruby-cms--page-builder#handleDragOver"
+        }
+      ) do %>
+
+        <%= tag.div class: "ruby_cms-page-header-card" do %>
+          <%= tag.h1 @page.title.presence || @page.key %>
+          <%= tag.p "Build your page by dragging components from the left sidebar into regions below." %>
+        <% end %>
+
+        <% if @regions.empty? %>
+          <%= tag.div class: "ruby_cms-empty-state" do %>
+            <svg class="ruby_cms-empty-state-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <%= tag.h3 "No regions yet", class: "ruby_cms-empty-state-title" %>
+            <%= tag.p "Create a region to start building.", class: "ruby_cms-empty-state-text" %>
+            <%= button_tag "Create Main Region", 
+              type: "button",
+              class: "ruby_cms-empty-state-btn",
+              data: { action: "click->ruby-cms--page-builder#createRegion" } %>
+          <% end %>
+        <% else %>
+          <% @regions.each do |region| %>
+            <%= tag.div(
+              class: "ruby_cms-region",
+              data: {
+                region_key: region.key,
+                ruby_cms__page_builder_target: "region",
+                action: "drop->ruby-cms--page-builder#handleDrop dragover->ruby-cms--page-builder#handleDragOver dragenter->ruby-cms--page-builder#handleDragEnter dragleave->ruby-cms--page-builder#handleDragLeave"
+              }
+            ) do %>
+              <%= tag.div class: "ruby_cms-region-header" do %>
+                <%= tag.div class: "ruby_cms-region-title" do %>
+                  <svg class="ruby_cms-region-title-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"></path>
+                  </svg>
+                  <%= tag.h3 region.key.humanize %>
+                <% end %>
+                <%= button_tag "Add Component", 
+                  type: "button",
+                  class: "ruby_cms-region-add-btn",
+                  data: { 
+                    region_key: region.key,
+                    action: "click->ruby-cms--page-builder#showComponentPicker"
+                  } %>
+              <% end %>
+              <%= tag.div(
+                id: "region-#{region.key}",
+                class: "ruby_cms-region-nodes",
+                data: { ruby_cms__page_builder_target: "regionNodes" }
+              ) do %>
+                <% region.page_nodes.by_position.each do |node| %>
+                  <%= render "node", node: node %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%# Props Editor (Right Sidebar) %>
+    <%= tag.aside(
+      id: "props-editor",
+      class: "ruby_cms-props-editor ruby_cms-hidden",
+      data: { ruby_cms__page_builder_target: "propsEditor" }
+    ) do %>
+      <%= tag.div class: "ruby_cms-props-editor-header" do %>
+        <%= tag.h2 "Component Properties" %>
+      <% end %>
+      <%= tag.div class: "ruby_cms-props-editor-content" do %>
+        <%= tag.div id: "props-form", data: { ruby_cms__page_builder_target: "propsForm" } do %>
+          <%= tag.div class: "ruby_cms-props-editor-empty" do %>
+            <svg class="ruby_cms-props-editor-empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            <%= tag.p "Select a component to edit its properties." %>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+
+  <%# Toolbar %>
+  <%= tag.div class: "ruby_cms-page-toolbar" do %>
+    <%= tag.div do %>
+      <%= link_to ruby_cms_admin_page_path(@page), class: "ruby_cms-toolbar-back" do %>
+        <svg class="ruby_cms-toolbar-back-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        <%= tag.span "Back to Page" %>
+      <% end %>
+    <% end %>
+    <%= tag.div class: "ruby_cms-toolbar-actions" do %>
+      <%= link_to "/p/#{@page.key}", target: "_blank", class: "ruby_cms-btn-preview" do %>
+        <svg class="ruby_cms-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+        </svg>
+        Preview
+      <% end %>
+      <%= button_tag type: "button",
+        class: "ruby_cms-btn-save",
+        data: { action: "click->ruby-cms--page-builder#save" } do %>
+        <svg class="ruby_cms-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        Save Changes
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= render "node_template" %>

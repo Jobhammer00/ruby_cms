@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Find Rails app root (current dir or nearest parent with config/application.rb)
+app_root = File.expand_path(Dir.pwd)
+loop do
+  break if File.file?(File.join(app_root, "config/application.rb"))
+
+  parent = File.dirname(app_root)
+  break if parent == app_root
+
+  app_root = parent
+end
+
+unless File.file?(File.join(app_root, "config/application.rb"))
+  warn "Not in a Rails application (config/application.rb not found)."
+  warn "Run from your app root, or use: rails ruby_cms:setup_admin"
+  exit 1
+end
+
+Dir.chdir(app_root)
+require File.join(app_root, "config/environment")
+
+require "ruby_cms/cli"
+RubyCms::CLI.start(ARGV)

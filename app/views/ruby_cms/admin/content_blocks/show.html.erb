@@ -1,0 +1,14 @@
+<div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden max-w-2xl">
+  <dl class="divide-y divide-gray-200">
+    <div class="px-4 py-3"><dt class="text-sm font-medium text-gray-500">Key</dt><dd class="mt-1 text-sm text-gray-900"><%= @content_block.key %></dd></div>
+    <div class="px-4 py-3"><dt class="text-sm font-medium text-gray-500">Title</dt><dd class="mt-1 text-sm text-gray-900"><%= @content_block.title %></dd></div>
+    <div class="px-4 py-3"><dt class="text-sm font-medium text-gray-500">Type</dt><dd class="mt-1 text-sm text-gray-900"><%= @content_block.content_type %></dd></div>
+    <div class="px-4 py-3"><dt class="text-sm font-medium text-gray-500">Published</dt><dd class="mt-1"><%= @content_block.published? ? tag.span("Yes", class: "px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800") : tag.span("No", class: "px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600") %></dd></div>
+    <div class="px-4 py-3"><dt class="text-sm font-medium text-gray-500">Content</dt><dd class="mt-1 text-sm text-gray-900"><%= @content_block.content_body %></dd></div>
+  </dl>
+</div>
+
+<p class="mt-4 space-x-4">
+  <%= link_to "Edit", edit_ruby_cms_admin_content_block_path(@content_block), class: "text-blue-600 hover:text-blue-800" %>
+  <%= link_to "Back", ruby_cms_admin_content_blocks_path, class: "text-blue-600 hover:text-blue-800" %>
+</p>

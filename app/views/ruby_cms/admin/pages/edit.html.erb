@@ -1,0 +1,7 @@
+<%= content_for :title, "Edit " + (@page.title.presence || @page.key) %>
+
+<div class="ruby_cms-page-header mb-6">
+  <h1 class="text-2xl font-semibold text-gray-900">Edit <%= @page.title.presence || @page.key %></h1>
+</div>
+
+<%= render "form" %>

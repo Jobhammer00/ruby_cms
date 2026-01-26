@@ -1,0 +1,65 @@
+<%= form_with model: [@menu, @item], url: @item.persisted? ? ruby_cms_admin_navigation_menu_navigation_item_path(@menu, @item) : ruby_cms_admin_navigation_menu_navigation_items_path(@menu), method: (@item.persisted? ? :patch : :post), class: "space-y-4 max-w-2xl" do |f| %>
+  <% if @item.errors.any? %>
+    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
+      <ul class="list-disc list-inside text-sm text-red-800">
+        <% @item.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="ruby_cms-field">
+    <%= f.label :label, class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_field :label, class: "ruby_cms-input block w-full rounded-md border border-gray-300 px-3 py-2", placeholder: "Home" %>
+  </div>
+
+  <div class="ruby_cms-field">
+    <%= f.label :link_type, class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.select :link_type, 
+        options_for_select([
+          ["URL", "url"],
+          ["CMS Page", "page"],
+          ["App Route", "route"]
+        ], @item.link_type || "url"),
+        {},
+        class: "ruby_cms-select block w-full rounded-md border border-gray-300 px-3 py-2",
+        data: { controller: "ruby-cms--navigation-item-form", action: "change->ruby-cms--navigation-item-form#toggleFields" } %>
+  </div>
+
+  <div id="url-field" class="ruby_cms-field" style="<%= 'display: none;' unless @item.link_type == 'url' %>">
+    <%= f.label :url, class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.text_field :url, class: "ruby_cms-input block w-full rounded-md border border-gray-300 px-3 py-2", placeholder: "/about" %>
+  </div>
+
+  <div id="page-field" class="ruby_cms-field" style="<%= 'display: none;' unless @item.link_type == 'page' %>">
+    <%= f.label :page_key, "CMS Page", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.select :page_key,
+        options_for_select([["Select a page", ""]] + @pages.map { |p| [p.title.presence || p.key, p.key] }, @item.page_key),
+        {},
+        class: "ruby_cms-select block w-full rounded-md border border-gray-300 px-3 py-2" %>
+  </div>
+
+  <div id="route-field" class="ruby_cms-field" style="<%= 'display: none;' unless @item.link_type == 'route' %>">
+    <%= f.label :route_name, "Route Name", class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.select :route_name,
+        options_for_select([["Select a route", ""]] + @app_routes.map { |k, v| [v[:label], v[:route_name]] }, @item.route_name),
+        {},
+        class: "ruby_cms-select block w-full rounded-md border border-gray-300 px-3 py-2" %>
+    <p class="mt-1 text-xs text-gray-500">Routes registered via RubyCms.register_app_route</p>
+  </div>
+
+  <div class="ruby_cms-field">
+    <%= f.label :position, class: "block text-sm font-medium text-gray-700 mb-1" %>
+    <%= f.number_field :position, class: "ruby_cms-input block w-full rounded-md border border-gray-300 px-3 py-2", min: 0, step: 1 %>
+  </div>
+
+  <div class="flex items-center">
+    <%= f.check_box :published, class: "h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" %>
+    <%= f.label :published, class: "ml-2 block text-sm text-gray-700" %>
+  </div>
+
+  <div class="pt-2">
+    <%= f.submit class: "ruby_cms-btn ruby_cms-btn-primary inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700" %>
+  </div>
+<% end %>

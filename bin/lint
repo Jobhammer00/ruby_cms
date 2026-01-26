@@ -1,0 +1,169 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "rubygems"
+require "bundler/setup"
+require "open3"
+
+RED = "\033[31m"
+GREEN = "\033[32m"
+YELLOW = "\033[33m"
+BLUE = "\033[34m"
+RESET = "\033[0m"
+BOLD = "\033[1m"
+
+CI_TRUE_ENV_KEYS = %w[CI GITHUB_ACTIONS TRAVIS CIRCLECI BUILDKITE GITLAB_CI].freeze
+
+def print_header(title)
+  puts "\n#{BOLD}#{BLUE}=== #{title} ===#{RESET}"
+end
+
+def print_success(message)
+  puts "#{GREEN}✓ #{message}#{RESET}"
+end
+
+def print_error(message)
+  puts "#{RED}✗ #{message}#{RESET}"
+end
+
+def print_warning(message)
+  puts "#{YELLOW}⚠ #{message}#{RESET}"
+end
+
+def in_ci?
+  return true if CI_TRUE_ENV_KEYS.any? { |key| ENV[key] == "true" }
+
+  ENV.key?("JENKINS_URL") || ENV.key?("TEAMCITY_VERSION")
+end
+
+def command_available?(command)
+  system("which #{command.split.first} > /dev/null 2>&1")
+end
+
+def brakeman_available?
+  system("which brakeman > /dev/null 2>&1") ||
+    (File.exist?("Gemfile") && system("bundle exec brakeman --version > /dev/null 2>&1"))
+end
+
+def filtered_stderr(stderr_str)
+  stderr_str.lines.reject do |line|
+    line.include?("already initialized constant Gem::Platform::") ||
+      line.include?("previous definition of") ||
+      line.include?("rbenv") ||
+      line.strip.empty?
+  end.join
+end
+
+def capture_command(command)
+  env = { "RUBYOPT" => "-W0" }
+
+  start_time = Time.now
+  stdout_str, stderr_str, status = Open3.capture3(env, command)
+  duration = Time.now - start_time
+
+  [stdout_str, filtered_stderr(stderr_str), status, duration]
+end
+
+def report_command_result(description, duration, success, ignore_failure:)
+  if success
+    print_success("#{description} completed successfully (#{duration.round(2)}s)")
+    return true
+  end
+
+  if ignore_failure
+    print_warning("#{description} failed but ignored in development (#{duration.round(2)}s)")
+    return true
+  end
+
+  print_error("#{description} failed (#{duration.round(2)}s)")
+  false
+end
+
+def run_command?(command, description, ignore_failure: false)
+  print_header(description)
+  puts "Running: #{command}"
+  puts "-" * 50
+
+  stdout_str, err_str, status, duration = capture_command(command)
+
+  print stdout_str unless stdout_str.empty?
+  print err_str unless err_str.empty?
+
+  report_command_result(description, duration, status.success?, ignore_failure: ignore_failure)
+end
+
+def run_brakeman
+  return nil unless brakeman_available?
+
+  brakeman_cmd =
+    if command_available?("brakeman")
+      "brakeman --no-pager"
+    else
+      "bundle exec brakeman --no-pager"
+    end
+
+  run_command?(
+    brakeman_cmd,
+    "Brakeman Security Scan",
+    ignore_failure: true
+  )
+end
+
+def main
+  auto_fix = ARGV.include?("-a")
+
+  if auto_fix
+    puts "#{BOLD}#{BLUE} Running linting with auto-fix enabled...#{RESET}"
+  else
+    puts "#{BOLD}#{BLUE} Running comprehensive linting and testing suite...#{RESET}"
+  end
+
+  all_passed = true
+  results = {}
+
+  if brakeman_available?
+    results[:brakeman] = run_brakeman
+  else
+    print_warning("Brakeman not available, skipping security scan")
+    results[:brakeman] = nil
+  end
+
+  rubocop_command = auto_fix ? "bundle exec rubocop -a -f github" : "bundle exec rubocop -f github"
+  rubocop_desc = auto_fix ? "RuboCop Code Style Check (auto-fix)" : "RuboCop Code Style Check"
+  results[:rubocop] = run_command?(rubocop_command, rubocop_desc)
+  all_passed &&= results[:rubocop]
+
+  unless auto_fix
+    results[:rspec] = run_command?("bundle exec rspec", "RSpec Test Suite")
+    all_passed &&= results[:rspec]
+  end
+
+  print_header("Linting Summary")
+  puts "\nResults:"
+  results.each do |tool, passed|
+    next if passed.nil?
+
+    status = passed ? "#{GREEN}✓ PASSED#{RESET}" : "#{RED}✗ FAILED#{RESET}"
+    puts "  #{tool.to_s.capitalize.ljust(12)}: #{status}"
+  end
+
+  puts "\n#{"=" * 60}"
+  if all_passed
+    if auto_fix
+      print_success("All linting checks completed! 🎉")
+    else
+      print_success("All checks passed! 🎉")
+    end
+    exit 0
+  else
+    print_error("Some checks failed. Please review the output above.")
+    exit 1
+  end
+end
+
+trap("INT") do
+  puts "\n#{YELLOW}⚠ Linting interrupted by user#{RESET}"
+  exit 1
+end
+
+main

@@ -1,0 +1,31 @@
+<%= content_for :title, @menu.name %>
+
+<div class="ruby_cms-page-header flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-semibold text-gray-900"><%= @menu.name %></h1>
+  <div class="flex items-center gap-2">
+    <%= link_to "Edit", edit_ruby_cms_admin_navigation_menu_path(@menu), class: "ruby_cms-btn ruby_cms-btn-primary" %>
+    <%= link_to "Add Item", new_ruby_cms_admin_navigation_menu_navigation_item_path(@menu), class: "ruby_cms-btn ruby_cms-btn-secondary" %>
+  </div>
+</div>
+
+<div class="ruby_cms-card ruby_cms-card--padded mb-6">
+  <dl class="grid gap-3">
+    <div>
+      <dt class="text-sm font-medium text-gray-500">Key</dt>
+      <dd class="text-gray-900"><%= @menu.key %></dd>
+    </div>
+    <div>
+      <dt class="text-sm font-medium text-gray-500">Published</dt>
+      <dd><%= @menu.published? ? "Yes" : "No" %></dd>
+    </div>
+  </dl>
+</div>
+
+<h2 class="text-lg font-medium text-gray-900 mb-3">Navigation Items</h2>
+<div class="ruby_cms-card ruby_cms-card--padded">
+  <% if @items.any? %>
+    <%= render "items_tree", items: @items, menu: @menu %>
+  <% else %>
+    <p class="text-gray-700">No items yet. <%= link_to "Add one", new_ruby_cms_admin_navigation_menu_navigation_item_path(@menu), class: "text-blue-600 hover:text-blue-800" %> to get started.</p>
+  <% end %>
+</div>

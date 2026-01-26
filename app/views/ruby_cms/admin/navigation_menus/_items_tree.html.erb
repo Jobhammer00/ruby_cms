@@ -1,0 +1,31 @@
+<ul class="space-y-2">
+  <% items.each do |item| %>
+    <li class="p-3 border border-gray-200 rounded-lg">
+      <div class="flex items-center justify-between">
+        <div class="flex-1">
+          <span class="font-medium text-gray-900"><%= item.label %></span>
+          <span class="text-sm text-gray-500 ml-2">
+            (<%= item.link_type %>: <%= item.url || item.page_key || item.route_name || "—" %>)
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <%= link_to "Edit", edit_ruby_cms_admin_navigation_menu_navigation_item_path(menu, item), class: "text-blue-600 hover:text-blue-800 text-sm" %>
+          <%= link_to "Delete", ruby_cms_admin_navigation_menu_navigation_item_path(menu, item), method: :delete,
+              data: { turbo_confirm: "Are you sure?" }, class: "text-red-600 hover:text-red-800 text-sm" %>
+        </div>
+      </div>
+      <% if item.children.any? %>
+        <ul class="ml-6 mt-2 space-y-1">
+          <% item.children.by_position.each do |child| %>
+            <li class="p-2 border border-gray-100 rounded text-sm">
+              <span class="text-gray-700"><%= child.label %></span>
+              <span class="text-gray-500 ml-2">
+                (<%= child.link_type %>: <%= child.url || child.page_key || child.route_name || "—" %>)
+              </span>
+            </li>
+          <% end %>
+        </ul>
+      <% end %>
+    </li>
+  <% end %>
+</ul>

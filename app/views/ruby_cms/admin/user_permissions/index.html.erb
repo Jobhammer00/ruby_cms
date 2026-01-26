@@ -1,0 +1,31 @@
+<h1 class="text-2xl font-semibold text-gray-900 mb-4">Permissions for <%= @user.try(:email_address) || @user.try(:email) || "User ##{@user.id}" %></h1>
+
+<%= link_to "Back to users", ruby_cms_admin_users_path, class: "ruby_cms-link text-blue-600 hover:text-blue-800 mb-6 inline-block" %>
+
+<div class="ruby_cms-card ruby_cms-card--padded bg-white rounded-lg border border-gray-200 shadow-sm p-4 mb-6 max-w-md">
+  <h2 class="text-lg font-medium text-gray-900 mb-3">Grant permission</h2>
+  <%= form_with url: ruby_cms_admin_user_permissions_path(@user), method: :post, class: "flex gap-2 flex-wrap items-end" do |f| %>
+    <%= f.select :permission_id, options_from_collection_for_select(@permissions, :id, :key), { include_blank: "Select…" }, class: "ruby_cms-select rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" %>
+    <%= f.submit "Grant", class: "ruby_cms-btn ruby_cms-btn-primary inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700" %>
+  <% end %>
+</div>
+
+<h2 class="text-lg font-medium text-gray-900 mb-3">Current permissions</h2>
+<div class="ruby_cms-card ruby_cms-table-wrap bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+  <table class="ruby_cms-table min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Permission</th>
+        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      <% @user_permissions.each do |up| %>
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-3 text-sm text-gray-900"><%= up.permission.key %></td>
+          <td class="actions px-4 py-3 text-sm text-right"><%= button_to "Revoke", ruby_cms_admin_user_permission_path(@user, up), method: :delete, class: "ruby_cms-link ruby_cms-link-danger text-red-600 hover:text-red-800", data: { turbo_confirm: "Revoke this permission?" } %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

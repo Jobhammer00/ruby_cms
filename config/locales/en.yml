@@ -1,0 +1,13 @@
+# frozen_string_literal: true
+
+en:
+  activemodel:
+    errors:
+      models:
+        ruby_cms/content_block:
+          attributes:
+            key:
+              reserved: "cannot start with a reserved prefix (e.g. admin_)"
+            image:
+              content_type_invalid: "must be PNG, JPEG, GIF, or WebP"
+              file_too_large: "must be under 5 MB"
