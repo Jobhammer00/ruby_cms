@@ -6,9 +6,10 @@ module RubyCms
   class CLI < Thor
     default_task :setup_admin
 
-    desc "setup_admin", "Interactively create or select the first admin user and grant full permissions"
+    desc "setup_admin",
+         "Interactively create or select the first admin user and grant full permissions"
     def setup_admin
-      RunSetupAdmin.call(shell: shell)
+      RunSetupAdmin.call(shell:)
     end
 
     private
@@ -20,11 +21,14 @@ module RubyCms
 
   # Logic for the interactive first-admin setup. Uses Thor::Shell for prompts.
   class RunSetupAdmin
-    ADMIN_PERMISSION_KEYS = %w[manage_admin manage_permissions manage_content_blocks manage_pages publish_pages].freeze
+    ADMIN_PERMISSION_KEYS = %w[
+      manage_admin manage_permissions manage_content_blocks manage_pages
+      publish_pages
+    ].freeze
 
     class << self
       def call(shell: Thor::Shell::Basic.new)
-        new(shell: shell).call
+        new(shell:).call
       end
     end
 
@@ -41,7 +45,9 @@ module RubyCms
       return if user.nil?
 
       grant_permissions(user)
-      @shell.say("\nDone. #{user.public_send(email_attr)} now has: #{ADMIN_PERMISSION_KEYS.join(", ")}.", :green)
+      @shell.say(
+        "\nDone. #{user.public_send(email_attr)} now has: #{ADMIN_PERMISSION_KEYS.join(', ')}.", :green
+      )
       @shell.say("Visit /admin to sign in.", :green)
     end
 
@@ -62,7 +68,13 @@ module RubyCms
           find_or_create_by_email(user_class, email_attr)
         else
           idx = choice.to_i
-          idx.between?(1, users.size) ? users[idx - 1] : find_or_create_by_email(user_class, email_attr)
+          if idx.between?(1,
+                          users.size)
+            users[idx - 1]
+          else
+            find_or_create_by_email(user_class,
+                                    email_attr)
+          end
         end
       else
         @shell.say("\nNo users yet. Create the first admin user.")
@@ -101,7 +113,10 @@ module RubyCms
         return nil
       end
 
-      attrs = { email_attr => email, password: password, password_confirmation: password_confirmation }
+      attrs = {
+        email_attr => email, password: password,
+        password_confirmation: password_confirmation
+      }
       user_class.create!(attrs)
     rescue ActiveRecord::RecordInvalid => e
       @shell.say("Could not create user: #{e.record.errors.full_messages.to_sentence}", :red)
@@ -119,7 +134,7 @@ module RubyCms
 
     def grant_permissions(user)
       ADMIN_PERMISSION_KEYS.each do |key|
-        perm = RubyCms::Permission.find_by!(key: key)
+        perm = RubyCms::Permission.find_by!(key:)
         RubyCms::UserPermission.find_or_create_by!(user: user, permission: perm)
       end
     end

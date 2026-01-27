@@ -1,22 +1,97 @@
-<h1 class="text-2xl font-semibold text-gray-900 mb-4">Permissions</h1>
+<%# Phlex-based Bulk Action Table View %>
+<%
+  begin
+    bulk_delete_url = bulk_delete_ruby_cms_admin_permissions_path
+  rescue NoMethodError, ActionController::UrlGenerationError
+    bulk_delete_url = nil
+  end
+%>
 
-<div class="ruby_cms-card ruby_cms-table-wrap bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-6">
-  <table class="ruby_cms-table min-w-full divide-y divide-gray-200">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Key</th>
-        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-gray-200">
-      <% @permissions.each do |p| %>
-        <tr class="hover:bg-gray-50">
-          <td class="px-4 py-3 text-sm text-gray-900"><%= p.key %></td>
-          <td class="px-4 py-3 text-sm text-gray-600"><%= p.name %></td>
-        </tr>
+<%= render RubyCms::Admin::AdminPage.new(
+  title: "Permissions",
+  actions: [
+    { 
+      label: "New permission", 
+      url: "#",
+      primary: true,
+      data: { 
+        controller: "ruby-cms--toggle",
+        action: "click->ruby-cms--toggle#toggle",
+        toggle_target_id: "new-permission-form"
+      }
+    }
+  ]
+) do %>
+  <% if flash[:alert] %>
+    <div class="ruby_cms-alert ruby_cms-alert--error">
+      <p><%= flash[:alert] %></p>
+    </div>
+  <% end %>
+
+  <div id="new-permission-form" class="hidden ruby_cms-card ruby_cms-card--padded ruby_cms-card--form">
+    <h2 class="ruby_cms-card-title">Create Permission</h2>
+    <%= form_with model: [:ruby_cms_admin, RubyCms::Permission.new], url: ruby_cms_admin_permissions_path, method: :post, class: "ruby_cms-form" do |f| %>
+      <div class="ruby_cms-field">
+        <%= f.label :key, class: "ruby_cms-label" %>
+        <%= f.text_field :key, class: "ruby_cms-input", placeholder: "manage_something" %>
+        <p class="ruby_cms-hint">URL-friendly key (e.g. manage_something)</p>
+      </div>
+      <div class="ruby_cms-field">
+        <%= f.label :name, class: "ruby_cms-label" %>
+        <%= f.text_field :name, class: "ruby_cms-input", placeholder: "Manage Something" %>
+      </div>
+      <div class="ruby_cms-button-group">
+        <%= f.submit "Create Permission", class: "ruby_cms-btn ruby_cms-btn-primary" %>
+        <button
+          type="button"
+          data-controller="ruby-cms--toggle"
+          data-action="click->ruby-cms--toggle#hide"
+          data-toggle-target-id="new-permission-form"
+          class="ruby_cms-btn ruby_cms-btn-secondary"
+        >
+          Cancel
+        </button>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="ruby_cms-card">
+    <%= render RubyCms::Admin::BulkActionTable::BulkActionTable.new(
+      turbo_frame: "admin_table_content",
+      pagination: @pagination,
+      pagination_path: @pagination_path,
+      bulk_actions_url: bulk_delete_url,
+      bulk_actions_buttons: [],
+      item_name: "permission",
+      controller_name: "ruby-cms--bulk-action-table",
+      csrf_token: form_authenticity_token
+    ) do %>
+      <%= render RubyCms::Admin::BulkActionTable::BulkActionTableHeader.new(
+        headers: ["Key", "Name", { text: "Actions", class: "text-right" }],
+        bulk_actions_enabled: true,
+        controller_name: "ruby-cms--bulk-action-table"
+      ) %>
+      
+      <%= render RubyCms::Admin::BulkActionTable::BulkActionTableBody.new do %>
+        <% (@permissions || []).each do |p| %>
+          <% next if p.nil? %>
+          <%= render RubyCms::Admin::BulkActionTable::BulkActionTableRow.new(
+            data: { item_id: p.id },
+            bulk_actions_enabled: true,
+            controller_name: "ruby-cms--bulk-action-table"
+          ) do %>
+            <td><%= p.key %></td>
+            <td class="ruby_cms-bulk-action-table-cell-muted"><%= p.name %></td>
+            <td class="ruby_cms-bulk-action-table-cell-right">
+              <%= render RubyCms::Admin::BulkActionTable::BulkActionTableActions.new(
+                delete_path: ruby_cms_admin_permission_path(p),
+                item_id: p.id,
+                controller_name: "ruby-cms--bulk-action-table"
+              ) %>
+            </td>
+          <% end %>
+        <% end %>
       <% end %>
-    </tbody>
-  </table>
-</div>
-
-<%= link_to "Users", ruby_cms_admin_users_path, class: "ruby_cms-btn ruby_cms-btn-secondary inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50" %>
+    <% end %>
+  </div>
+<% end %>

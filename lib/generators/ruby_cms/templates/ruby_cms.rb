@@ -53,7 +53,7 @@ RubyCms.configure do |c|
   # Preview data proc to pass instance variables to the preview template. Example:
   # c.preview_data = ->(page_key, view) { { products: Product.limit(5) } }
 
-  # Component Registry: Register components for Page Builder
+  # Component Registry: Register components for page builder
   # Example:
   #   c.component_registry.register(
   #     key: "my_app.hero",
@@ -69,24 +69,6 @@ RubyCms.configure do |c|
   #     render: ->(view, props, &block) do
   #       view.render partial: "components/hero", locals: props, &block
   #     end
-  #   )
-
-  # Template Registry: Register page templates for quick creation
-  # Example:
-  #   c.template_registry.register(
-  #     key: "my_app.product_page",
-  #     name: "Product Page",
-  #     description: "A product detail page template",
-  #     layout: "pages/product",
-  #     regions: [
-  #       {
-  #         key: "main",
-  #         nodes: [
-  #           { component_key: "primitive.heading", props: { text: "Product Name" } }
-  #         ]
-  #       }
-  #     ],
-  #     content_block_keys: ["product_description", "product_price"]
   #   )
 
   # App Integration: Link App routes and settings

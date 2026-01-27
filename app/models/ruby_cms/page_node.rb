@@ -6,12 +6,15 @@ module RubyCms
 
     belongs_to :page_region, class_name: "RubyCms::PageRegion", touch: true
     belongs_to :parent, class_name: "RubyCms::PageNode", optional: true
-    has_many :children, class_name: "RubyCms::PageNode", foreign_key: "parent_id", dependent: :destroy
+    has_many :children, class_name: "RubyCms::PageNode", foreign_key: "parent_id",
+                        dependent: :destroy
 
     validates :component_key, presence: true
-    validates :component_key, inclusion: { in: lambda { |_node|
-      RubyCms.component_registry.all.map(&:key)
-    }, message: "is not a registered component" }
+    validates :component_key, inclusion: {
+      in: lambda {|_node|
+            RubyCms.component_registry.all.map(&:key)
+          }, message: "is not a registered component"
+    }
 
     scope :by_position, -> { order(:position, :id) }
     scope :root_nodes, -> { where(parent_id: nil) }
@@ -48,7 +51,7 @@ module RubyCms
 
     # Get all descendants (all children recursively)
     def descendants
-      children.flat_map { |child| [child] + child.descendants }
+      children.flat_map {|child| [child] + child.descendants }
     end
 
     private
@@ -72,11 +75,11 @@ module RubyCms
 
     def recalculate_depth
       new_depth = calculate_depth_value
-      if depth != new_depth
-        self.depth = new_depth
-        # Recursively update children depths
-        update_children_depths
-      end
+      return unless depth != new_depth
+
+      self.depth = new_depth
+      # Recursively update children depths
+      update_children_depths
     end
 
     def update_children_depths
@@ -93,9 +96,9 @@ module RubyCms
       parent_node = parent || RubyCms::PageNode.find_by(id: parent_id)
       return unless parent_node
 
-      if parent_node.depth_level >= MAX_DEPTH - 1
-        errors.add(:parent_id, "would exceed maximum nesting depth of #{MAX_DEPTH}")
-      end
+      return unless parent_node.depth_level >= MAX_DEPTH - 1
+
+      errors.add(:parent_id, "would exceed maximum nesting depth of #{MAX_DEPTH}")
     end
 
     def dependencies_available
@@ -106,10 +109,13 @@ module RubyCms
       available_component_keys = page_region&.page_nodes&.pluck(:component_key) || []
       available_component_keys << component_key # Include self
 
-      missing_deps = component.dependencies.reject { |dep| available_component_keys.include?(dep.to_s) }
-      if missing_deps.any?
-        errors.add(:component_key, "requires dependencies that are not available: #{missing_deps.join(', ')}")
+      missing_deps = component.dependencies.reject do |dep|
+        available_component_keys.include?(dep.to_s)
       end
+      return unless missing_deps.any?
+
+      errors.add(:component_key,
+                 "requires dependencies that are not available: #{missing_deps.join(', ')}")
     end
 
     def validate_props_against_schema
@@ -119,7 +125,7 @@ module RubyCms
       schema = component.schema
 
       # Check required fields
-      if schema[:required].is_a?(Array)
+      if schema[:required].kind_of?(Array)
         schema[:required].each do |required_key|
           unless props.key?(required_key.to_s) || props.key?(required_key.to_sym)
             errors.add(:props, "missing required field: #{required_key}")
@@ -128,7 +134,7 @@ module RubyCms
       end
 
       # Type validation (simplified)
-      return unless schema[:properties].is_a?(Hash)
+      return unless schema[:properties].kind_of?(Hash)
 
       schema[:properties].each do |prop_key, prop_schema|
         next unless props.key?(prop_key.to_s) || props.key?(prop_key.to_sym)
@@ -136,7 +142,7 @@ module RubyCms
         value = props[prop_key.to_s] || props[prop_key.to_sym]
 
         # Skip validation for nil or empty string values (optional fields)
-        next if value.nil? || (value.is_a?(String) && value.empty?)
+        next if value.nil? || (value.kind_of?(String) && value.empty?)
 
         expected_type = prop_schema[:type]
 
@@ -144,21 +150,22 @@ module RubyCms
 
         type_valid = case expected_type
                      when "string"
-                       value.is_a?(String)
+                       value.kind_of?(String)
                      when "number", "integer"
-                       value.is_a?(Numeric)
+                       value.kind_of?(Numeric)
                      when "boolean"
-                       value.is_a?(TrueClass) || value.is_a?(FalseClass)
+                       value.kind_of?(TrueClass) || value.kind_of?(FalseClass)
                      when "array"
-                       value.is_a?(Array)
+                       value.kind_of?(Array)
                      when "object"
-                       value.is_a?(Hash)
+                       value.kind_of?(Hash)
                      else
                        true
                      end
 
         unless type_valid
-          errors.add(:props, "#{prop_key} has wrong type. Expected #{expected_type}, got #{value.class}")
+          errors.add(:props,
+                     "#{prop_key} has wrong type. Expected #{expected_type}, got #{value.class}")
         end
       end
     end

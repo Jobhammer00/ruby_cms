@@ -1,0 +1,110 @@
+<%# Admin Sidebar Navigation %>
+<aside class="ruby_cms-admin-sidebar" aria-label="Admin" data-ruby-cms--mobile-menu-target="sidebar">
+  <div class="ruby_cms-admin-sidebar-header">
+    <div class="ruby_cms-admin-sidebar-header-content" data-ruby-cms--mobile-menu-target="sidebarContent">
+      <% if respond_to?(:image_tag, true) %>
+        <div class="ruby_cms-admin-sidebar-logo">
+          <% if respond_to?(:main_app, true) && main_app.respond_to?(:image_path) %>
+            <%= image_tag main_app.image_path("logo.png"), alt: "Logo", onerror: "this.style.display='none'" rescue nil %>
+          <% end %>
+        </div>
+      <% end %>
+      <div>
+        <p class="ruby_cms-admin-sidebar-title">RubyCMS</p>
+      </div>
+    </div>
+  </div>
+  
+  <nav class="ruby_cms-admin-sidebar-nav flex-1 px-3 py-6 overflow-y-auto" aria-label="Admin" data-ruby-cms--mobile-menu-target="sidebarContent">
+    <% 
+      entries = ruby_cms_nav_entries
+      # Group entries: first items without section, then items grouped by section
+      main_entries = entries.select { |e| e[:section].blank? }
+      sectioned_entries = entries.select { |e| e[:section].present? }.group_by { |e| e[:section] }
+    %>
+    
+    <div class="space-y-1">
+      <%# Main content items (no section) %>
+      <% main_entries.each do |e| %>
+        <% begin %>
+          <% path = e[:path].respond_to?(:call) ? e[:path].call(self) : e[:path] %>
+          <% next if path.blank? %>
+          <% path_str = path.respond_to?(:to_str) ? path.to_str : path.to_s %>
+          <% active = (path_str == "/admin" || path_str == "/admin/") ? request.path.match?(%r{\A/admin/?\z}) : request.path.start_with?(path_str) %>
+          <%= link_to path, class: "#{active ? 'active' : ''}" do %>
+            <% if e[:icon].present? %>
+              <svg class="ruby_cms-admin-sidebar-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <%= raw e[:icon] %>
+              </svg>
+            <% end %>
+            <span class="ruby_cms-admin-sidebar-nav-text"><%= e[:label] %></span>
+          <% end %>
+        <% rescue => ex %>
+          <% Rails.logger.error "RubyCMS nav error for #{e[:key]}: #{ex.message}" if defined?(Rails.logger) %>
+          <% # Silently skip failed nav entries %>
+        <% end %>
+      <% end %>
+    </div>
+    
+    <%# Sectioned items %>
+    <% sectioned_entries.each do |section_name, section_items| %>
+      <div class="my-6">
+        <div class="h-px bg-gray-100"></div>
+      </div>
+      <div class="space-y-1">
+        <% section_items.each do |e| %>
+          <% begin %>
+            <% path = e[:path].respond_to?(:call) ? e[:path].call(self) : e[:path] %>
+            <% next if path.blank? %>
+            <% path_str = path.respond_to?(:to_str) ? path.to_str : path.to_s %>
+            <% active = (path_str == "/admin" || path_str == "/admin/") ? request.path.match?(%r{\A/admin/?\z}) : request.path.start_with?(path_str) %>
+            <%= link_to path, class: "#{active ? 'active' : ''}" do %>
+              <% if e[:icon].present? %>
+                <svg class="ruby_cms-admin-sidebar-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <%= raw e[:icon] %>
+                </svg>
+              <% end %>
+              <span class="ruby_cms-admin-sidebar-nav-text"><%= e[:label] %></span>
+            <% end %>
+          <% rescue => ex %>
+            <% Rails.logger.error "RubyCMS nav error for #{e[:key]}: #{ex.message}" if defined?(Rails.logger) %>
+            <% # Silently skip failed nav entries %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  </nav>
+  
+  <div class="ruby_cms-admin-sidebar-footer" data-ruby-cms--mobile-menu-target="sidebarContent">
+    <%# i18n Locale Switcher %>
+    <div class="ruby_cms-admin-locale-switcher">
+      <%= form_with url: ruby_cms_admin_locale_path, method: :patch, data: { turbo: true } do |form| %>
+        <%= form.select :locale, 
+            options_for_select(I18n.available_locales.map { |loc| [loc.to_s.upcase, loc.to_s] }, I18n.locale.to_s),
+            {},
+            { 
+              class: "ruby_cms-admin-locale-select",
+              onchange: "this.form.requestSubmit()"
+            } %>
+      <% end %>
+    </div>
+
+    <% if respond_to?(:main_app, true) && main_app.respond_to?(:root_path) %>
+      <%= link_to main_app.root_path, target: "_blank", class: "ruby_cms-admin-sidebar-footer-item" do %>
+        <svg class="ruby_cms-admin-sidebar-footer-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+        </svg>
+        <span class="ruby_cms-admin-sidebar-footer-text">View site</span>
+      <% end %>
+    <% end %>
+    
+    <% if respond_to?(:main_app, true) && main_app.respond_to?(:session_path) %>
+      <%= button_to main_app.session_path, method: :delete, class: "ruby_cms-admin-sidebar-footer-item", data: { turbo_confirm: "Are you sure you want to logout?" } do %>
+        <svg class="ruby_cms-admin-sidebar-footer-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+        </svg>
+        <span class="ruby_cms-admin-sidebar-footer-text">Logout</span>
+      <% end %>
+    <% end %>
+  </div>
+</aside>

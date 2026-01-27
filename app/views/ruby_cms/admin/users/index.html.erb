@@ -1,22 +1,108 @@
-<h1 class="text-2xl font-semibold text-gray-900 mb-4">Users</h1>
+<%# Phlex-based Bulk Action Table View %>
+<%
+  begin
+    bulk_delete_url = bulk_delete_ruby_cms_admin_users_path
+  rescue NoMethodError, ActionController::UrlGenerationError
+    bulk_delete_url = nil
+  end
+  
+  user_class = Object.const_get(Rails.application.config.ruby_cms.user_class_name.presence || "User")
+  email_attr = user_class.column_names.include?("email_address") ? :email_address : :email
+%>
 
-<div class="ruby_cms-card ruby_cms-table-wrap bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-  <table class="ruby_cms-table min-w-full divide-y divide-gray-200">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-gray-200">
-      <% @users.each do |u| %>
-        <tr class="hover:bg-gray-50">
-          <td class="px-4 py-3 text-sm text-gray-900"><%= u.id %></td>
-          <td class="px-4 py-3 text-sm text-gray-900"><%= u.try(:email_address) || u.try(:email) || u.to_s %></td>
-          <td class="actions px-4 py-3 text-sm text-right"><%= link_to "Permissions", ruby_cms_admin_user_permissions_path(u), class: "ruby_cms-link text-blue-600 hover:text-blue-800" %></td>
-        </tr>
+<%= render RubyCms::Admin::AdminPage.new(
+  title: "Users",
+  actions: [
+    { 
+      label: "New user", 
+      url: "#",
+      primary: true,
+      data: { 
+        controller: "ruby-cms--toggle",
+        action: "click->ruby-cms--toggle#toggle",
+        toggle_target_id: "new-user-form"
+      }
+    }
+  ]
+) do %>
+  <% if flash[:alert] %>
+    <div class="ruby_cms-alert ruby_cms-alert--error">
+      <p><%= flash[:alert] %></p>
+    </div>
+  <% end %>
+
+  <div id="new-user-form" class="hidden ruby_cms-card ruby_cms-card--padded ruby_cms-card--form">
+    <h2 class="ruby_cms-card-title">Create User</h2>
+    <%= form_with url: ruby_cms_admin_users_path, method: :post, class: "ruby_cms-form" do |f| %>
+      <div class="ruby_cms-field">
+        <%= f.label email_attr, class: "ruby_cms-label" %>
+        <%= f.text_field email_attr, class: "ruby_cms-input", placeholder: "user@example.com" %>
+      </div>
+      <% if user_class.column_names.include?("password") %>
+        <div class="ruby_cms-field">
+          <%= f.label :password, class: "ruby_cms-label" %>
+          <%= f.password_field :password, class: "ruby_cms-input" %>
+        </div>
+        <div class="ruby_cms-field">
+          <%= f.label :password_confirmation, "Password Confirmation", class: "ruby_cms-label" %>
+          <%= f.password_field :password_confirmation, class: "ruby_cms-input" %>
+        </div>
       <% end %>
-    </tbody>
-  </table>
-</div>
+      <div class="ruby_cms-button-group">
+        <%= f.submit "Create User", class: "ruby_cms-btn ruby_cms-btn-primary" %>
+        <button
+          type="button"
+          data-controller="ruby-cms--toggle"
+          data-action="click->ruby-cms--toggle#hide"
+          data-toggle-target-id="new-user-form"
+          class="ruby_cms-btn ruby_cms-btn-secondary"
+        >
+          Cancel
+        </button>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="ruby_cms-card">
+    <%= render RubyCms::Admin::BulkActionTable::BulkActionTable.new(
+      turbo_frame: "admin_table_content",
+      pagination: @pagination,
+      pagination_path: @pagination_path,
+      bulk_actions_url: bulk_delete_url,
+      bulk_actions_buttons: [],
+      item_name: "user",
+      controller_name: "ruby-cms--bulk-action-table",
+      csrf_token: form_authenticity_token
+    ) do %>
+      <%= render RubyCms::Admin::BulkActionTable::BulkActionTableHeader.new(
+        headers: ["ID", "Email", { text: "Actions", class: "text-right" }],
+        bulk_actions_enabled: true,
+        controller_name: "ruby-cms--bulk-action-table"
+      ) %>
+      
+      <%= render RubyCms::Admin::BulkActionTable::BulkActionTableBody.new do %>
+        <% (@users || []).each do |u| %>
+          <% next if u.nil? %>
+          <%= render RubyCms::Admin::BulkActionTable::BulkActionTableRow.new(
+            data: { item_id: u.id },
+            bulk_actions_enabled: true,
+            controller_name: "ruby-cms--bulk-action-table"
+          ) do %>
+            <td><%= u.id %></td>
+            <td><%= u.try(:email_address) || u.try(:email) || u.to_s %></td>
+            <td class="ruby_cms-bulk-action-table-cell-right">
+              <div class="ruby_cms-bulk-action-table-actions">
+                <%= link_to "Permissions", ruby_cms_admin_user_permissions_path(u), class: "ruby_cms-bulk-action-table-link" %>
+                <%= render RubyCms::Admin::BulkActionTable::BulkActionTableActions.new(
+                  delete_path: ruby_cms_admin_user_path(u),
+                  item_id: u.id,
+                  controller_name: "ruby-cms--bulk-action-table"
+                ) %>
+              </div>
+            </td>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+<% end %>

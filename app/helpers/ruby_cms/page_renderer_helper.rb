@@ -27,7 +27,7 @@ module RubyCms
 
       return "" if regions.empty?
 
-      safe_join(regions.map { |region| render_page_region(region) })
+      safe_join(regions.map {|region| render_page_region(region) })
     end
 
     # Render a single page region with its nodes
@@ -38,7 +38,7 @@ module RubyCms
       return "" if nodes.empty?
 
       tag.div(class: "ruby-cms-region", data: { region_key: region.key }) do
-        safe_join(nodes.map { |node| render_page_node(node) })
+        safe_join(nodes.map {|node| render_page_node(node) })
       end
     end
 
@@ -51,7 +51,7 @@ module RubyCms
       if children.any?
         # Render component with children as block content
         RubyCms.render_component(self, node.component_key, node.props || {}) do
-          safe_join(children.map { |child| render_page_node(child) })
+          safe_join(children.map {|child| render_page_node(child) })
         end
       else
         # Render component without children

@@ -20,7 +20,7 @@ module RubyCms
     class << self
       def ensure_defaults!
         DEFAULT_KEYS.each do |k|
-          find_or_create_by!(key: k) { |p| p.name = k.humanize }
+          find_or_create_by!(key: k) {|p| p.name = k.humanize }
         end
       end
     end

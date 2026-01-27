@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module RubyCms
-  # Component Registry for Page Builder
-  # Allows registering components (RubyUI, host components, primitives) for use in the builder
+  # Component Registry
+  # Allows registering components (RubyUI, host components, primitives) for use in the CMS
   class ComponentRegistry
     Component = Struct.new(
       :key,
@@ -32,10 +32,11 @@ module RubyCms
     # @param slots [Array<String>] Optional slot names this component accepts
     # @param dependencies [Array<String>] Optional component keys this component depends on
     # @param description [String] Optional description
-    def register(key:, name:, category: "General", icon: nil, schema: {}, render: nil, slots: [], dependencies: [], description: nil)
+    def register(key:, name:, category: "General", icon: nil, schema: {}, render: nil, slots: [],
+                 dependencies: [], description: nil)
       raise ArgumentError, "Component key is required" if key.blank?
       raise ArgumentError, "Component name is required" if name.blank?
-      raise ArgumentError, "Render callable is required" if render.nil? || !render.is_a?(Proc)
+      raise ArgumentError, "Render callable is required" if render.nil? || !render.kind_of?(Proc)
 
       # Validate dependencies exist
       dependencies.each do |dep_key|
@@ -91,7 +92,7 @@ module RubyCms
     # @param props [Hash] Component props
     # @param block [Proc] Optional block for children/slots
     # @param slot_content [Hash] Optional named slot content: { "header" => "...", "footer" => "..." }
-    def render(view_context, key, props = {}, slot_content: {}, &block)
+    def render(view_context, key, props={}, slot_content: {}, &)
       component = get(key)
       raise ArgumentError, "Component not found: #{key}" unless component
 
@@ -110,12 +111,12 @@ module RubyCms
       # Call the render proc with slot content available
       if slot_content.present?
         # If slots are provided, pass them as a second block parameter
-        component.render.call(view_context, props) do |slot_name = :default|
+        component.render.call(view_context, props) do |slot_name=:default|
           slot_content[slot_name.to_s] || (block_given? ? yield : "")
         end
       else
         # Standard rendering with block
-        component.render.call(view_context, props, &block)
+        component.render.call(view_context, props, &)
       end
     end
 
@@ -123,21 +124,21 @@ module RubyCms
     # @param key [String] Component key
     # @return [Array<Component>] Components that depend on this one
     def dependents_of(key)
-      @components.values.select { |c| c.dependencies.include?(key.to_s) }
+      @components.values.select {|c| c.dependencies.include?(key.to_s) }
     end
 
     # Check if a component can be used (all dependencies are available)
     # @param key [String] Component key
     # @param available_components [Array<String>] List of available component keys
     # @return [Boolean] True if all dependencies are available
-    def can_use?(key, available_components = nil)
+    def can_use?(key, available_components=nil)
       component = get(key)
       return false unless component
 
       return true if component.dependencies.empty?
 
       available = available_components || @components.keys
-      component.dependencies.all? { |dep| available.include?(dep.to_s) }
+      component.dependencies.all? {|dep| available.include?(dep.to_s) }
     end
 
     # Clear all registrations (useful for testing)
@@ -199,7 +200,7 @@ module RubyCms
       return if schema.blank?
 
       # Basic validation - check required fields
-      if schema[:required].is_a?(Array)
+      if schema[:required].kind_of?(Array)
         schema[:required].each do |required_key|
           unless props.key?(required_key.to_s) || props.key?(required_key.to_sym)
             raise ArgumentError, "Required prop missing: #{required_key}"
@@ -208,37 +209,38 @@ module RubyCms
       end
 
       # Type validation (simplified)
-      return unless schema[:properties].is_a?(Hash)
+      return unless schema[:properties].kind_of?(Hash)
 
       schema[:properties].each do |prop_key, prop_schema|
         next unless props.key?(prop_key.to_s) || props.key?(prop_key.to_sym)
 
         value = props[prop_key.to_s] || props[prop_key.to_sym]
-        
+
         # Skip validation for nil or empty string values (optional fields)
-        next if value.nil? || (value.is_a?(String) && value.empty?)
-        
+        next if value.nil? || (value.kind_of?(String) && value.empty?)
+
         expected_type = prop_schema[:type]
 
         next unless expected_type
 
         type_valid = case expected_type
                      when "string"
-                       value.is_a?(String)
+                       value.kind_of?(String)
                      when "number", "integer"
-                       value.is_a?(Numeric)
+                       value.kind_of?(Numeric)
                      when "boolean"
-                       value.is_a?(TrueClass) || value.is_a?(FalseClass)
+                       value.kind_of?(TrueClass) || value.kind_of?(FalseClass)
                      when "array"
-                       value.is_a?(Array)
+                       value.kind_of?(Array)
                      when "object"
-                       value.is_a?(Hash)
+                       value.kind_of?(Hash)
                      else
                        true # Unknown type, skip validation
                      end
 
         unless type_valid
-          raise ArgumentError, "Prop #{prop_key} has wrong type. Expected #{expected_type}, got #{value.class}"
+          raise ArgumentError,
+                "Prop #{prop_key} has wrong type. Expected #{expected_type}, got #{value.class}"
         end
       end
     end
@@ -251,8 +253,8 @@ module RubyCms
     attr_reader :component_registry
 
     # Register a component (convenience method)
-    def register_component(**kwargs)
-      @component_registry.register(**kwargs)
+    def register_component(**)
+      @component_registry.register(**)
     end
 
     # Get a component
@@ -267,12 +269,12 @@ module RubyCms
 
     # Get all components
     def all_components(category: nil)
-      @component_registry.all(category: category)
+      @component_registry.all(category:)
     end
 
     # Render a component
-    def render_component(view_context, key, props = {}, slot_content: {}, &block)
-      @component_registry.render(view_context, key, props, slot_content: slot_content, &block)
+    def render_component(view_context, key, props={}, slot_content: {}, &)
+      @component_registry.render(view_context, key, props, slot_content:, &)
     end
   end
 end

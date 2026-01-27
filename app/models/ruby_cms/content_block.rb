@@ -31,20 +31,24 @@ module RubyCms
 
     CONTENT_TYPES = %w[text rich_text image link list].freeze
 
-    validates :key, presence: true, uniqueness: true
+    validates :key, presence: true
+    validates :locale, presence: true
     validates :content_type, inclusion: { in: CONTENT_TYPES }
+    validates :key, uniqueness: { scope: :locale, message: "must be unique per locale" }
     validate :key_not_reserved
     validate :image_content_type, if: -> { respond_to?(:image) && image.attached? }
     validate :image_size, if: -> { respond_to?(:image) && image.attached? }
 
     scope :published, -> { where(published: true) }
     scope :by_key, -> { order(:key) }
+    scope :for_locale, ->(locale) { where(locale: locale.to_s) }
+    scope :for_current_locale, -> { where(locale: I18n.locale.to_s) }
 
     # Scope for content blocks accessible by a user
     # Can be extended in the future for per-record permissions
     # @param user [User] The user to check access for
     # @return [ActiveRecord::Relation] Content blocks the user can access
-    def self.accessible_by(user)
+    def self.accessible_by(_user)
       # For now, all content blocks are accessible if user has manage_content_blocks permission
       # Future: Add per-record permission checks here
       all
@@ -61,6 +65,29 @@ module RubyCms
       when "text", "link", "list" then content.to_s
       else content.to_s
       end
+    end
+
+    # Find content block by key and locale, with fallback to default locale
+    # @param key [String] The content block key
+    # @param locale [String, Symbol] The locale to find
+    # @param default_locale [String, Symbol] Fallback locale if not found
+    # @return [ContentBlock, nil] The content block or nil
+    def self.find_by_key_and_locale(key, locale: nil, default_locale: nil)
+      locale ||= I18n.locale.to_s
+      default_locale ||= begin
+        I18n.default_locale.to_s
+      rescue StandardError
+        "en"
+      end
+
+      # Try requested locale first
+      block = find_by(key: key.to_s, locale: locale.to_s)
+      return block if block
+
+      # Fallback to default locale
+      return nil if locale.to_s == default_locale.to_s
+
+      find_by(key: key.to_s, locale: default_locale.to_s)
     end
 
     private
@@ -83,8 +110,10 @@ module RubyCms
         Rails.application.config.ruby_cms.image_content_types
       rescue StandardError
         nil
-      end || %w[image/png image/jpeg image/gif
-                image/webp]
+      end || %w[
+        image/png image/jpeg image/gif
+        image/webp
+      ]
       return if image.content_type.in?(allowed)
 
       errors.add(:image, :content_type_invalid)

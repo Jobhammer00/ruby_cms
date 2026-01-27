@@ -37,7 +37,7 @@ module RubyCms
 
       # Forbid (403) or redirect with flash. Default-deny: unknown permission = forbidden.
       def require_permission!(permission_key, record: nil)
-        return if current_user_cms&.can?(permission_key, record: record)
+        return if current_user_cms&.can?(permission_key, record:)
 
         respond_to do |format|
           format.html { redirect_to(cms_redirect_path, alert: "Not authorized.") }

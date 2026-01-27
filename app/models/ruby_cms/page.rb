@@ -7,7 +7,11 @@ module RubyCms
     RENDER_MODES = %w[builder html template].freeze
 
     validates :key, presence: true, uniqueness: true
-    validates :key, format: { with: /\A[\w-]+\z/, message: "only letters, numbers, hyphens, and underscores" }
+    validates :key,
+              format: {
+                with: /\A[\w-]+\z/,
+                message: "only letters, numbers, hyphens, and underscores"
+              }
     validates :render_mode, presence: true, inclusion: { in: RENDER_MODES }
     validates :template_path, presence: true, if: -> { render_mode == "template" }
     validates :body_html, presence: true, if: -> { render_mode == "html" }
@@ -17,8 +21,8 @@ module RubyCms
     scope :published_only, -> { where(published: true, draft: false) }
     scope :by_position, -> { order(:position, :key) }
 
-    has_many :page_regions, class_name: "RubyCms::PageRegion", dependent: :destroy, foreign_key: "page_id"
-    has_many :page_versions, class_name: "RubyCms::PageVersion", dependent: :destroy, foreign_key: "page_id"
+    has_many :page_regions, class_name: "RubyCms::PageRegion", dependent: :destroy
+    has_many :page_versions, class_name: "RubyCms::PageVersion", dependent: :destroy
 
     before_validation :set_default_render_mode, on: :create
     after_commit :enqueue_compile, if: :should_compile?
@@ -60,7 +64,7 @@ module RubyCms
 
     # Get or create a region by key
     def region(key)
-      page_regions.find_or_create_by(key: key) do |region|
+      page_regions.find_or_create_by(key:) do |region|
         region.position = page_regions.count
       end
     end
@@ -131,7 +135,9 @@ module RubyCms
     def publish!(user: nil)
       transaction do
         # Save version before publishing if there are changes
-        save_version(user: user, notes: "Published") if changed? || page_regions.any? { |r| r.changed? }
+        save_version(user: user, notes: "Published") if changed? || page_regions.any? do |r|
+          r.changed?
+        end
 
         self.draft = false
         self.published = true
@@ -189,7 +195,7 @@ module RubyCms
       }
 
       if node.children.any?
-        data[:children] = node.children.by_position.map { |child| serialize_node(child) }
+        data[:children] = node.children.by_position.map {|child| serialize_node(child) }
       end
 
       data
@@ -201,25 +207,25 @@ module RubyCms
 
       # Recreate regions from snapshot
       snapshot.each do |region_key, region_data|
-        next unless region_data.is_a?(Hash)
+        next unless region_data.kind_of?(Hash)
 
         region = page_regions.create!(key: region_key, position: page_regions.count)
 
-        if region_data[:nodes].is_a?(Array)
-          region_data[:nodes].each_with_index do |node_data, index|
-            next unless node_data.is_a?(Hash)
+        next unless region_data[:nodes].kind_of?(Array)
 
-            node = region.page_nodes.create!(
-              component_key: node_data[:component_key],
-              props: node_data[:props] || {},
-              position: index,
-              depth: node_data[:depth] || 0
-            )
+        region_data[:nodes].each_with_index do |node_data, index|
+          next unless node_data.kind_of?(Hash)
 
-            # Restore nested children
-            if node_data[:children].is_a?(Array)
-              restore_nested_nodes(node, node_data[:children], 1)
-            end
+          node = region.page_nodes.create!(
+            component_key: node_data[:component_key],
+            props: node_data[:props] || {},
+            position: index,
+            depth: node_data[:depth] || 0
+          )
+
+          # Restore nested children
+          if node_data[:children].kind_of?(Array)
+            restore_nested_nodes(node, node_data[:children], 1)
           end
         end
       end
@@ -227,7 +233,7 @@ module RubyCms
 
     def restore_nested_nodes(parent_node, children_data, current_depth)
       children_data.each_with_index do |child_data, index|
-        next unless child_data.is_a?(Hash)
+        next unless child_data.kind_of?(Hash)
 
         child = parent_node.children.create!(
           component_key: child_data[:component_key],
@@ -236,13 +242,11 @@ module RubyCms
           depth: current_depth
         )
 
-        if child_data[:children].is_a?(Array)
+        if child_data[:children].kind_of?(Array)
           restore_nested_nodes(child, child_data[:children], current_depth + 1)
         end
       end
     end
-
-    private
 
     def set_default_render_mode
       self.render_mode ||= "builder"

@@ -10,6 +10,7 @@
     <%= stylesheet_link_tag "ruby_cms/admin", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
   </head>
   <body class="min-h-screen bg-gray-50">
     <div class="ruby_cms-admin-layout flex h-screen overflow-hidden" data-controller="ruby-cms--mobile-menu">
@@ -20,114 +21,8 @@
         </svg>
       </button>
       
-      <%# Sidebar (gvexcelsior-style) %>
-      <aside class="ruby_cms-admin-sidebar" aria-label="Admin" data-ruby-cms--mobile-menu-target="sidebar">
-        <div class="ruby_cms-admin-sidebar-header">
-          <div class="ruby_cms-admin-sidebar-header-content" data-ruby-cms--mobile-menu-target="sidebarContent">
-            <% if respond_to?(:image_tag, true) %>
-              <div class="ruby_cms-admin-sidebar-logo">
-                <% if respond_to?(:main_app, true) && main_app.respond_to?(:image_path) %>
-                  <%= image_tag main_app.image_path("logo.png"), alt: "Logo", onerror: "this.style.display='none'" rescue nil %>
-                <% end %>
-              </div>
-            <% end %>
-            <div>
-              <p class="ruby_cms-admin-sidebar-title">RubyCMS</p>
-            </div>
-          </div>
-        </div>
-        <nav class="ruby_cms-admin-sidebar-nav flex-1 px-3 py-6 overflow-y-auto" aria-label="Admin" data-ruby-cms--mobile-menu-target="sidebarContent">
-          <% 
-            entries = ruby_cms_nav_entries
-            # Group entries: first items without section, then items grouped by section
-            main_entries = entries.select { |e| e[:section].blank? }
-            sectioned_entries = entries.select { |e| e[:section].present? }.group_by { |e| e[:section] }
-          %>
-          
-          <div class="space-y-1">
-            <%# Main content items (no section) %>
-            <% main_entries.each do |e| %>
-              <% begin %>
-                <% path = e[:path].respond_to?(:call) ? e[:path].call(self) : e[:path] %>
-                <% next if path.blank? %>
-                <% path_str = path.respond_to?(:to_str) ? path.to_str : path.to_s %>
-                <% active = (path_str == "/admin" || path_str == "/admin/") ? request.path.match?(%r{\A/admin/?\z}) : request.path.start_with?(path_str) %>
-                <%= link_to path, class: "#{active ? 'active' : ''}" do %>
-                  <% if e[:icon].present? %>
-                    <svg class="ruby_cms-admin-sidebar-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <%= raw e[:icon] %>
-                    </svg>
-                  <% end %>
-                  <span class="ruby_cms-admin-sidebar-nav-text"><%= e[:label] %></span>
-                <% end %>
-              <% rescue => ex %>
-                <% Rails.logger.error "RubyCMS nav error for #{e[:key]}: #{ex.message}" if defined?(Rails.logger) %>
-                <% # Silently skip failed nav entries %>
-              <% end %>
-            <% end %>
-          </div>
-          
-          <%# Sectioned items %>
-          <% sectioned_entries.each do |section_name, section_items| %>
-            <div class="my-6">
-              <div class="h-px bg-gray-100"></div>
-            </div>
-            <div class="space-y-1">
-              <% section_items.each do |e| %>
-                <% begin %>
-                  <% path = e[:path].respond_to?(:call) ? e[:path].call(self) : e[:path] %>
-                  <% next if path.blank? %>
-                  <% path_str = path.respond_to?(:to_str) ? path.to_str : path.to_s %>
-                  <% active = (path_str == "/admin" || path_str == "/admin/") ? request.path.match?(%r{\A/admin/?\z}) : request.path.start_with?(path_str) %>
-                  <%= link_to path, class: "#{active ? 'active' : ''}" do %>
-                    <% if e[:icon].present? %>
-                      <svg class="ruby_cms-admin-sidebar-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <%= raw e[:icon] %>
-                      </svg>
-                    <% end %>
-                    <span class="ruby_cms-admin-sidebar-nav-text"><%= e[:label] %></span>
-                  <% end %>
-                <% rescue => ex %>
-                  <% Rails.logger.error "RubyCMS nav error for #{e[:key]}: #{ex.message}" if defined?(Rails.logger) %>
-                  <% # Silently skip failed nav entries %>
-                <% end %>
-              <% end %>
-            </div>
-          <% end %>
-        </nav>
-        <div class="ruby_cms-admin-sidebar-footer" data-ruby-cms--mobile-menu-target="sidebarContent">
-          <%# i18n Locale Switcher %>
-          <div class="ruby_cms-admin-locale-switcher">
-            <%= form_with url: ruby_cms_admin_locale_path, method: :patch, data: { turbo: true } do |form| %>
-              <%= form.select :locale, 
-                  options_for_select(I18n.available_locales.map { |loc| [loc.to_s.upcase, loc.to_s] }, I18n.locale.to_s),
-                  {},
-                  { 
-                    class: "ruby_cms-admin-locale-select",
-                    onchange: "this.form.requestSubmit()"
-                  } %>
-            <% end %>
-          </div>
-
-          <% if respond_to?(:main_app, true) && main_app.respond_to?(:root_path) %>
-            <%= link_to main_app.root_path, target: "_blank", class: "ruby_cms-admin-sidebar-footer-item" do %>
-              <svg class="ruby_cms-admin-sidebar-footer-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-              </svg>
-              <span class="ruby_cms-admin-sidebar-footer-text">View site</span>
-            <% end %>
-          <% end %>
-          
-          <% if respond_to?(:main_app, true) && main_app.respond_to?(:session_path) %>
-            <%= button_to main_app.session_path, method: :delete, class: "ruby_cms-admin-sidebar-footer-item", data: { turbo_confirm: "Are you sure you want to logout?" } do %>
-              <svg class="ruby_cms-admin-sidebar-footer-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-              </svg>
-              <span class="ruby_cms-admin-sidebar-footer-text">Logout</span>
-            <% end %>
-          <% end %>
-        </div>
-      </aside>
+      <%# Sidebar Navigation %>
+      <%= render "layouts/ruby_cms/admin_sidebar" %>
 
       <%# Mobile overlay %>
       <div class="ruby_cms-mobile-overlay" data-ruby-cms--mobile-menu-target="overlay" data-action="click->ruby-cms--mobile-menu#close"></div>
@@ -147,38 +42,13 @@
               </nav>
             <% end %>
             
-            <%# Flash messages with better styling and auto-dismiss %>
-            <% if flash.any? %>
-              <div class="mb-4 space-y-2" data-controller="ruby-cms--flash-messages">
-                <% flash.each do |type, message| %>
-                  <div class="flash-message flash-<%= type %> px-4 py-3 rounded-lg border flex items-center justify-between animate-slide-in" role="alert" data-ruby-cms--flash-messages-target="message">
-                    <div class="flex items-center">
-                      <% if type == "notice" %>
-                        <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                        </svg>
-                      <% elsif type == "alert" %>
-                        <svg class="w-5 h-5 text-amber-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                        </svg>
-                      <% end %>
-                      <span><%= message %></span>
-                    </div>
-                    <button type="button" class="ml-4 text-gray-400 hover:text-gray-600" aria-label="Dismiss" data-action="click->ruby-cms--flash-messages#dismiss">
-                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                      </svg>
-                    </button>
-                  </div>
-                <% end %>
-              </div>
-            <% end %>
+            <%# Flash messages %>
+            <%= render "layouts/ruby_cms/admin_flash_messages" %>
             
             <%= yield %>
           </div>
         <% end %>
       </main>
     </div>
-    <%= javascript_importmap_tags if respond_to?(:javascript_importmap_tags, true) %>
   </body>
 </html>

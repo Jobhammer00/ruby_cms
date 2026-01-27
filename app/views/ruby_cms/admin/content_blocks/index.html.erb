@@ -1,33 +1,84 @@
-<div class="ruby_cms-page-header flex items-center justify-between mb-6">
-  <h1 class="text-2xl font-semibold text-gray-900">Content blocks</h1>
-  <%= link_to "New content block", new_ruby_cms_admin_content_block_path, class: "ruby_cms-btn ruby_cms-btn-primary inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700" %>
-</div>
+<%# Phlex-based Bulk Action Table View %>
+<%
+  # Build bulk action buttons
+  bulk_action_buttons = []
+  begin
+    bulk_publish_url = bulk_publish_ruby_cms_admin_content_blocks_path
+    bulk_action_buttons << {
+      name: "publish",
+      label: "Publish Selected",
+      url: bulk_publish_url,
+      confirm: "Are you sure you want to publish the selected content blocks?"
+    }
+  rescue NoMethodError, ActionController::UrlGenerationError
+  end
+  
+  begin
+    bulk_unpublish_url = bulk_unpublish_ruby_cms_admin_content_blocks_path
+    bulk_action_buttons << {
+      name: "unpublish",
+      label: "Unpublish Selected",
+      url: bulk_unpublish_url,
+      confirm: "Are you sure you want to unpublish the selected content blocks?"
+    }
+  rescue NoMethodError, ActionController::UrlGenerationError
+  end
+  
+  begin
+    bulk_delete_url = bulk_delete_ruby_cms_admin_content_blocks_path
+  rescue NoMethodError, ActionController::UrlGenerationError
+    bulk_delete_url = nil
+  end
+%>
 
-<div class="ruby_cms-card ruby_cms-table-wrap bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
-  <table class="ruby_cms-table min-w-full divide-y divide-gray-200">
-    <thead class="bg-gray-50">
-      <tr>
-        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Key</th>
-        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
-        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Published</th>
-        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-gray-200">
-      <% @content_blocks.each do |block| %>
-        <tr class="hover:bg-gray-50">
-          <td class="px-4 py-3 text-sm text-gray-900"><%= block.key %></td>
-          <td class="px-4 py-3 text-sm text-gray-900"><%= block.title %></td>
-          <td class="px-4 py-3 text-sm text-gray-600"><%= block.content_type %></td>
-          <td class="px-4 py-3 text-sm"><%= block.published? ? tag.span("Yes", class: "ruby_cms-badge ruby_cms-badge-success px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800") : tag.span("No", class: "ruby_cms-badge ruby_cms-badge-muted px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600") %></td>
-          <td class="actions px-4 py-3 text-sm text-right space-x-2">
-            <%= link_to "Show", ruby_cms_admin_content_block_path(block), class: "ruby_cms-link text-blue-600 hover:text-blue-800" %>
-            <%= link_to "Edit", edit_ruby_cms_admin_content_block_path(block), class: "ruby_cms-link text-blue-600 hover:text-blue-800" %>
-            <%= button_to "Delete", ruby_cms_admin_content_block_path(block), method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "ruby_cms-link ruby_cms-link-danger inline text-red-600 hover:text-red-800" %>
-          </td>
-        </tr>
+<%= render RubyCms::Admin::AdminPage.new(
+  title: "Content blocks",
+  actions: [
+    { label: "New content block", url: new_ruby_cms_admin_content_block_path, primary: true }
+  ]
+) do %>
+  <div class="ruby_cms-card">
+    <%= render RubyCms::Admin::BulkActionTable::BulkActionTable.new(
+      turbo_frame: "admin_table_content",
+      pagination: @pagination,
+      pagination_path: @pagination_path,
+      bulk_actions_url: bulk_delete_url,
+      bulk_actions_buttons: bulk_action_buttons,
+      item_name: "content block",
+      controller_name: "ruby-cms--bulk-action-table",
+      csrf_token: form_authenticity_token
+    ) do %>
+      <%= render RubyCms::Admin::BulkActionTable::BulkActionTableHeader.new(
+        headers: ["Key", "Title", "Type", "Published", { text: "Actions", class: "text-right" }],
+        bulk_actions_enabled: true,
+        controller_name: "ruby-cms--bulk-action-table"
+      ) %>
+      
+      <%= render RubyCms::Admin::BulkActionTable::BulkActionTableBody.new do %>
+        <% (@content_blocks || []).each do |block| %>
+          <% next if block.nil? %>
+          <%= render RubyCms::Admin::BulkActionTable::BulkActionTableRow.new(
+            data: { item_id: block.id },
+            bulk_actions_enabled: true,
+            controller_name: "ruby-cms--bulk-action-table"
+          ) do %>
+            <td><%= block.key %></td>
+            <td><%= block.title %></td>
+            <td class="text-muted"><%= block.content_type %></td>
+            <td>
+              <%= block.published? ? tag.span("Yes", class: "ruby_cms-badge ruby_cms-badge-success") : tag.span("No", class: "ruby_cms-badge ruby_cms-badge-muted") %>
+            </td>
+            <td class="text-right">
+              <%= render RubyCms::Admin::BulkActionTable::BulkActionTableActions.new(
+                edit_path: edit_ruby_cms_admin_content_block_path(block),
+                delete_path: ruby_cms_admin_content_block_path(block),
+                item_id: block.id,
+                controller_name: "ruby-cms--bulk-action-table"
+              ) %>
+            </td>
+          <% end %>
+        <% end %>
       <% end %>
-    </tbody>
-  </table>
-</div>
+    <% end %>
+  </div>
+<% end %>

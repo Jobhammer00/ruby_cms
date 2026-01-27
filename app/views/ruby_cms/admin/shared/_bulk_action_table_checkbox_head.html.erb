@@ -1,0 +1,15 @@
+<%# Bulk Action Table Checkbox Head %>
+<% controller_name = local_assigns[:controller_name] || "ruby-cms--bulk-action-table" %>
+
+<th class="bulk-action-table__checkbox-head">
+  <div class="bulk-action-table__checkbox-head-wrapper">
+    <input
+      type="checkbox"
+      role="checkbox"
+      data-<%= controller_name %>-target="selectAllCheckbox"
+      data-action="change-><%= controller_name %>#toggleSelectAll"
+      class="bulk-action-table__checkbox-head-input"
+      aria-label="Select all"
+    />
+  </div>
+</th>

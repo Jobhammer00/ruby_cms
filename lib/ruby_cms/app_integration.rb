@@ -14,10 +14,10 @@ module RubyCms
       def self.register_route(key:, route_name:, label:, description: nil, params: {})
         @registered_routes ||= {}
         @registered_routes[key] = {
-          route_name: route_name,
-          label: label,
-          description: description,
-          params: params
+          route_name:,
+          label:,
+          description:,
+          params:
         }
       end
 
@@ -60,8 +60,8 @@ module RubyCms
   # Convenience methods
   class << self
     # Register an app route
-    def register_app_route(**kwargs)
-      AppIntegration::LinkApp.register_route(**kwargs)
+    def register_app_route(**)
+      AppIntegration::LinkApp.register_route(**)
     end
 
     # Get registered routes
@@ -70,8 +70,8 @@ module RubyCms
     end
 
     # Register an app setting
-    def register_app_setting(**kwargs)
-      AppIntegration::AppSettings.register_setting(**kwargs)
+    def register_app_setting(**)
+      AppIntegration::AppSettings.register_setting(**)
     end
 
     # Load app settings for view context

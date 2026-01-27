@@ -34,7 +34,7 @@ module RubyCms
         when "builder", "html"
           # Use page's layout if specified, otherwise config default
           self.class.layout(@page.effective_layout)
-          
+
           # Use compiled HTML if available and fresh
           if @page.compiled_html_fresh? && @page.compiled_html.present?
             render html: @page.compiled_html.html_safe, layout: @page.effective_layout
@@ -79,9 +79,9 @@ module RubyCms
       def handle_missing_template(_error)
         escaped = ERB::Util.html_escape(@page&.template_path.to_s)
         render html: "<h1>Missing template</h1>" \
-          "<p>Could not find <code>#{escaped}</code>.</p>" \
-          "<p>Create it in your app, e.g. <code>app/views/#{escaped}.html.erb</code>, " \
-          "or change the page's <code>template_path</code>.</p>".html_safe, status: :not_found, layout: false
+                     "<p>Could not find <code>#{escaped}</code>.</p>" \
+                     "<p>Create it in your app, e.g. <code>app/views/#{escaped}.html.erb</code>, " \
+                     "or change the page's <code>template_path</code>.</p>".html_safe, status: :not_found, layout: false
       end
 
       def set_cache_headers

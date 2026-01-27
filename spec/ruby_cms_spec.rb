@@ -2,6 +2,6 @@
 
 RSpec.describe RubyCms do
   it "has a version number" do
-    expect(RubyCms::VERSION).not_to be nil
+    expect(RubyCms::VERSION).not_to be_nil
   end
 end

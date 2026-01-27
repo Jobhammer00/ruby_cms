@@ -1,0 +1,13 @@
+<div class="container mx-auto px-4 py-8">
+  <h1 class="text-4xl font-bold mb-4">
+    <%= content_block("home_hero_title", default: "Welcome to RubyCMS", tag: :span) %>
+  </h1>
+  
+  <div class="prose max-w-none">
+    <%= content_block("home_hero_description", default: "This is a sample homepage. Click the blocks above to edit them in the visual editor.", tag: :div) %>
+  </div>
+  
+  <div class="mt-8">
+    <%= content_block("home_content", default: "Main content goes here. You can edit this content using the visual editor.", tag: :div) %>
+  </div>
+</div>

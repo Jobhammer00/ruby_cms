@@ -2,8 +2,6 @@
 
 require_relative "component_registry"
 require_relative "component_registry/defaults"
-require_relative "template_registry"
-require_relative "template_registry/defaults"
 
 module RubyCms
   class Engine < ::Rails::Engine
@@ -26,7 +24,7 @@ module RubyCms
 
     # Callable to resolve "current user" from the request. Receives controller, returns user or nil.
     # Default: ->(c) { c.respond_to?(:current_user) ? c.current_user : nil }
-    config.ruby_cms.current_user_resolver = lambda { |controller|
+    config.ruby_cms.current_user_resolver = lambda {|controller|
       controller.respond_to?(:current_user) ? controller.current_user : nil
     }
 
@@ -45,17 +43,17 @@ module RubyCms
 
     # Content blocks: reserved key prefixes (e.g. "admin_") cannot be used.
     config.ruby_cms.reserved_key_prefixes = %w[admin_]
+    # Content blocks: default translation namespace (e.g., "content_blocks" or "cms")
+    # When set, content_block helper will try translations at namespace.key before root-level key
+    # Example: If namespace is "content_blocks", it tries "content_blocks.home_hero_title" then "home_hero_title"
+    config.ruby_cms.content_blocks_translation_namespace = nil
     # Image attachment: allowed content types and max size.
     config.ruby_cms.image_content_types = %w[image/png image/jpeg image/gif image/webp]
     config.ruby_cms.image_max_size = 5.megabytes
 
-    # Component Registry: allowlist of components for Page Builder
+    # Component Registry: allowlist of components
     # Configure via: config.ruby_cms.component_registry.register(...)
     config.ruby_cms.component_registry = RubyCms.component_registry
-
-    # Template Registry: allowlist of page templates
-    # Configure via: config.ruby_cms.template_registry.register(...)
-    config.ruby_cms.template_registry = RubyCms.template_registry
 
     initializer "ruby_cms.i18n" do |app|
       app.config.i18n.load_path += Dir[config.root.join("config", "locales", "**", "*.yml")]
@@ -65,15 +63,21 @@ module RubyCms
       ActiveSupport.on_load(:action_controller_base) do
         helper RubyCms::ApplicationHelper
         helper RubyCms::ContentBlocksHelper
-        helper RubyCms::PageBuilderHelper
         helper RubyCms::PageRendererHelper
-        helper RubyCms::NavigationHelper
+        helper RubyCms::BulkActionTableHelper
+        helper RubyCms::Admin::BulkActionTableHelper
       end
     end
 
     initializer "ruby_cms.assets" do |app|
       # Add JavaScript controllers to asset pipeline
-      app.config.assets.paths << config.root.join("app/javascript") if app.config.respond_to?(:assets)
+      if app.config.respond_to?(:assets)
+        app.config.assets.paths << config.root.join("app/javascript")
+      end
+      # Add stylesheets to asset pipeline
+      if app.config.respond_to?(:assets)
+        app.config.assets.paths << config.root.join("app/assets/stylesheets")
+      end
     end
 
     initializer "ruby_cms.importmap", before: "importmap" do |app|
@@ -102,24 +106,11 @@ module RubyCms
         RubyCms.nav_register(
           key: :visual_editor,
           label: "Visual editor",
-          path: lambda(&:ruby_cms_admin_editor_path),
+          path: lambda(&:ruby_cms_admin_visual_editor_path),
           icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>'
-        )
-        RubyCms.nav_register(
-          key: :page_builder,
-          label: "Page builder",
-          path: lambda(&:ruby_cms_admin_page_builder_path),
-          icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>'
         )
 
         # Settings section
-        RubyCms.nav_register(
-          key: :pages,
-          label: "Pages",
-          path: lambda { |v| v.respond_to?(:ruby_cms_admin_pages_path) ? v.ruby_cms_admin_pages_path : "/admin/pages" },
-          section: "Settings",
-          icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>'
-        )
         RubyCms.nav_register(
           key: :permissions,
           label: "Permissions",
@@ -134,27 +125,12 @@ module RubyCms
           section: "Settings",
           icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>'
         )
-        RubyCms.nav_register(
-          key: :navigation_menus,
-          label: "Navigation",
-          path: lambda(&:ruby_cms_admin_navigation_menus_path),
-          section: "Settings",
-          icon: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>'
-        )
       end
     end
 
     initializer "ruby_cms.component_registry" do
       Rails.application.config.to_prepare do
-        # Register default components
         RubyCms::ComponentRegistry::Defaults.register_all
-      end
-    end
-
-    initializer "ruby_cms.template_registry" do
-      Rails.application.config.to_prepare do
-        # Register default templates
-        RubyCms::TemplateRegistry::Defaults.register_all
       end
     end
 
@@ -181,19 +157,100 @@ module RubyCms
 
         desc "Grant manage_admin to a user by email. Usage: rails ruby_cms:grant_manage_admin email=user@example.com"
         task :grant_manage_admin, [:email] => :environment do |_t, args|
-          email = args[:email] || ENV["email"] || ENV["EMAIL"]
+          email = args[:email] || ENV["email"] || ENV.fetch("EMAIL", nil)
           abort "Usage: rails ruby_cms:grant_manage_admin email=user@example.com" if email.blank?
 
           RubyCms::Permission.ensure_defaults!
           user_class = Rails.application.config.ruby_cms.user_class_name.constantize
           user = nil
-          user = user_class.find_by(email_address: email) if user_class.column_names.include?("email_address")
-          user ||= user_class.find_by(email: email) if user.nil? && user_class.column_names.include?("email")
+          if user_class.column_names.include?("email_address")
+            user = user_class.find_by(email_address: email)
+          end
+          if user.nil? && user_class.column_names.include?("email")
+            user ||= user_class.find_by(email:)
+          end
           abort "User not found: #{email}" unless user
 
           perm = RubyCms::Permission.find_by!(key: "manage_admin")
           RubyCms::UserPermission.find_or_create_by!(user: user, permission: perm)
-          puts "Granted manage_admin to #{email}"
+          $stdout.puts "Granted manage_admin to #{email}"
+        end
+
+        namespace :content_blocks do
+          desc "Export content blocks from database to YAML locale files"
+          task :export, %i[namespace locales_dir] => :environment do |_t, args|
+            require "ruby_cms/content_blocks_sync"
+
+            namespace = args[:namespace]&.presence
+            locales_dir = args[:locales_dir]&.presence ? Pathname.new(args[:locales_dir]) : nil
+            flatten = ENV["flatten"] == "true"
+
+            sync = RubyCms::ContentBlocksSync.new(namespace:, locales_dir:)
+            summary = sync.export_to_yaml(only_published: true, flatten_keys: flatten)
+
+            if summary.empty?
+              $stdout.puts "No content blocks found to export."
+            else
+              $stdout.puts "Exported content blocks to locale files:"
+              summary.each do |locale, count|
+                $stdout.puts "  #{locale}: #{count} block(s) updated in config/locales/#{locale}.yml"
+              end
+            end
+          end
+
+          desc "Import content blocks from YAML locale files to database"
+          task :import, %i[locale namespace locales_dir] => :environment do |_t, args|
+            require "ruby_cms/content_blocks_sync"
+
+            locale = args[:locale]&.presence&.to_sym
+            namespace = args[:namespace]&.presence
+            locales_dir = args[:locales_dir]&.presence ? Pathname.new(args[:locales_dir]) : nil
+            create_missing = ENV["create_missing"] != "false"
+            update_existing = ENV["update_existing"] != "false"
+            published = ENV["published"] == "true"
+
+            sync = RubyCms::ContentBlocksSync.new(namespace:, locales_dir:)
+            summary = sync.import_from_yaml(
+              locale:,
+              create_missing:,
+              update_existing:,
+              published:
+            )
+
+            $stdout.puts "Import summary:"
+            $stdout.puts "  Created: #{summary[:created]}"
+            $stdout.puts "  Updated: #{summary[:updated]}"
+            $stdout.puts "  Skipped: #{summary[:skipped]}"
+            if summary[:errors].any?
+              $stdout.puts "  Errors:"
+              summary[:errors].each {|e| $stdout.puts "    - #{e}" }
+            end
+          end
+
+          desc "Sync content blocks: export DB to YAML, optionally import from YAML"
+          task :sync, %i[namespace locales_dir] => :environment do |_t, args|
+            require "ruby_cms/content_blocks_sync"
+
+            namespace = args[:namespace]&.presence
+            locales_dir = args[:locales_dir]&.presence ? Pathname.new(args[:locales_dir]) : nil
+            import_after = ENV["import_after"] == "true"
+
+            sync = RubyCms::ContentBlocksSync.new(namespace:, locales_dir:)
+            result = sync.sync(import_after_export: import_after)
+
+            $stdout.puts "Sync complete!"
+            $stdout.puts "\nExport summary:"
+            result[:export].each do |locale, count|
+              $stdout.puts "  #{locale}: #{count} block(s) updated"
+            end
+
+            if import_after && result[:import].any?
+              $stdout.puts "\nImport summary:"
+              $stdout.puts "  Created: #{result[:import][:created]}"
+              $stdout.puts "  Updated: #{result[:import][:updated]}"
+              $stdout.puts "  Skipped: #{result[:import][:skipped]}"
+            end
+          end
         end
       end
     end

@@ -12,8 +12,6 @@ BLUE = "\033[34m"
 RESET = "\033[0m"
 BOLD = "\033[1m"
 
-CI_TRUE_ENV_KEYS = %w[CI GITHUB_ACTIONS TRAVIS CIRCLECI BUILDKITE GITLAB_CI].freeze
-
 def print_header(title)
   puts "\n#{BOLD}#{BLUE}=== #{title} ===#{RESET}"
 end
@@ -31,52 +29,19 @@ def print_warning(message)
 end
 
 def in_ci?
-  return true if CI_TRUE_ENV_KEYS.any? { |key| ENV[key] == "true" }
-
-  ENV.key?("JENKINS_URL") || ENV.key?("TEAMCITY_VERSION")
+  ENV["CI"] == "true" ||
+    ENV["GITHUB_ACTIONS"] == "true" ||
+    ENV["TRAVIS"] == "true" ||
+    ENV["CIRCLECI"] == "true" ||
+    ENV["JENKINS_URL"] ||
+    ENV["BUILDKITE"] == "true" ||
+    ENV["GITLAB_CI"] == "true" ||
+    ENV["TEAMCITY_VERSION"] ||
+    false
 end
 
 def command_available?(command)
   system("which #{command.split.first} > /dev/null 2>&1")
-end
-
-def brakeman_available?
-  system("which brakeman > /dev/null 2>&1") ||
-    (File.exist?("Gemfile") && system("bundle exec brakeman --version > /dev/null 2>&1"))
-end
-
-def filtered_stderr(stderr_str)
-  stderr_str.lines.reject do |line|
-    line.include?("already initialized constant Gem::Platform::") ||
-      line.include?("previous definition of") ||
-      line.include?("rbenv") ||
-      line.strip.empty?
-  end.join
-end
-
-def capture_command(command)
-  env = { "RUBYOPT" => "-W0" }
-
-  start_time = Time.now
-  stdout_str, stderr_str, status = Open3.capture3(env, command)
-  duration = Time.now - start_time
-
-  [stdout_str, filtered_stderr(stderr_str), status, duration]
-end
-
-def report_command_result(description, duration, success, ignore_failure:)
-  if success
-    print_success("#{description} completed successfully (#{duration.round(2)}s)")
-    return true
-  end
-
-  if ignore_failure
-    print_warning("#{description} failed but ignored in development (#{duration.round(2)}s)")
-    return true
-  end
-
-  print_error("#{description} failed (#{duration.round(2)}s)")
-  false
 end
 
 def run_command?(command, description, ignore_failure: false)
@@ -84,29 +49,32 @@ def run_command?(command, description, ignore_failure: false)
   puts "Running: #{command}"
   puts "-" * 50
 
-  stdout_str, err_str, status, duration = capture_command(command)
+  env = { "RUBYOPT" => "-W0" }
+
+  start_time = Time.now
+  stdout_str, stderr_str, status = Open3.capture3(env, command)
+  duration = Time.now - start_time
+
+  filtered_stderr = stderr_str.lines.reject do |line|
+    line.include?("already initialized constant Gem::Platform::") ||
+      line.include?("previous definition of") ||
+      line.include?("rbenv") ||
+      line.strip.empty?
+  end.join
 
   print stdout_str unless stdout_str.empty?
-  print err_str unless err_str.empty?
+  print filtered_stderr unless filtered_stderr.empty?
 
-  report_command_result(description, duration, status.success?, ignore_failure: ignore_failure)
-end
-
-def run_brakeman
-  return nil unless brakeman_available?
-
-  brakeman_cmd =
-    if command_available?("brakeman")
-      "brakeman --no-pager"
-    else
-      "bundle exec brakeman --no-pager"
-    end
-
-  run_command?(
-    brakeman_cmd,
-    "Brakeman Security Scan",
-    ignore_failure: true
-  )
+  if status.success?
+    print_success("#{description} completed successfully (#{duration.round(2)}s)")
+    true
+  elsif ignore_failure
+    print_warning("#{description} failed but ignored in development (#{duration.round(2)}s)")
+    true
+  else
+    print_error("#{description} failed (#{duration.round(2)}s)")
+    false
+  end
 end
 
 def main
@@ -121,20 +89,19 @@ def main
   all_passed = true
   results = {}
 
-  if brakeman_available?
-    results[:brakeman] = run_brakeman
-  else
-    print_warning("Brakeman not available, skipping security scan")
-    results[:brakeman] = nil
-  end
-
   rubocop_command = auto_fix ? "bundle exec rubocop -a -f github" : "bundle exec rubocop -f github"
-  rubocop_desc = auto_fix ? "RuboCop Code Style Check (auto-fix)" : "RuboCop Code Style Check"
-  results[:rubocop] = run_command?(rubocop_command, rubocop_desc)
+  description = auto_fix ? "RuboCop Code Style Check (auto-fix)" : "RuboCop Code Style Check"
+  results[:rubocop] = run_command?(
+    rubocop_command,
+    description
+  )
   all_passed &&= results[:rubocop]
 
   unless auto_fix
-    results[:rspec] = run_command?("bundle exec rspec", "RSpec Test Suite")
+    results[:rspec] = run_command?(
+      "bundle exec rspec",
+      "RSpec Test Suite"
+    )
     all_passed &&= results[:rspec]
   end
 

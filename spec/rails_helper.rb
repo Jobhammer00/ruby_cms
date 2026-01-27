@@ -10,7 +10,7 @@ require_relative "dummy/config/environment"
 require "rspec/rails"
 
 # Load support files
-Dir[File.expand_path("support/**/*.rb", __dir__)].sort.each { |f| require f }
+Dir[File.expand_path("support/**/*.rb", __dir__)].sort.each {|f| require f }
 
 RSpec.configure do |config|
   config.use_transactional_fixtures = true
@@ -20,4 +20,3 @@ RSpec.configure do |config|
 
   config.filter_rails_from_backtrace!
 end
-

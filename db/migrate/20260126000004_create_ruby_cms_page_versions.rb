@@ -19,7 +19,7 @@ class CreateRubyCmsPageVersions < ActiveRecord::Migration[7.1]
       t.timestamps
     end
 
-    add_index :ruby_cms_page_versions, [:page_id, :version_number], unique: true
+    add_index :ruby_cms_page_versions, %i[page_id version_number], unique: true
     add_index :ruby_cms_page_versions, :created_at
   end
 end

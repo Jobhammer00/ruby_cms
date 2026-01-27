@@ -9,10 +9,12 @@
 pin "ruby_cms", to: "controllers/ruby_cms/index.js", preload: true
 
 # Pin individual controllers (these paths match the file structure under app/javascript/)
-pin "ruby_cms/page_builder_controller", to: "controllers/ruby_cms/page_builder_controller.js"
 pin "ruby_cms/visual_editor_controller", to: "controllers/ruby_cms/visual_editor_controller.js"
 pin "ruby_cms/mobile_menu_controller", to: "controllers/ruby_cms/mobile_menu_controller.js"
 pin "ruby_cms/flash_messages_controller", to: "controllers/ruby_cms/flash_messages_controller.js"
-pin "ruby_cms/navigation_item_form_controller", to: "controllers/ruby_cms/navigation_item_form_controller.js"
-pin "ruby_cms/bulk_action_table_controller", to: "controllers/ruby_cms/bulk_action_table_controller.js"
+pin "ruby_cms/bulk_action_table_controller",
+    to: "controllers/ruby_cms/bulk_action_table_controller.js"
 pin "ruby_cms/page_preview_controller", to: "controllers/ruby_cms/page_preview_controller.js"
+pin "ruby_cms/toggle_controller", to: "controllers/ruby_cms/toggle_controller.js"
+pin "ruby_cms/visual_editor_header_controller",
+    to: "controllers/ruby_cms/visual_editor_header_controller.js"

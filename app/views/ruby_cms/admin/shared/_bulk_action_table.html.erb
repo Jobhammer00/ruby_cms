@@ -1,0 +1,40 @@
+<%# Bulk Action Table Component %>
+<%# Usage: render layout: "ruby_cms/admin/shared/bulk_action_table", locals: { controller_name: "ruby-cms--bulk-action-table", bulk_actions_url: path, item_name: "item", bulk_action_buttons: [] } do %>
+<%# Note: MUST use `layout:` not `partial:` because we use yield to render the block content %>
+<% controller_name = local_assigns[:controller_name] || "ruby-cms--bulk-action-table" %>
+<% bulk_actions_url = local_assigns[:bulk_actions_url] %>
+<% item_name = local_assigns[:item_name] || "item" %>
+<% bulk_action_buttons = local_assigns[:bulk_action_buttons] || [] %>
+<% has_bulk_actions = bulk_actions_url.present? %>
+
+<div
+  data-controller="<%= controller_name %>"
+  data-<%= controller_name %>-csrf-token-value="<%= form_authenticity_token %>"
+  data-<%= controller_name %>-item-name-value="<%= item_name %>"
+  <% if bulk_actions_url.present? %>
+    data-<%= controller_name %>-bulk-action-url-value="<%= bulk_actions_url %>"
+  <% end %>
+  class="bulk-action-table"
+>
+  <div class="bulk-action-table__wrapper">
+    <div class="bulk-action-table__scroll-container">
+      <div class="bulk-action-table__table-container">
+        <table class="bulk-action-table__table">
+          <%= yield %>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <% if has_bulk_actions %>
+    <%= render partial: "ruby_cms/admin/shared/bulk_action_table_actions", locals: {
+      controller_name: controller_name,
+      item_name: item_name,
+      bulk_actions_url: bulk_actions_url,
+      bulk_action_buttons: bulk_action_buttons
+    } %>
+    <%= render partial: "ruby_cms/admin/shared/bulk_action_table_delete_dialog", locals: {
+      controller_name: controller_name
+    } %>
+  <% end %>
+</div>

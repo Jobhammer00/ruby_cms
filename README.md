@@ -1,23 +1,20 @@
 # RubyCMS
 
-Reusable Rails engine: admin-only auth, permissions, admin shell, **pages**, content blocks, visual editor, and **page builder**.
+Reusable Rails engine: admin-only auth, permissions, admin shell, content blocks, and visual editor.
 
-**Vision:** The CMS builds the site (pages, content, visual editor, page builder); the programmer builds the SaaS product (auth, billing, dashboards, etc.). You define pages and templates in the CMS; you implement the view files and app logic in the host.
+**Vision:** The CMS manages content (content blocks, visual editor); the programmer builds the SaaS product (auth, billing, dashboards, etc.). You define pages and templates in your app; you edit content using the visual editor.
 
 ## Features
 
-- **Page Builder** - Drag-and-drop interface for building pages with components
 - **Visual Editor** - Inline editing of content blocks
 - **Content Blocks** - Reusable content snippets with rich text support
-- **Pages** - Manage pages with multiple render modes (builder, HTML, template)
-- **Navigation** - Menu and navigation item management
+- **Pages** - Display pages with template mode (pages can be created programmatically)
 - **Permissions** - Fine-grained permission system
-- **RubyUI Integration** - Automatically use RubyUI components in the page builder
+- **Users** - User management with permission assignments
 
 ## Documentation
 
 - **[Installation](#installation)** - Get started with RubyCMS
-- **[Page Builder](docs/Page%20Builder.md)** - Complete guide to the page builder
 - **[Usage](#usage)** - Basic usage examples
 
 See [PLAN.md](PLAN.md) for the roadmap.
@@ -51,24 +48,7 @@ rails db:migrate
 
 (Active Storage is usually already present in a new Rails app.)
 
-### 4. (Optional) Add RailsUI for Page Builder components
-
-To use RubyUI components in the page builder:
-
-```ruby
-# Gemfile
-gem "rails_ui", ">= 1.0"
-```
-
-Then:
-
-```bash
-bundle install
-```
-
-Create RubyUI components in `app/components/ruby_ui/` - they'll be automatically discovered and available in the page builder. See [Page Builder documentation](docs/Page%20Builder.md) for details.
-
-### 5. Add the ruby_cms gem
+### 4. Add the ruby_cms gem
 
 **From a local path** (e.g. when developing the gem):
 
@@ -89,7 +69,7 @@ Then:
 bundle install
 ```
 
-### 6. Install RubyCMS
+### 5. Install RubyCMS
 
 ```bash
 rails g ruby_cms:install
@@ -97,17 +77,44 @@ rails g ruby_cms:install
 
 This creates `config/initializers/ruby_cms.rb`, mounts the engine, and injects `include RubyCms::Permittable` into `User`. If `app/models/user.rb` is missing, it will run `rails g authentication` and `bundle install` for you (Rails 8+); you can then skip step 2 and run `rails db:migrate` after this.
 
-### 7. Migrate and seed
+### 6. Migrate and seed
 
 ```bash
 rails db:migrate
 rails ruby_cms:seed_permissions
 ```
 
-### 8. Resolve route conflicts
+### 7. Resolve route conflicts
 
 If the app already has `/admin` routes, remove or change them so RubyCMS can use `/admin`. The install adds `mount RubyCms::Engine => "/"`; keep it after your main routes (e.g. `root`, `resources`) so it doesn’t override them.
+### 8. Configure JavaScript/Stimulus controllers
 
+RubyCMS uses Stimulus controllers for interactive features. The engine automatically registers controllers when `window.Stimulus` is available.
+
+**For Rails 7+ with importmap**, ensure your `app/javascript/controllers/application.js` exports the Stimulus application to `window`:
+
+```javascript
+import { Application } from "@hotwired/stimulus"
+
+const application = Application.start()
+application.debug = false
+window.Stimulus = application  // Required for RubyCMS controllers
+
+export { application }
+```
+
+Then in `app/javascript/controllers/index.js`, import the ruby_cms controllers:
+
+```javascript
+import { application } from "controllers/application"
+import { registerRubyCmsControllers } from "ruby_cms"
+
+registerRubyCmsControllers(application)
+
+// ... your other controller imports
+```
+
+This ensures RubyCMS Stimulus controllers (`ruby-cms--mobile-menu`, `ruby-cms--bulk-action-table`, etc.) are properly registered.
 ### 9. Create an admin user and open /admin
 
 **Recommended:** run the interactive Thor CLI to pick or create the first admin and grant full permissions:
@@ -116,7 +123,7 @@ If the app already has `/admin` routes, remove or change them so RubyCMS can use
 rails ruby_cms:setup_admin
 ```
 
-You can select an existing user, enter another email, or create a new user. The CLI grants `manage_admin`, `manage_permissions`, `manage_content_blocks`, `manage_pages`, and `publish_pages`.
+You can select an existing user, enter another email, or create a new user. The CLI grants `manage_admin`, `manage_permissions`, and `manage_content_blocks`.
 
 Alternatively:
 
@@ -156,10 +163,10 @@ To run inside a real app (e.g. notesk or a new app):
 
 ### Pages
 
-Create pages under **Admin → Pages** (key, template path, title, published, position). Each page maps a `key` (e.g. `home`) to a view `template_path` (e.g. `pages/home`). You implement that template in your app (e.g. `app/views/pages/home.html.erb`).
+Pages can be created programmatically (via console, seeds, or migrations). Each page maps a `key` (e.g. `home`) to a view `template_path` (e.g. `pages/home`). You implement that template in your app (e.g. `app/views/pages/home.html.erb`).
 
 - **Public URL:** `GET /p/:key` renders the page (published only). Example: `/p/home` → `pages/home`.
-- **Visual editor:** Page records are merged with `config.ruby_cms.preview_templates` for the page selector and preview. You can use **either** Admin → Pages **or** `c.preview_templates = { "home" => "pages/home" }` in the initializer.
+- **Visual editor:** Pages are loaded from the database and merged with `config.ruby_cms.preview_templates` for the page selector and preview. Configure pages via `c.preview_templates = { "home" => "pages/home" }` in the initializer.
 
 To serve the home page at `/`, add to your routes (before the engine mount):
 
@@ -180,42 +187,18 @@ Create and edit blocks under **Admin → Content blocks**.
 
 ### Visual editor
 
-1. **Preview templates** come from **Admin → Pages** and/or `config.ruby_cms.preview_templates` in `config/initializers/ruby_cms.rb`. Page records override config for the same key.
+1. **Preview templates** come from page records in the database and/or `config.ruby_cms.preview_templates` in `config/initializers/ruby_cms.rb`. Page records override config for the same key.
 
    ```ruby
    c.preview_templates = { "home" => "pages/home", "about" => "pages/about" }
    c.preview_data = ->(page_key, view) { { products: Product.limit(5) } }
    ```
 
-2. Create the view templates (e.g. `app/views/pages/home.html.erb`) and use the `content_block("key")` helper for editable regions. Wrap editable elements in `<div class="content-block" data-block-id="..." data-content-key="...">`.
+2. Create the view templates (e.g. `app/views/pages/home.html.erb`) and use the `content_block("key")` helper for editable regions. Wrap editable elements in `<div class="ruby_cms-content-block" data-content-key="...">`.
 
-3. Open **Admin → Visual editor**, pick a page, and click any `.content-block` in the iframe to edit in the modal. Use bulk actions to publish/unpublish blocks.
+3. Open **Admin → Visual editor**, pick a page, and click any content block in the preview to edit in the modal.
 
-4. **postMessage**: The preview iframe and parent check `event.origin` and a per-load `nonce` for `ruby_cms:content_block:click` and `ruby_cms:preview:reload`.
-
-### Page Builder
-
-The Page Builder provides a drag-and-drop interface for building pages. See the [Page Builder documentation](docs/Page%20Builder.md) for complete details.
-
-**Quick start:**
-
-1. Create a page in **Admin → Pages** with render mode "builder"
-2. Open **Admin → Page Builder** and select your page
-3. Drag components from the palette to build your page
-4. Click components to edit their properties
-5. Save your changes
-
-**RubyUI Components:**
-
-If you have `rails_ui` installed, the following components are automatically available:
-
-- Button
-- Text (Typography)
-- Heading (Typography)
-- DropdownMenu
-- Sidebar (if available)
-
-Components are automatically discovered from `app/components/ruby_ui/` in your host application. No configuration needed!
+4. **postMessage**: The preview iframe and parent communicate via postMessage for content block editing and updates.
 
 ---
 

@@ -35,14 +35,28 @@ module RubyCms
           schema: {
             type: "object",
             properties: {
-              max_width: { type: "string", default: "7xl" },
-              padding: { type: "string", default: "4" }
+              class: { type: "string", default: "" },
+              max_width: { type: "string", default: "" },
+              padding: { type: "string", default: "" }
             }
           },
           render: lambda do |view, props, &block|
-            max_width = props[:max_width] || props["max_width"] || "7xl"
-            padding = props[:padding] || props["padding"] || "4"
-            view.tag.div(class: "max-w-#{max_width} mx-auto px-#{padding}", &block)
+            classes = props[:class] || props["class"] || ""
+            max_width = props[:max_width] || props["max_width"]
+            padding = props[:padding] || props["padding"]
+
+            style_parts = []
+            style_parts << "max-width: #{max_width}" if max_width.present?
+            if padding.present?
+              style_parts << "padding-left: #{padding}"
+              style_parts << "padding-right: #{padding}"
+            end
+
+            attrs = {}
+            attrs[:class] = classes if classes.present?
+            attrs[:style] = style_parts.join("; ") if style_parts.any?
+
+            view.tag.div(**attrs, &block)
           end
         )
 
@@ -54,12 +68,25 @@ module RubyCms
           schema: {
             type: "object",
             properties: {
-              padding: { type: "string", default: "py-12" }
+              class: { type: "string", default: "" },
+              padding: { type: "string", default: "" }
             }
           },
           render: lambda do |view, props, &block|
-            padding = props[:padding] || props["padding"] || "py-12"
-            view.tag.section(class: padding, &block)
+            classes = props[:class] || props["class"] || ""
+            padding = props[:padding] || props["padding"]
+
+            style_parts = []
+            if padding.present?
+              style_parts << "padding-top: #{padding}"
+              style_parts << "padding-bottom: #{padding}"
+            end
+
+            attrs = {}
+            attrs[:class] = classes if classes.present?
+            attrs[:style] = style_parts.join("; ") if style_parts.any?
+
+            view.tag.section(**attrs, &block)
           end
         )
 
@@ -71,12 +98,26 @@ module RubyCms
           schema: {
             type: "object",
             properties: {
-              gap: { type: "string", default: "4" }
+              class: { type: "string", default: "" },
+              gap: { type: "string", default: "" }
             }
           },
           render: lambda do |view, props, &block|
-            gap = props[:gap] || props["gap"] || "4"
-            view.tag.div(class: "flex flex-col gap-#{gap}", &block)
+            classes = props[:class] || props["class"] || ""
+            gap = props[:gap] || props["gap"]
+
+            style_parts = []
+            if gap.present?
+              style_parts << "display: flex"
+              style_parts << "flex-direction: column"
+              style_parts << "gap: #{gap}"
+            end
+
+            attrs = {}
+            attrs[:class] = classes if classes.present?
+            attrs[:style] = style_parts.join("; ") if style_parts.any?
+
+            view.tag.div(**attrs, &block)
           end
         )
 
@@ -88,12 +129,26 @@ module RubyCms
           schema: {
             type: "object",
             properties: {
-              columns: { type: "string", default: "3" }
+              class: { type: "string", default: "" },
+              columns: { type: "string", default: "" },
+              gap: { type: "string", default: "" }
             }
           },
           render: lambda do |view, props, &block|
-            columns = props[:columns] || props["columns"] || "3"
-            view.tag.div(class: "grid grid-cols-1 md:grid-cols-#{columns} gap-4", &block)
+            classes = props[:class] || props["class"] || ""
+            columns = props[:columns] || props["columns"]
+            gap = props[:gap] || props["gap"]
+
+            style_parts = []
+            style_parts << "display: grid"
+            style_parts << "grid-template-columns: repeat(#{columns}, 1fr)" if columns.present?
+            style_parts << "gap: #{gap}" if gap.present?
+
+            attrs = {}
+            attrs[:class] = classes if classes.present?
+            attrs[:style] = style_parts.join("; ") if style_parts.any?
+
+            view.tag.div(**attrs, &block)
           end
         )
 
@@ -109,14 +164,18 @@ module RubyCms
             properties: {
               text: { type: "string" },
               level: { type: "string", default: "h1" },
-              size: { type: "string", default: "text-3xl" }
+              class: { type: "string", default: "" }
             }
           },
           render: lambda do |view, props, &_block|
             text = props[:text] || props["text"] || ""
             level = props[:level] || props["level"] || "h1"
-            size = props[:size] || props["size"] || "text-3xl"
-            view.tag.send(level.to_sym, text, class: "#{size} font-bold")
+            classes = props[:class] || props["class"] || ""
+
+            attrs = {}
+            attrs[:class] = classes if classes.present?
+
+            view.tag.send(level.to_sym, text, **attrs)
           end
         )
 
@@ -129,24 +188,20 @@ module RubyCms
             type: "object",
             required: ["text"],
             properties: {
-              text: { type: "string" }
+              text: { type: "string" },
+              class: { type: "string", default: "" }
             }
           },
           render: lambda do |view, props, &_block|
             text = props[:text] || props["text"] || ""
-            view.tag.p(text, class: "text-gray-700")
+            classes = props[:class] || props["class"] || ""
+
+            attrs = {}
+            attrs[:class] = classes if classes.present?
+
+            view.tag.p(text, **attrs)
           end
         )
-
-        # Try to register RubyUI components if available
-        if defined?(RubyUI)
-          begin
-            RubyCms::PageBuilder::RubyUIDiscovery.register_components(registry)
-          rescue => e
-            # Silently fail if RubyUI is not properly configured
-            Rails.logger.debug("RubyUI components not available: #{e.message}") if defined?(Rails.logger)
-          end
-        end
       end
     end
   end

@@ -13,7 +13,7 @@ module RubyCms
           I18n.locale = locale
         end
 
-        redirect_back(fallback_location: ruby_cms_admin_root_path)
+        redirect_back_or_to(ruby_cms_admin_root_path)
       end
     end
   end

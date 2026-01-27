@@ -1,10 +1,258 @@
-inherit_from: .rubocop_todo.yml
+plugins:
+  - rubocop-rails
+  - rubocop-rspec
+  - rubocop-performance
 
 AllCops:
-  TargetRubyVersion: 3.2
+  NewCops: enable
+
+# Layout rules
+Layout/ElseAlignment:
+  Severity: warning
+
+Layout/FirstArrayElementLineBreak:
+  Enabled: true
+
+Layout/FirstHashElementLineBreak:
+  Enabled: true
+
+Layout/LineLength:
+  Severity: convention
+  Max: 100
+  Exclude:
+    - "db/migrate/*"
+
+Layout/SpaceAroundEqualsInParameterDefault:
+  EnforcedStyle: no_space
+
+Layout/SpaceBeforeBlockBraces:
+  Enabled: false
+
+Layout/SpaceInsideBlockBraces:
+  Enabled: true
+  SpaceBeforeBlockParameters: false
+
+Layout/SpaceInsideHashLiteralBraces:
+  Enabled: false
+
+# Lint rules
+Lint/AmbiguousBlockAssociation:
+  Enabled: true
+  Exclude:
+    - "spec/**/*"
+
+Lint/Debugger:
+  Severity: error
+
+Lint/EmptyEnsure:
+  Severity: error
+
+Lint/LiteralInInterpolation:
+  Enabled: true
+
+Lint/MissingSuper:
+  Enabled: true
+
+Lint/RescueException:
+  Severity: error
+
+Lint/UselessAssignment:
+  Severity: error
+
+Lint/UnreachableCode:
+  Severity: error
+
+Lint/UnusedBlockArgument:
+  Enabled: false
+
+# Metrics rules
+Metrics/AbcSize:
+  Severity: refactor
+
+Metrics/BlockLength:
+  Severity: refactor
+  Exclude:
+    - "Guardfile"
+    - "Gemfile"
+    - "db/migrate/*"
+    - "spec/**/*"
+
+Metrics/BlockNesting:
+  Severity: refactor
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Severity: refactor
+
+Metrics/MethodLength:
+  Severity: convention
+  CountAsOne: ["array", "hash"]
+
+Metrics/ModuleLength:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Severity: refactor
+
+Metrics/PerceivedComplexity:
+  Severity: refactor
+
+# Security rules
+Security/Eval:
+  Severity: error
+
+# Style rules
+Style/AndOr:
+  Severity: warning
+
+Style/ClassCheck:
+  EnforcedStyle: kind_of?
+
+Style/CollectionMethods:
+  Enabled: true
+
+Style/Documentation:
+  Enabled: false
+
+Style/DoubleNegation:
+  Severity: error
+
+Style/EmptyElse:
+  Severity: convention
+
+Style/FrozenStringLiteralComment:
+  Enabled: true
+  Exclude:
+    - "db/migrate/*.rb"
+
+Style/GlobalVars:
+  Severity: warning
+
+Style/HashSyntax:
+  EnforcedShorthandSyntax: consistent
+  Severity: convention
+
+Style/MissingElse:
+  Enabled: true
+  EnforcedStyle: case
+  Severity: convention
+
+Style/MutableConstant:
+  Enabled: false # doesn't always work
+  Severity: warning
+
+Style/NumericLiterals:
+  Enabled: false
+
+Style/OptionHash:
+  Enabled: true
+
+Style/PerlBackrefs:
+  Severity: warning
+
+Style/RedundantInterpolation:
+  Severity: warning
+
+Style/Sample:
+  Severity: warning
 
 Style/StringLiterals:
-  EnforcedStyle: double_quotes
+  Enabled: false
 
-Style/StringLiteralsInInterpolation:
-  EnforcedStyle: double_quotes
+Style/StringMethods:
+  Enabled: true
+
+Style/SymbolArray:
+  Enabled: true
+
+Style/SymbolProc:
+  Severity: warning
+  AutoCorrect: false
+
+Style/UnlessElse:
+  Severity: warning
+
+# Rails rules
+Rails:
+  Enabled: true
+
+Rails/Output:
+  Severity: warning
+
+Rails/OutputSafety:
+  Severity: warning
+
+Rails/TimeZone:
+  Severity: warning
+
+Rails/UnknownEnv:
+  Environments:
+    - production
+    - development
+    - test
+    - ci
+    - acceptance
+    - staging
+
+# RSpec rules
+RSpec/ContextWording:
+  Prefixes:
+    - when
+    - with
+    - without
+    - if
+
+RSpec/DescribeClass:
+  Severity: warning
+
+RSpec/ExampleLength:
+  Enabled: false
+
+RSpec/Focus:
+  Enabled: true
+  Severity: error
+  AutoCorrect: false
+
+RSpec/MultipleDescribes:
+  Severity: warning
+
+RSpec/MultipleExpectations:
+  Max: 5
+
+RSpec/MultipleMemoizedHelpers:
+  Enabled: true
+  Severity: refactor
+  Max: 10
+
+RSpec/SharedExamples:
+  Enabled: false
+
+# Performance rules
+Performance/CaseWhenSplat:
+  Severity: warning
+
+Performance/Count:
+  Severity: warning
+
+Performance/Detect:
+  Severity: warning
+
+Performance/FixedSize:
+  Severity: warning
+
+Performance/FlatMap:
+  Severity: warning
+
+Performance/RangeInclude:
+  Severity: warning
+
+Performance/ReverseEach:
+  Severity: warning
+
+Performance/Size:
+  Severity: warning
+
+Performance/StringReplacement:
+  Severity: warning

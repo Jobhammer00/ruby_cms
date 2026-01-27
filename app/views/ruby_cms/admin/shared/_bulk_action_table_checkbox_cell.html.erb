@@ -1,0 +1,21 @@
+<%# Bulk Action Table Checkbox Cell %>
+<% controller_name = local_assigns[:controller_name] || "ruby-cms--bulk-action-table" %>
+<% item_id = local_assigns[:item_id] %>
+
+<td class="bulk-action-table__checkbox-cell">
+  <div
+    class="bulk-action-table__checkbox-cell-wrapper"
+    data-action="click-><%= controller_name %>#stopPropagation"
+  >
+    <input
+      type="checkbox"
+      role="checkbox"
+      value="<%= item_id %>"
+      data-<%= controller_name %>-target="itemCheckbox"
+      data-item-id="<%= item_id %>"
+      data-action="change-><%= controller_name %>#updateSelection"
+      class="bulk-action-table__checkbox-cell-input"
+      aria-label="Select row"
+    />
+  </div>
+</td>

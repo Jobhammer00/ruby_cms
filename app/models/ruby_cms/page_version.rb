@@ -15,12 +15,14 @@ module RubyCms
 
     # Get the previous version
     def previous
-      page.page_versions.where("version_number < ?", version_number).order(version_number: :desc).first
+      page.page_versions.where("version_number < ?",
+                               version_number).order(version_number: :desc).first
     end
 
     # Get the next version
     def next
-      page.page_versions.where("version_number > ?", version_number).order(version_number: :asc).first
+      page.page_versions.where("version_number > ?",
+                               version_number).order(version_number: :asc).first
     end
 
     # Check if this is the latest version

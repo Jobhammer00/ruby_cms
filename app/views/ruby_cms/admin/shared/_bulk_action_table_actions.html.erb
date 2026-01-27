@@ -1,0 +1,67 @@
+<%# Bulk Action Table Actions Bar %>
+<% controller_name = local_assigns[:controller_name] || "ruby-cms--bulk-action-table" %>
+<% item_name = local_assigns[:item_name] || "item" %>
+<% bulk_actions_url = local_assigns[:bulk_actions_url] %>
+<% bulk_action_buttons = local_assigns[:bulk_action_buttons] || [] %>
+
+<div
+  data-<%= controller_name %>-target="bulkBar"
+  class="bulk-actions-bar"
+>
+  <div class="bulk-actions-bar__content">
+    <div class="bulk-actions-bar__selection-info">
+      <span
+        data-<%= controller_name %>-target="selectedCount"
+        class="bulk-actions-bar__selected-count"
+      >
+        0 <%= item_name %>s selected:
+      </span>
+      <button
+        type="button"
+        data-<%= controller_name %>-target="selectAllButton"
+        data-action="click-><%= controller_name %>#selectAll"
+        class="bulk-actions-bar__select-all-button"
+      >
+        Select all
+      </button>
+      <button
+        type="button"
+        data-action="click-><%= controller_name %>#clearSelection"
+        class="bulk-actions-bar__clear-button"
+      >
+        Clear selection
+      </button>
+    </div>
+    <div class="bulk-actions-bar__buttons">
+      <% bulk_action_buttons.each do |button_config| %>
+        <button
+          type="button"
+          data-action="click-><%= controller_name %>#showActionDialog"
+          data-action-name="<%= button_config[:name] %>"
+          data-action-url="<%= button_config[:url] %>"
+          <% if button_config[:confirm] %>
+            data-action-confirm="<%= button_config[:confirm] %>"
+            data-action-label="<%= button_config[:label] || button_config[:name]&.humanize %>"
+          <% end %>
+          <% if button_config[:action_type] == "redirect" %>
+            data-action-type="redirect"
+          <% end %>
+          class="ruby_cms-bulk-action-button <%= button_config[:class] %>"
+        >
+          <%= button_config[:label] || button_config[:text] || button_config[:name]&.humanize %>
+        </button>
+      <% end %>
+      <button
+        type="button"
+        data-action="click-><%= controller_name %>#showActionDialog"
+        data-action-name="delete"
+        data-action-label="Delete Selected"
+        data-action-confirm="Are you sure you want to delete the selected items? This action cannot be undone."
+        data-action-url="<%= bulk_actions_url %>"
+        class="ruby_cms-bulk-action-button ruby_cms-bulk-action-button--delete"
+      >
+        Delete Selected
+      </button>
+    </div>
+  </div>
+</div>

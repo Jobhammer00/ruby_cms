@@ -17,13 +17,23 @@ module RubyCms
           redirect_to ruby_cms_admin_user_permissions_path(@user), notice: "Permission granted."
         end
       rescue ActiveRecord::RecordInvalid
-        redirect_to ruby_cms_admin_user_permissions_path(@user), alert: "Could not grant permission."
+        redirect_to ruby_cms_admin_user_permissions_path(@user),
+                    alert: "Could not grant permission."
       end
 
       def destroy
         up = RubyCms::UserPermission.find_by!(user: @user, id: params[:id])
         up.destroy
         redirect_to ruby_cms_admin_user_permissions_path(@user), notice: "Permission revoked."
+      end
+
+      def bulk_delete
+        ids = Array(params[:item_ids]).map(&:to_i).compact
+        user_permissions = RubyCms::UserPermission.where(user: @user, id: ids)
+        count = user_permissions.count
+        user_permissions.destroy_all
+        redirect_to ruby_cms_admin_user_permissions_path(@user),
+                    notice: "#{count} permission(s) revoked."
       end
 
       private

@@ -6,6 +6,16 @@ module RubyCms
       def index
         @content_blocks_count = RubyCms::ContentBlock.count
         @content_blocks_published_count = RubyCms::ContentBlock.published.count
+        @permissions_count = RubyCms::Permission.count
+        @user_permissions_count = RubyCms::UserPermission.count
+
+        # Get user class for user count
+        user_class = Object.const_get(Rails.application.config.ruby_cms.user_class_name.presence || "User")
+        @users_count = begin
+          user_class.count
+        rescue StandardError
+          0
+        end
       end
     end
   end
