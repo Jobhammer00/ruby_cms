@@ -28,7 +28,7 @@ module RubyCms
       end
 
       def bulk_delete
-        ids = Array(params[:item_ids]).map(&:to_i).compact
+        ids = Array(params[:item_ids]).filter_map(&:to_i)
         user_permissions = RubyCms::UserPermission.where(user: @user, id: ids)
         count = user_permissions.count
         user_permissions.destroy_all

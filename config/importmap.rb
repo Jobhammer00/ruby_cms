@@ -14,7 +14,6 @@ pin "ruby_cms/mobile_menu_controller", to: "controllers/ruby_cms/mobile_menu_con
 pin "ruby_cms/flash_messages_controller", to: "controllers/ruby_cms/flash_messages_controller.js"
 pin "ruby_cms/bulk_action_table_controller",
     to: "controllers/ruby_cms/bulk_action_table_controller.js"
-pin "ruby_cms/page_preview_controller", to: "controllers/ruby_cms/page_preview_controller.js"
 pin "ruby_cms/toggle_controller", to: "controllers/ruby_cms/toggle_controller.js"
 pin "ruby_cms/visual_editor_header_controller",
     to: "controllers/ruby_cms/visual_editor_header_controller.js"

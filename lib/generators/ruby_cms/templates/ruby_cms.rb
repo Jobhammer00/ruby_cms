@@ -43,33 +43,16 @@ RubyCms.configure do |c|
   # Content blocks: key prefixes that cannot be used (default: ["admin_"]).
   # c.reserved_key_prefixes = %w[admin_]
 
-  # Layout for public /p/:key pages (default: "application").
-  # c.public_page_layout = "application"
-
   # Visual editor: allowlist of page_key => template path. You can also create Page records (Admin → Pages);
   # Page records are merged with this config. Example: "home" => "pages/home"
+<% if @detected_pages&.any? -%>
+  c.preview_templates = { <%= @detected_pages.map { |k, v| %("#{k}" => "#{v}") }.join(", ") %> }
+<% else -%>
   # c.preview_templates = { "home" => "pages/home", "about" => "pages/about" }
+<% end -%>
 
   # Preview data proc to pass instance variables to the preview template. Example:
   # c.preview_data = ->(page_key, view) { { products: Product.limit(5) } }
-
-  # Component Registry: Register components for page builder
-  # Example:
-  #   c.component_registry.register(
-  #     key: "my_app.hero",
-  #     name: "Hero Section",
-  #     category: "Layout",
-  #     schema: {
-  #       type: "object",
-  #       properties: {
-  #         title: { type: "string" },
-  #         subtitle: { type: "string" }
-  #       }
-  #     },
-  #     render: ->(view, props, &block) do
-  #       view.render partial: "components/hero", locals: props, &block
-  #     end
-  #   )
 
   # App Integration: Link App routes and settings
   # Register app routes that can be linked from CMS navigation:

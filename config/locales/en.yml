@@ -11,3 +11,10 @@ en:
             image:
               content_type_invalid: "must be PNG, JPEG, GIF, or WebP"
               file_too_large: "must be under 5 MB"
+
+  ruby_cms:
+    admin:
+      content_blocks:
+        created: "Content block created."
+        updated: "Content block updated."
+        deleted: "Content block deleted."

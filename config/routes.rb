@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 RubyCms::Engine.routes.draw do
-  get "p/:key", to: "ruby_cms/public/pages#show", as: :public_page, constraints: { key: /[\w-]+/ }
-
   scope path: "admin", module: "ruby_cms/admin", as: "ruby_cms_admin" do
     root to: "dashboard#index"
     resources :content_blocks do

@@ -13,8 +13,6 @@ module RubyCms
       manage_admin
       manage_permissions
       manage_content_blocks
-      manage_pages
-      publish_pages
     ].freeze
 
     class << self

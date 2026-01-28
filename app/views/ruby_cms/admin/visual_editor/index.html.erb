@@ -1,87 +1,56 @@
 <% content_for :full_width, true %>
 
-<%
-  # Build action controls wrapped in a single controller
-  controls_html = content_tag(:div, 
-    class: "ruby_cms-visual-editor-header__controls",
-    data: { 
-      controller: "ruby-cms--visual-editor-header",
-      "ruby-cms--visual-editor-header-current-page-value": @current_page.to_s
-    }
-  ) do
-    controls = []
-    
-    # Add page selector if multiple pages available
-    if @available_pages && @available_pages.size > 1
-      controls << select_tag('page-selector', 
-        options_for_select(@available_pages.map { |k, v| [v[:name], k] }, @current_page),
-        class: "ruby_cms-visual-editor-header__select",
-        data: { 
-          ruby_cms__visual_editor_header_target: "pageSelector",
-          action: "change->ruby-cms--visual-editor-header#changePage"
-        }
-      )
-    end
-    
-    # Edit mode toggle
-    controls << content_tag(:button, 
-      content_tag(:svg, 
-        content_tag(:path, nil, 
-          'stroke-linecap': "round", 
-          'stroke-linejoin': "round", 
-          'stroke-width': "2", 
-          d: "M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-        ),
-        class: "ruby_cms-visual-editor-header__button-icon",
-        fill: "none",
-        stroke: "currentColor",
-        viewBox: "0 0 24 24"
-      ) + content_tag(:span, "Edit Mode", 
-        data: { ruby_cms__visual_editor_header_target: "editModeText" }
-      ),
-      type: "button",
-      class: "ruby_cms-visual-editor-header__button",
-      data: {
-        ruby_cms__visual_editor_header_target: "editModeToggle",
-        action: "click->ruby-cms--visual-editor-header#toggleEditMode"
-      }
-    )
-    
-    # Refresh button
-    controls << content_tag(:button,
-      content_tag(:svg,
-        content_tag(:path, nil,
-          'stroke-linecap': "round",
-          'stroke-linejoin': "round",
-          'stroke-width': "2",
-          d: "M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-        ),
-        class: "ruby_cms-visual-editor-header__button-icon",
-        fill: "none",
-        stroke: "currentColor",
-        viewBox: "0 0 24 24"
-      ),
-      type: "button",
-      class: "ruby_cms-visual-editor-header__button",
-      title: "Refresh",
-      data: {
-        action: "click->ruby-cms--visual-editor-header#refresh"
-      }
-    )
-    
-    safe_join(controls, ' ')
-  end
-  
-  # Ensure HTML is properly marked as safe for Phlex rendering
-  actions = [{ html: controls_html.to_s.html_safe }]
-%>
+<div class="ruby_cms-admin-main-inner" style="padding: 1.5rem;">
+  <!-- Header outside card -->
+  <div class="ruby_cms-page-header" style="margin-bottom: 1.5rem;">
+    <div class="ruby_cms-page-header__content">
+      <div class="ruby_cms-page-header__title-group">
+        <h1 class="ruby_cms-page-title">Visual Editor</h1>
+      </div>
+      <div class="ruby_cms-page-header__action-icons" 
+           data-controller="ruby-cms--visual-editor-header" 
+           data-ruby-cms--visual-editor-header-current-page-value="<%= @current_page.to_s %>">
+        <% if @available_pages && @available_pages.size > 1 %>
+          <%= select_tag('page-selector', 
+            options_for_select(@available_pages.map { |k, v| [v[:name], k] }, @current_page),
+            class: "ruby_cms-visual-editor-header__select",
+            style: "margin-right: 0.5rem;",
+            data: { 
+              ruby_cms__visual_editor_header_target: "pageSelector",
+              action: "change->ruby-cms--visual-editor-header#changePage"
+            }
+          ) %>
+        <% end %>
+        
+        <!-- Edit Mode Toggle Icon -->
+        <button 
+          type="button"
+          class="ruby_cms-page-header__icon-action ruby_cms-page-header__icon-action--blue"
+          title="Edit Mode"
+          data-ruby-cms__visual_editor_header_target="editModeToggle"
+          data-action="click->ruby-cms--visual-editor-header#toggleEditMode">
+          <svg class="ruby_cms-page-header__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+          </svg>
+        </button>
+        
+        <!-- Refresh Icon -->
+        <button 
+          type="button"
+          class="ruby_cms-page-header__icon-action ruby_cms-page-header__icon-action--green"
+          title="Refresh"
+          data-action="click->ruby-cms--visual-editor-header#refresh">
+          <svg class="ruby_cms-page-header__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
 
-<%= render RubyCms::Admin::AdminPage.new(
-  title: "Visual Editor",
-  padding: false,
-  overflow: false,
-  actions: actions
-) do %>
+  <!-- Content area (no card wrapper) -->
+  <div class="ruby_cms-admin-page" style="padding: 0; border: none; background: transparent;">
+    <div class="ruby_cms-admin-page__content" style="padding: 0;">
 <div class="ruby_cms-visual-editor" data-controller="ruby-cms--visual-editor" data-ruby-cms--visual-editor-current-page-value="<%= @current_page.to_s %>">
   <div class="ruby_cms-visual-editor__container">
     <!-- Preview Area -->
@@ -149,17 +118,23 @@
                 data-action="input->ruby-cms--visual-editor#updateCharCount"></textarea>
             </div>
 
-            <!-- Rich Text Editor (Trix) -->
-            <div class="ruby_cms-visual-editor-modal__rich-text-container" data-ruby-cms--visual-editor-target="richTextContainer">
-              <label class="ruby_cms-visual-editor-modal__label">
-                Rich Content
-              </label>
-              <input id="rich-content" type="hidden" name="content" data-ruby-cms--visual-editor-target="richContentInput">
-              <trix-editor 
-                input="rich-content"
-                class="ruby_cms-visual-editor-modal__rich-text-editor"
-                data-action="trix-change->ruby-cms--visual-editor#updateCharCount"></trix-editor>
-            </div>
+            <!-- Rich Text Editor (Action Text) -->
+            <% if ::ContentBlock.respond_to?(:action_text_available?) && ::ContentBlock.action_text_available? %>
+              <div class="ruby_cms-visual-editor-modal__rich-text-container" data-ruby-cms--visual-editor-target="richTextContainer">
+                <label class="ruby_cms-visual-editor-modal__label" for="rich-content-input">
+                  Rich Content
+                </label>
+                <input id="rich-content-input" type="hidden" name="rich_content" data-ruby-cms--visual-editor-target="richContentInput">
+                <trix-editor 
+                  input="rich-content-input"
+                  class="ruby_cms-visual-editor-modal__rich-text-editor"
+                  data-action="trix-change->ruby-cms--visual-editor#updateCharCount"></trix-editor>
+              </div>
+            <% else %>
+              <div class="ruby_cms-visual-editor-modal__rich-text-container" data-ruby-cms--visual-editor-target="richTextContainer" style="display: none;">
+                <p class="text-gray-500 text-sm">Rich text requires Action Text. Run: <code>bin/rails action_text:install</code></p>
+              </div>
+            <% end %>
 
             <!-- Info Bar -->
             <div class="ruby_cms-visual-editor-modal__info-bar">
@@ -202,4 +177,6 @@
       </div>
     </div>
   </div>
-</div><% end %>
+</div>
+  </div>
+</div>

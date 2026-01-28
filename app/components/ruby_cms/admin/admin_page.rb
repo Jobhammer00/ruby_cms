@@ -14,13 +14,15 @@ module RubyCms
     # @param turbo_frame [String, nil] Turbo Frame ID for wrapping
     # @param turbo_frame_options [Hash, nil] Custom Turbo Frame options
     class AdminPage < BaseComponent
-      def initialize(title:, **options)
+      def initialize(title: nil, **options)
         super()
         @title = title
         @subtitle = options[:subtitle]
         @actions = options[:actions] || []
+        @action_icons = options[:action_icons] || []
+        @search = options[:search]
         @breadcrumbs = options[:breadcrumbs]
-        @padding = options.fetch(:padding, true)
+        @padding = options.fetch(:padding, false)
         @overflow = options.fetch(:overflow, true)
         @turbo_frame = options[:turbo_frame]
         @turbo_frame_options = options[:turbo_frame_options]
@@ -28,18 +30,21 @@ module RubyCms
       end
 
       def extract_user_attrs(options)
-        excluded_keys = %i[subtitle actions breadcrumbs padding overflow turbo_frame turbo_frame_options]
-        options.reject { |key, _| excluded_keys.include?(key) }
+        excluded_keys = %i[
+          title subtitle actions action_icons search breadcrumbs padding overflow
+          turbo_frame turbo_frame_options
+        ]
+        options.reject {|key, _| excluded_keys.include?(key) }
       end
 
-      def view_template(&block)
-        content = build_page_content(&block)
-        wrap_with_turbo_frame(content, &block)
+      def view_template(&)
+        content = build_page_content(&)
+        wrap_with_turbo_frame(content, &)
       end
 
       def build_page_content(&block)
         lambda do
-          div(class: build_admin_page_classes, **@user_attrs) do
+          div(class: "ruby_cms-admin-page", **@user_attrs) do
             render_breadcrumbs if @breadcrumbs&.any?
             render_header
             render_content(&block)
@@ -47,7 +52,7 @@ module RubyCms
         end
       end
 
-      def wrap_with_turbo_frame(content, &block)
+      def wrap_with_turbo_frame(content, &)
         if @turbo_frame
           turbo_frame_tag(@turbo_frame, **default_turbo_frame_options, &content)
         else
@@ -56,13 +61,6 @@ module RubyCms
       end
 
       private
-
-      def build_admin_page_classes
-        classes = ["ruby_cms-admin-page"]
-        classes << "ruby_cms-admin-page--with-padding" if @padding
-        classes << "ruby_cms-admin-page--no-overflow" unless @overflow
-        classes.join(" ")
-      end
 
       def default_turbo_frame_options
         defaults = {
@@ -116,26 +114,127 @@ module RubyCms
       end
 
       def render_header
+        return unless @title || @action_icons.any? || @actions.any? || @search
+
         div(class: "ruby_cms-page-header") do
+          # Title and icons on same row: title left, icons right
           div(class: "ruby_cms-page-header__content") do
-            render_header_title_group
-            render_header_actions if @actions.any?
+            render_header_title_group if @title
+            if @action_icons.any? || @actions.any?
+              div(class: "ruby_cms-page-header__action-icons") do
+                render_action_icons if @action_icons.any?
+                render_header_actions if @actions.any?
+              end
+            end
           end
+
+          # Search bar below (if present)
+          render_search if @search
         end
       end
 
       def render_header_title_group
         div(class: "ruby_cms-page-header__title-group") do
-          h1(class: "ruby_cms-page-title") { @title }
+          h1(class: "ruby_cms-page-title") { @title } if @title
           p(class: "ruby_cms-page-subtitle") { @subtitle } if @subtitle
         end
       end
 
-      def render_header_actions
-        div(class: "ruby_cms-page-header__actions") do
-          @actions.each do |action|
-            render_action_button(action)
+      def render_action_icons
+        @action_icons.each do |icon_action|
+          render_icon_action(icon_action)
+        end
+      end
+
+      def render_icon_action(action)
+        url = action[:url] || action[:path] || "#"
+        icon = action[:icon]
+        color = action[:color] || "blue"
+        title = action[:title] || action[:label] || ""
+        method = action[:method] || :get
+        attrs = {
+          class: "ruby_cms-page-header__icon-action ruby_cms-page-header__icon-action--#{color}",
+          title: title,
+          aria_label: title
+        }
+        attrs[:data] = action[:data] if action[:data]
+
+        if get_method?(method)
+          a(href: url, **attrs) do
+            render_icon(icon)
           end
+        else
+          form_with(url: url, method: method, class: "ruby_cms-inline-form") do
+            button(type: "submit", **attrs) do
+              render_icon(icon)
+            end
+          end
+        end
+      end
+
+      def render_icon(icon)
+        if icon.kind_of?(String)
+          # SVG path string
+          svg(class: "ruby_cms-page-header__icon", fill: "none", stroke: "currentColor",
+              viewBox: "0 0 24 24") do |s|
+            s.path(stroke_linecap: "round", stroke_linejoin: "round", stroke_width: "2", d: icon)
+          end
+        elsif icon.kind_of?(Hash)
+          # Hash with SVG details
+          svg_attrs = {
+            class: "ruby_cms-page-header__icon",
+            fill: icon[:fill] || "none",
+            stroke: icon[:stroke] || "currentColor",
+            viewBox: icon[:viewBox] || "0 0 24 24"
+          }
+          svg(**svg_attrs) do |s|
+            if icon[:paths]
+              icon[:paths].each do |path|
+                s.path(**path)
+              end
+            elsif icon[:path]
+              s.path(**icon[:path])
+            end
+          end
+        else
+          # Assume it's already rendered HTML
+          raw(icon.to_s)
+        end
+      end
+
+      def render_search
+        search_opts = @search.kind_of?(Hash) ? @search : { placeholder: "Search" }
+        placeholder = search_opts[:placeholder] || "Search"
+        url = search_opts[:url] || "#"
+        turbo_frame = search_opts[:turbo_frame] || "admin_table_content"
+
+        form_with(
+          url: url,
+          method: :get,
+          class: "ruby_cms-page-header__search-form",
+          data: { turbo_frame: }
+        ) do
+          div(class: "ruby_cms-page-header__search-wrapper") do
+            svg(class: "ruby_cms-page-header__search-icon", fill: "none", stroke: "currentColor",
+                viewBox: "0 0 24 24") do |s|
+              s.path(stroke_linecap: "round", stroke_linejoin: "round", stroke_width: "2",
+                     d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z")
+            end
+            input(
+              type: "search",
+              name: search_opts[:name] || "q",
+              placeholder: placeholder,
+              class: "ruby_cms-page-header__search-input",
+              value: search_opts[:value],
+              data: { action: "input->turbo-frame#submit" }
+            )
+          end
+        end
+      end
+
+      def render_header_actions
+        @actions.each do |action|
+          render_action_button(action)
         end
       end
 
@@ -162,10 +261,8 @@ module RubyCms
         if html_value.respond_to?(:html_safe?) && html_value.html_safe?
           html_value
         elsif html_value.respond_to?(:html_safe)
-          # rubocop:disable Rails/OutputSafety
           html_value.html_safe
         else
-          # rubocop:disable Rails/OutputSafety
           html_value.to_s.html_safe
         end
       end

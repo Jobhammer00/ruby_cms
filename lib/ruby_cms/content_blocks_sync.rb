@@ -8,7 +8,7 @@ module RubyCms
     class Error < StandardError; end
 
     def initialize(namespace: nil, locales_dir: nil)
-      @namespace = namespace || get_default_namespace
+      @namespace = namespace || default_namespace_from_config
       @locales_dir = locales_dir || Rails.root.join("config/locales")
     end
 
@@ -19,18 +19,13 @@ module RubyCms
     # @return [Hash] Summary of exported blocks per locale
     def export_to_yaml(only_published: true, flatten_keys: false)
       scope = only_published ? RubyCms::ContentBlock.published : RubyCms::ContentBlock.all
-
-      # Group blocks by locale
       blocks_by_locale = scope.order(:key).group_by(&:locale)
 
       summary = {}
       I18n.available_locales.each do |locale|
-        locale_str = locale.to_s
-        locale_file = @locales_dir.join("#{locale}.yml")
-        blocks = blocks_by_locale[locale_str] || []
-        blocks_hash = blocks.index_by(&:key)
-        summary[locale] =
-          update_locale_file(locale_file, locale, blocks_hash, flatten_keys:)
+        summary[locale] = export_locale_to_yaml(
+          locale, blocks_by_locale, flatten_keys:
+        )
       end
 
       summary
@@ -47,22 +42,13 @@ module RubyCms
       summary = { created: 0, updated: 0, skipped: 0, errors: [] }
 
       locales_to_process.each do |loc|
-        locale_file = @locales_dir.join("#{loc}.yml")
-        next unless locale_file.exist?
-
-        begin
-          locale_data = YAML.load_file(locale_file)
-          blocks_data = extract_blocks_from_locale(locale_data, loc)
-
-          blocks_data.each do |key, content|
-            result = import_block(key, content, loc.to_s, create_missing, update_existing,
-                                  published)
-            summary[result[:action]] += 1
-            summary[:errors] << result[:error] if result[:error]
-          end
-        rescue StandardError => e
-          summary[:errors] << "Error processing #{loc}: #{e.message}"
-        end
+        import_locale_from_yaml(
+          loc,
+          summary,
+          create_missing:,
+          update_existing:,
+          published:
+        )
       end
 
       summary
@@ -86,52 +72,84 @@ module RubyCms
 
     private
 
-    def get_default_namespace
+    def default_namespace_from_config
       Rails.application.config.ruby_cms.content_blocks_translation_namespace
     rescue StandardError
       nil
     end
 
+    def export_locale_to_yaml(locale, blocks_by_locale, flatten_keys:)
+      locale_str = locale.to_s
+      locale_file = @locales_dir.join("#{locale}.yml")
+      blocks = blocks_by_locale[locale_str] || []
+      blocks_hash = blocks.index_by(&:key)
+      update_locale_file(locale_file, locale, blocks_hash, flatten_keys:)
+    end
+
     def update_locale_file(locale_file, locale, blocks, flatten_keys: false)
-      # Load existing locale file or create new structure
-      existing_data = if locale_file.exist?
-                        YAML.load_file(locale_file) || {}
-                      else
-                        {}
-                      end
+      existing_data = load_existing_locale_data(locale_file)
+      locale_root = ensure_locale_root(existing_data, locale)
+      target_hash = target_hash_for_locale(locale_root)
 
-      # Ensure locale root exists
+      updated_count = update_target_hash(
+        target_hash,
+        blocks,
+        flatten_keys:
+      )
+
+      write_locale_file(locale_file, existing_data)
+      updated_count
+    end
+
+    def load_existing_locale_data(locale_file)
+      return {} unless locale_file.exist?
+
+      YAML.load_file(locale_file) || {}
+    end
+
+    def ensure_locale_root(existing_data, locale)
       existing_data[locale.to_s] ||= {}
+    end
 
-      # Get target hash (namespace or root)
-      target_hash = if @namespace.present?
-                      existing_data[locale.to_s][@namespace] ||= {}
-                      existing_data[locale.to_s][@namespace]
-                    else
-                      existing_data[locale.to_s]
-                    end
+    def target_hash_for_locale(locale_root)
+      return locale_root if @namespace.blank?
 
-      # Update with content blocks
+      locale_root[@namespace] ||= {}
+      locale_root[@namespace]
+    end
+
+    def update_target_hash(target_hash, blocks, flatten_keys:)
       updated_count = 0
-      blocks.each do |key, block|
-        content = extract_content_from_block(block)
 
-        if flatten_keys && key.to_s.include?(".")
-          # Flatten dot-separated keys into nested structure
-          nested_key = unflatten_key(key.to_s, content)
-          merge_nested_hash(target_hash, nested_key)
-        elsif target_hash[key.to_s] != content
-          # Flat key structure
-          target_hash[key.to_s] = content
-          updated_count += 1
-        end
+      blocks.each do |key, block|
+        updated_count += apply_block_to_target_hash(
+          target_hash,
+          key,
+          block,
+          flatten_keys:
+        )
       end
 
-      # Write back to file with proper YAML formatting
-      yaml_output = existing_data.to_yaml
-      # Ensure proper line endings and formatting
-      File.write(locale_file, yaml_output)
       updated_count
+    end
+
+    def apply_block_to_target_hash(target_hash, key, block, flatten_keys:)
+      content = extract_content_from_block(block)
+      key_str = key.to_s
+
+      if flatten_keys && key_str.include?(".")
+        merge_nested_hash(target_hash, unflatten_key(key_str, content))
+        return 0
+      end
+
+      return 0 if target_hash[key_str] == content
+
+      target_hash[key_str] = content
+      1
+    end
+
+    def write_locale_file(locale_file, existing_data)
+      File.write(locale_file, existing_data.to_yaml)
     end
 
     # Convert dot-separated key to nested hash structure
@@ -162,23 +180,16 @@ module RubyCms
     end
 
     def extract_content_from_block(block)
-      case block.content_type
-      when "rich_text"
-        if block.respond_to?(:rich_content) && block.rich_content.present?
-          # Export rich text as plain text for YAML (HTML can be preserved if needed)
-          # For now, use plain text which is cleaner for YAML files
-          block.rich_content.to_plain_text.presence || block.content.to_s
-        else
-          block.content.to_s
-        end
-      when "text", "link", "list"
-        block.content.to_s
-      when "image"
-        # For images, store the content (which might be a URL or path)
-        block.content.to_s
-      else
-        block.content.to_s
-      end
+      return rich_text_as_plain_text(block) if block.content_type == "rich_text"
+
+      block.content.to_s
+    end
+
+    def rich_text_as_plain_text(block)
+      return block.content.to_s unless block.respond_to?(:rich_content)
+      return block.content.to_s if block.rich_content.blank?
+
+      block.rich_content.to_plain_text.presence || block.content.to_s
     end
 
     def extract_blocks_from_locale(locale_data, locale)
@@ -199,68 +210,93 @@ module RubyCms
 
     # Flatten nested hash structure to dot-separated keys
     # Example: { hero: { title: "..." } } => { "hero.title" => "..." }
-    def flatten_hash(hash, prefix=nil)
+    def flatten_hash(hash, prefix: nil)
       result = {}
       hash.each do |key, value|
-        new_key = prefix ? "#{prefix}.#{key}" : key.to_s
-
-        if value.kind_of?(Hash)
-          # Recursively flatten nested hashes
-          result.merge!(flatten_hash(value, new_key))
-        elsif value.kind_of?(Array)
-          # Skip arrays (like badges in experience_items)
-          # Could be handled differently if needed
-          next
-        else
-          # Leaf value - this is a content block
-          result[new_key] = value.to_s
-        end
+        merge_flattened_value(result, key, value, prefix)
       end
       result
+    end
+
+    def merge_flattened_value(result, key, value, prefix)
+      new_key = prefix ? "#{prefix}.#{key}" : key.to_s
+
+      if value.kind_of?(Hash)
+        result.merge!(flatten_hash(value, new_key))
+        return
+      end
+
+      return if value.kind_of?(Array)
+
+      result[new_key] = value.to_s
     end
 
     def reserved_keys
       %w[activemodel activerecord date time number currency support]
     end
 
-    def import_block(key, content, locale, create_missing, update_existing, published)
-      block = RubyCms::ContentBlock.find_by(key: key, locale: locale.to_s)
+    def import_locale_from_yaml(loc, summary, create_missing:, update_existing:, published:)
+      locale_file = @locales_dir.join("#{loc}.yml")
+      return unless locale_file.exist?
 
-      if block.nil?
-        return { action: :skipped, error: nil } unless create_missing
+      locale_data = YAML.load_file(locale_file)
+      blocks_data = extract_blocks_from_locale(locale_data, loc)
 
-        block = RubyCms::ContentBlock.new(
-          key: key,
-          locale: locale.to_s,
-          content: content.to_s,
-          content_type: infer_content_type(content),
-          published: published
+      blocks_data.each do |key, content|
+        result = import_block(
+          key, content, locale:, create_missing:, update_existing:, published:
         )
-
-        if block.save
-          { action: :created, error: nil }
-        else
-          {
-            action: :skipped,
-            error: "Failed to create #{key} (#{locale}): #{block.errors.full_messages.join(', ')}"
-          }
-        end
-      elsif update_existing
-        block.content = content.to_s
-        block.published = published if block.published != published
-        block.content_type = infer_content_type(content) if block.content_type == "text"
-
-        if block.save
-          { action: :updated, error: nil }
-        else
-          {
-            action: :skipped,
-            error: "Failed to update #{key} (#{locale}): #{block.errors.full_messages.join(', ')}"
-          }
-        end
-      else
-        { action: :skipped, error: nil }
+        summary[result[:action]] += 1
+        summary[:errors] << result[:error] if result[:error]
       end
+    rescue StandardError => e
+      summary[:errors] << "Error processing #{loc}: #{e.message}"
+    end
+
+    def import_block(key, content, locale, create_missing:, update_existing:, published:)
+      block = RubyCms::ContentBlock.find_by(key: key, locale: locale.to_s)
+      return import_new_block(key, content, locale, published) if block.nil? && create_missing
+      return { action: :skipped, error: nil } if block.nil?
+      return { action: :skipped, error: nil } unless update_existing
+
+      update_existing_block(block, key, content, locale, published)
+    end
+
+    def import_new_block(key, content, locale, published)
+      block = RubyCms::ContentBlock.new(
+        key: key,
+        locale: locale.to_s,
+        content: content.to_s,
+        content_type: infer_content_type(content),
+        published: published
+      )
+
+      save_block(block, key, locale, action: :created, failure_verb: "create")
+    end
+
+    def update_existing_block(block, key, content, locale, published)
+      block.content = content.to_s
+      block.published = published if block.published != published
+      set_inferred_type_if_text(block, content)
+
+      save_block(block, key, locale, action: :updated, failure_verb: "update")
+    end
+
+    def set_inferred_type_if_text(block, content)
+      return unless block.content_type == "text"
+
+      block.content_type = infer_content_type(content)
+    end
+
+    def save_block(block, key, locale, action:, failure_verb:)
+      return { action: action, error: nil } if block.save
+
+      { action: :skipped, error: block_failure_message(block, key, locale, failure_verb) }
+    end
+
+    def block_failure_message(block, key, locale, failure_verb)
+      errors = block.errors.full_messages.join(", ")
+      "Failed to #{failure_verb} #{key} (#{locale}): #{errors}"
     end
 
     def infer_content_type(content)

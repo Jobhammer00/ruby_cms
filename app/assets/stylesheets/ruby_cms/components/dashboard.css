@@ -1,0 +1,125 @@
+/* ============================================
+     Dashboard
+     ============================================ */
+
+.ruby_cms-dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+  .ruby_cms-dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .ruby_cms-dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.ruby_cms-dashboard-card {
+  background: var(--pelican-bg-primary);
+  border: 1px solid var(--pelican-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.ruby_cms-dashboard-card:hover {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.ruby_cms-dashboard-card-body {
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.ruby_cms-dashboard-card-icon {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+}
+
+.ruby_cms-dashboard-card-icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.ruby_cms-dashboard-card-icon--blue {
+  color: var(--pelican-accent-blue);
+  background: var(--pelican-accent-blue-bg);
+}
+
+.ruby_cms-dashboard-card-icon--green {
+  color: var(--pelican-accent-green);
+  background: var(--pelican-accent-green-bg);
+}
+
+.ruby_cms-dashboard-card-icon--purple {
+  color: #8b5cf6;
+  background: #ede9fe;
+}
+
+.ruby_cms-dashboard-card-content {
+  margin-left: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.ruby_cms-dashboard-card-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--pelican-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ruby_cms-dashboard-card-value {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ruby_cms-dashboard-card-number {
+  font-size: 1.875rem;
+  font-weight: 600;
+  color: var(--pelican-text-primary);
+}
+
+.ruby_cms-dashboard-card-subtext {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--pelican-text-secondary);
+}
+
+.ruby_cms-dashboard-card-subtext--success {
+  color: var(--pelican-accent-green);
+}
+
+.ruby_cms-dashboard-card-footer {
+  background: var(--pelican-bg-secondary);
+  padding: 0.75rem 1.5rem;
+  border-top: 1px solid var(--pelican-border);
+}
+
+.ruby_cms-dashboard-card-link {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--pelican-accent-blue);
+  text-decoration: none;
+}
+
+.ruby_cms-dashboard-card-link:hover {
+  color: var(--pelican-accent-blue-dark);
+}

@@ -16,7 +16,7 @@ module RubyCms
     end
 
     def bootstrap?
-      RubyCms::Permission.count.zero?
+      RubyCms::Permission.none?
     end
 
     def bootstrap_allowed?(permission_key)

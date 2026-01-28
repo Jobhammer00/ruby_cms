@@ -1,0 +1,53 @@
+/* ============================================
+     Tables
+     ============================================ */
+
+.ruby_cms-table-wrap {
+  overflow: hidden;
+  border: 1px solid var(--pelican-border);
+  border-radius: 0.5rem;
+}
+
+.ruby_cms-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--pelican-bg-primary);
+}
+
+.ruby_cms-table thead {
+  background: var(--pelican-bg-primary);
+  border-bottom: 1px solid var(--pelican-border);
+}
+
+.ruby_cms-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--pelican-text-secondary);
+}
+
+.ruby_cms-table tbody tr {
+  border-bottom: 1px solid var(--pelican-border);
+  transition: background-color 0.15s;
+}
+
+.ruby_cms-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.ruby_cms-table tbody tr:hover {
+  background: var(--pelican-bg-secondary);
+}
+
+.ruby_cms-table td {
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  color: var(--pelican-text-primary);
+  vertical-align: middle;
+}
+
+.ruby_cms-table td.actions {
+  text-align: right;
+  white-space: nowrap;
+}

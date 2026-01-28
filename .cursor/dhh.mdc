@@ -1,0 +1,698 @@
+---
+alwaysApply: true
+---
+
+# The Unofficial 37signals/DHH Rails Style Guide
+
+Based on analysis of the Fizzy codebase - 37signals' open-source project management tool.
+
+**Source:** https://gist.github.com/marckohlbrugge/d363fb90c89f71bd0c816d24d7642aca  
+**Extended Repo:** https://github.com/marckohlbrugge/unofficial-37signals-coding-style-guide
+
+## Philosophy Overview
+
+The 37signals approach can be summarized as: **"Vanilla Rails is plenty."** They maximize what Rails gives you out of the box, minimize dependencies, and resist abstractions until absolutely necessary.
+
+Core principles:
+
+- **Rich domain models** over service objects
+- **CRUD controllers** over custom actions
+- **Concerns** for horizontal code sharing
+- **Records as state** over boolean columns
+- **Database-backed everything** (no Redis)
+- **Build it yourself** before reaching for gems
+
+## Dependencies & What's Notably Absent
+
+### What They Use
+
+```ruby
+# Gemfile
+# Core Rails (running edge!)
+gem "rails", github: "rails/rails", branch: "main"
+
+# Their Hotwire stack
+gem "turbo-rails"
+gem "stimulus-rails"
+gem "importmap-rails"
+gem "propshaft"
+
+# Database-backed infrastructure (NO Redis!)
+gem "solid_queue"  # Jobs
+gem "solid_cache"  # Caching
+gem "solid_cable"  # WebSockets
+
+# Their own gems
+gem "geared_pagination"
+gem "lexxy"    # Rich text
+gem "mittens"  # Email
+
+# Minimal, focused gems
+gem "bcrypt"     # Password hashing
+gem "rqrcode"    # QR codes
+gem "redcarpet"  # Markdown
+```
+
+### What's Notably ABSENT
+
+DO NOT USE:
+
+| Gem/Pattern        | Why They Avoid It                                      |
+| ------------------ | ------------------------------------------------------ |
+| devise             | Auth is ~150 lines of custom code. Devise is overkill. |
+| pundit/cancancan   | Authorization lives in models (can_administer_card?)   |
+| dry-rb gems        | Over-engineered for most Rails apps                    |
+| interactor/command | Service objects are rarely needed                      |
+| view_component     | ERB partials are fine                                  |
+| sidekiq            | Solid Queue uses the database (no Redis)               |
+| redis              | Database-backed everything                             |
+| elasticsearch      | Custom sharded MySQL full-text search                  |
+| graphql            | REST with Turbo is sufficient                          |
+| rspec              | Minitest is simpler and faster                         |
+
+## Routing: Everything is CRUD
+
+### The Core Principle
+
+Every action maps to a CRUD verb. When something doesn't fit, create a new resource.
+
+```ruby
+# ❌ BAD: Custom actions on existing resource
+resources :cards do
+  post :close
+  post :reopen
+  post :archive
+  post :gild
+end
+
+# ✅ GOOD: New resources for each state change
+resources :cards do
+  resource :closure   # POST to close, DELETE to reopen
+  resource :goldness  # POST to gild, DELETE to ungild
+  resource :not_now   # POST to postpone
+  resource :pin       # POST to pin, DELETE to unpin
+  resource :watch     # POST to watch, DELETE to unwatch
+end
+```
+
+### Real Examples from Fizzy Routes
+
+```ruby
+# config/routes.rb
+resources :cards do
+  scope module: :cards do
+    resource :board        # Moving card to different board
+    resource :closure      # Closing/reopening
+    resource :column       # Assigning to workflow column
+    resource :goldness     # Highlighting as important
+    resource :image        # Managing header image
+    resource :not_now      # Postponing
+    resource :pin          # Pinning to sidebar
+    resource :publish      # Publishing draft
+    resource :reading      # Marking as read
+    resource :triage       # Triaging
+    resource :watch        # Subscribing to updates
+
+    resources :assignments # Managing assignees
+    resources :steps       # Checklist items
+    resources :taggings    # Tags
+
+    resources :comments do
+      resources :reactions # Emoji reactions
+    end
+  end
+end
+```
+
+### Namespace for Context
+
+```ruby
+# Board-specific resources
+resources :boards do
+  scope module: :boards do
+    resource :publication  # Publishing board
+    resource :closure      # Archiving board
+  end
+end
+```
+
+## Controller Design
+
+### Thin Controllers, Rich Models
+
+Controllers orchestrate, models contain business logic:
+
+```ruby
+class Cards::ClosuresController < ApplicationController
+  include CardScoped  # Provides @card, @board, render_card_replacement
+
+  def create
+    @card.close  # Business logic in model
+
+    respond_to do |format|
+      format.turbo_stream { render_card_replacement }
+      format.json { head :no_content }
+    end
+  end
+end
+```
+
+### Controller Concerns Pattern
+
+Create focused concerns for:
+
+- Resource scoping (CardScoped, BoardScoped)
+- Request context (CurrentRequest, CurrentTimezone)
+- Security (BlockSearchEngineIndexing, RequestForgeryProtection)
+- View helpers (TurboFlash, ViewTransitions)
+
+```ruby
+module CardScoped
+  extend ActiveSupport::Concern
+
+  included do
+    before_action :set_card, :set_board
+  end
+
+  private
+
+  def set_card
+    @card = Current.user.accessible_cards.find_by!(number: params[:card_id])
+  end
+
+  def render_card_replacement
+    # Shared rendering logic
+  end
+end
+```
+
+## Model Layer & Concerns
+
+### Heavy Use of Concerns
+
+Models include many focused concerns for horizontal behavior:
+
+```ruby
+class Card < ApplicationRecord
+  include Assignable, Closeable, Eventable, Searchable, Watchable
+
+  belongs_to :account, default: -> { board.account }
+  belongs_to :creator, class_name: "User", default: -> { Current.user }
+end
+```
+
+### Concern Structure
+
+Each concern is self-contained with associations, scopes, and methods:
+
+```ruby
+module Card::Closeable
+  extend ActiveSupport::Concern
+
+  included do
+    has_one :closure, dependent: :destroy
+
+    scope :closed, -> { joins(:closure) }
+    scope :open, -> { where.missing(:closure) }
+  end
+
+  def closed?
+    closure.present?
+  end
+
+  def close(user: Current.user)
+    transaction do
+      create_closure!(user: user)
+      track_event :closed, creator: user
+    end
+  end
+end
+```
+
+### State as Records, Not Booleans
+
+Instead of boolean columns, create separate records:
+
+```ruby
+# ❌ BAD: Boolean column
+closed: boolean
+
+# ✅ GOOD: Separate record
+class Closure < ApplicationRecord
+  belongs_to :card, touch: true
+  belongs_to :user, optional: true
+end
+
+class Card < ApplicationRecord
+  has_one :closure, dependent: :destroy
+
+  scope :closed, -> { joins(:closure) }
+  scope :open, -> { where.missing(:closure) }
+end
+```
+
+Benefits: timestamps, who did it, easy scoping
+
+## Scope Naming Conventions
+
+Use standard scope names for consistency:
+
+```ruby
+scope :chronologically, -> { order created_at: :asc }
+scope :reverse_chronologically, -> { order created_at: :desc }
+scope :alphabetically, -> { order name: :asc }
+scope :latest, -> { order last_active_at: :desc }
+```
+
+### Preloading Scopes
+
+Use `preloaded` as a standard name for eager loading:
+
+```ruby
+# app/models/card.rb
+scope :with_users, -> {
+  preload(creator: [:avatar_attachment, :account],
+          assignees: [:avatar_attachment, :account])
+}
+
+scope :preloaded, -> {
+  with_users
+    .preload(:column, :tags, :steps, :closure, :goldness, :activity_spike,
+             :image_attachment, board: [:entropy, :columns],
+             not_now: [:user])
+    .with_rich_text_description_and_embeds
+}
+
+# app/models/comment.rb
+scope :preloaded, -> {
+  with_rich_text_body.includes(reactions: :reacter)
+}
+
+# app/models/notification.rb
+scope :preloaded, -> {
+  preload(:creator, :account,
+          source: [:board, :creator, { eventable: [:closure, :board, :assignments] }])
+}
+```
+
+### Parameterized Scopes
+
+```ruby
+scope :indexed_by, ->(index) do
+  case index.to_s
+  when "all" then all
+  when "closed" then closed
+  when "open" then open
+  when "not_now" then not_now
+  else all
+  end
+end
+
+scope :sorted_by, ->(sort) do
+  case sort.to_s
+  when "latest" then latest
+  when "oldest" then chronologically
+  else latest
+  end
+end
+```
+
+## Model Callbacks: Used Sparingly
+
+Only 38 callback occurrences across 30 files - callbacks are used but not overused.
+
+### Common Callback Uses
+
+```ruby
+# After commit for async work
+after_commit :relay_later, on: :create
+
+# Before save for derived data
+before_save :set_defaults
+
+# After create for side effects
+after_create_commit :broadcast_new_record
+```
+
+### What They Avoid
+
+- No complex callback chains
+- No `before_validation` for business logic
+- No callbacks that call external services synchronously
+- Prefer explicit method calls over implicit callbacks
+
+## Authentication Without Devise
+
+Build custom auth with:
+
+- Magic link or passwordless authentication
+- Session model with signed cookies
+- `Current` for request context
+- Controller concern for authentication logic
+
+```ruby
+module Authentication
+  extend ActiveSupport::Concern
+
+  included do
+    before_action :require_authentication
+    helper_method :authenticated?
+  end
+
+  private
+
+  def require_authentication
+    resume_session || request_authentication
+  end
+
+  def set_current_session(session)
+    Current.session = session
+    cookies.signed.permanent[:session_token] = {
+      value: session.signed_id,
+      httponly: true,
+      same_site: :lax
+    }
+  end
+end
+```
+
+## Background Jobs
+
+### Shallow Jobs, Rich Models
+
+Jobs just call model methods:
+
+```ruby
+class NotifyRecipientsJob < ApplicationJob
+  def perform(notifiable)
+    notifiable.notify_recipients  # Model does the work
+  end
+end
+```
+
+### `_later` and `_now` Convention
+
+```ruby
+module Card::Readable
+  def mark_as_read_later(user:)
+    MarkCardAsReadJob.perform_later(self, user)
+  end
+
+  def mark_as_read_now(user:)
+    readings.find_or_create_by!(user: user).touch
+  end
+end
+```
+
+### Use Solid Queue
+
+Database-backed jobs (no Redis):
+
+```yaml
+# config/recurring.yml
+production:
+  deliver_notifications:
+    command: "Notification::Bundle.deliver_all_later"
+    schedule: every 30 minutes
+```
+
+## Testing Approach
+
+- Use Minitest (not RSpec) - simpler and faster
+- Use fixtures for test data (located in `test/fixtures/`)
+- Try to minimize mocks - test full behavior
+- Use `render_views` in controller tests
+- Test models, controllers, services, and jobs
+
+## HTTP Caching Patterns
+
+Use HTTP ETags for efficient caching:
+
+```ruby
+class CardsController < ApplicationController
+  def show
+    fresh_when etag: [@card, Current.user]
+  end
+end
+
+# In ApplicationController
+etag { "v1" }  # Bust all caches on deploy
+```
+
+## Fragment Caching Patterns
+
+Use fragment caching with proper cache keys:
+
+```erb
+<%# Cache with model and user context %>
+<% cache [@card, Current.user] do %>
+  <%= render @card %>
+<% end %>
+
+<%# Cache collections with proper invalidation %>
+<% cache [@cards.maximum(:updated_at), Current.user] do %>
+  <%= render @cards %>
+<% end %>
+```
+
+## Event Tracking & Activity System
+
+Track all important actions as events:
+
+```ruby
+module Eventable
+  def track_event(action, creator: Current.user, **particulars)
+    events.create!(
+      action: "#{model_name.element}_#{action}",
+      creator: creator,
+      particulars: particulars
+    )
+  end
+end
+```
+
+## PORO Patterns
+
+Namespace under parent model for presentation/business logic:
+
+```ruby
+# app/models/event/description.rb
+class Event::Description
+  attr_reader :event
+
+  def initialize(event)
+    @event = event
+  end
+
+  def to_html
+    # Format event for display
+  end
+end
+```
+
+## View Helpers Pattern
+
+Use view helpers for presentation logic, not decorators:
+
+```ruby
+# app/helpers/cards_helper.rb
+module CardsHelper
+  def card_article_tag(card, **options, &block)
+    classes = [
+      options.delete(:class),
+      ("golden-effect" if card.golden?),
+      ("card--postponed" if card.postponed?)
+    ].compact.join(" ")
+
+    tag.article(class: classes, **options, &block)
+  end
+end
+```
+
+## Multi-Tenancy
+
+Use URL-based tenancy with `Current.account`:
+
+```ruby
+# Middleware extracts account from /{account_id}/...
+Current.account = Account.find_by(external_id: account_id)
+
+# Every model has account_id
+belongs_to :account, default: -> { parent.account }
+```
+
+## Stimulus Controller Patterns
+
+Keep controllers small and focused:
+
+- Single responsibility (one behavior per controller)
+- Configuration via `static values` and `static classes`
+- Events for communication (`this.dispatch("show")`)
+- Private methods with `#`
+- No dependencies - vanilla JS only
+
+```javascript
+// copy_to_clipboard_controller.js
+export default class extends Controller {
+  static values = { content: String };
+  static classes = ["success"];
+
+  async copy(event) {
+    event.preventDefault();
+    await navigator.clipboard.writeText(this.contentValue);
+    this.element.classList.add(this.successClass);
+  }
+}
+```
+
+## Modern CSS (No Preprocessors)
+
+Use native CSS with modern features:
+
+```css
+/* CSS Layers for specificity control */
+@layer reset, base, components, utilities;
+
+/* OKLCH colors for perceptual uniformity */
+:root {
+  --lch-blue: 66% 0.196 257.82;
+  --color-link: oklch(var(--lch-blue));
+}
+
+/* Native nesting */
+.btn {
+  background: var(--btn-bg);
+
+  &:hover {
+    filter: brightness(1.1);
+  }
+}
+
+/* Modern features: :has(), container queries, @starting-style */
+```
+
+## PWA & Push Notifications
+
+### Minimal Service Worker
+
+```javascript
+// app/views/pwa/service_worker.js
+self.addEventListener("fetch", (event) => {
+  if (event.request.method !== "GET") return;
+
+  if (event.request.destination === "document") {
+    event.respondWith(
+      fetch(event.request, { cache: "no-cache" }).catch(() =>
+        caches.match(event.request)
+      ) // Offline fallback
+    );
+  }
+});
+
+// Push notifications
+self.addEventListener("push", async (event) => {
+  const data = await event.data.json();
+  event.waitUntil(
+    Promise.all([showNotification(data), updateBadgeCount(data.options)])
+  );
+});
+
+// App badge count
+async function updateBadgeCount({ data: { badge } }) {
+  return self.navigator.setAppBadge?.(badge || 0);
+}
+
+// Notification click opens app
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL(event.notification.data.path, self.location.origin).href;
+  event.waitUntil(openURL(url));
+});
+```
+
+### Web Push Gem
+
+Uses `web-push` gem for server-side push:
+
+```ruby
+# Gemfile
+gem "web-push"
+```
+
+## Notable Gems They DO Use
+
+While avoiding heavyweight dependencies, these gems made the cut:
+
+| Gem                  | Purpose                                 |
+| -------------------- | --------------------------------------- |
+| geared_pagination    | DHH's cursor-based pagination           |
+| propshaft            | Asset pipeline (simpler than Sprockets) |
+| solid_queue          | Database-backed job queue               |
+| solid_cache          | Database-backed Rails cache             |
+| solid_cable          | Database-backed Action Cable            |
+| thruster             | HTTP/2 proxy for Puma                   |
+| kamal                | Docker deployment                       |
+| redcarpet + rouge    | Markdown + syntax highlighting          |
+| rqrcode              | QR code generation                      |
+| lexxy                | Rich text editor (Basecamp's)           |
+| platform_agent       | User agent parsing                      |
+| web-push             | Push notifications                      |
+| mission_control-jobs | Job monitoring UI                       |
+| autotuner            | Automatic Ruby GC tuning                |
+
+## CSP Configuration: Extensible via ENV
+
+Make Content Security Policy extensible via environment variables:
+
+```ruby
+# config/initializers/content_security_policy.rb
+# Helper to get additional CSP sources from ENV or config.x
+sources = ->(directive) do
+  env_key = "CSP_#{directive.to_s.upcase}"
+
+  value = if ENV.key?(env_key)
+    ENV[env_key]
+  else
+    config.x.content_security_policy.send(directive)
+  end
+
+  # Supports: nil, string, space-separated string, or array
+  case value
+  when nil then []
+  when Array then value
+  when String then value.split
+  else []
+  end
+end
+```
+
+This allows:
+
+- Base CSP defined in code
+- Extensions via ENV vars (`CSP_SCRIPT_SRC="https://cdn.example.com"`)
+- Config overrides for multi-tenant SaaS
+
+## Code Evolution Patterns
+
+- **Ship incrementally** - Many small commits, not big releases
+- **Tests ship with features** - Not TDD, not afterthought, but together
+- **Refactor toward consistency** - Establish patterns, then update old code
+- **CSS uses the platform** - Native CSS layers, nesting, OKLCH - no preprocessors
+- **Design tokens everywhere** - CSS variables for colors, spacing, typography
+
+## Summary: The 37signals Way
+
+1. **Start with vanilla Rails** - Don't add abstractions until you feel the pain
+2. **Models are rich** - Business logic lives in models, not services
+3. **Controllers are thin** - Just orchestration and response formatting
+4. **Everything is CRUD** - New resource over new action
+5. **State is records** - Not boolean columns
+6. **Concerns are compositions** - Horizontal behavior sharing
+7. **Build before buying** - Auth, search, jobs - all custom
+8. **Database is king** - No Redis, no Elasticsearch
+9. **Test with fixtures** - Deterministic, fast, simple
+10. **Use the platform** - Modern CSS, native browser APIs
+
+**The best code is the code you don't write. The second best is the code that's obviously correct.**
+
+The 37signals codebase optimizes for both.

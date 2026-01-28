@@ -2,8 +2,6 @@
 
 require_relative "ruby_cms/version"
 require_relative "ruby_cms/engine"
-require_relative "ruby_cms/component_registry"
-require_relative "ruby_cms/component_registry/defaults"
 require_relative "ruby_cms/app_integration"
 require_relative "ruby_cms/content_blocks_sync"
 

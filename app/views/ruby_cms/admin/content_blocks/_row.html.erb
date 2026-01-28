@@ -1,0 +1,18 @@
+<%# Row partial for content blocks table %>
+<% content_block = local_assigns[:content_block] %>
+<%= tag.td content_block.key %>
+<%= tag.td content_block.title %>
+<%= tag.td content_block.content_type, class: "text-muted" %>
+<%= tag.td do %>
+  <%= content_block.published? ? tag.span("Yes", class: "ruby_cms-badge ruby_cms-badge-success") : tag.span("No", class: "ruby_cms-badge ruby_cms-badge-muted") %>
+<% end %>
+<%= tag.td class: "text-right" do %>
+  <%= tag.div class: "bulk-action-table__actions" do %>
+    <%= render RubyCms::Admin::BulkActionTable::BulkActionTableActions.new(
+      edit_path: edit_ruby_cms_admin_content_block_path(content_block),
+      delete_path: ruby_cms_admin_content_block_path(content_block),
+      item_id: content_block.id,
+      controller_name: "ruby-cms--bulk-action-table"
+    ) %>
+  <% end %>
+<% end %>

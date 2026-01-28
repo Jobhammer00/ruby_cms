@@ -1,9 +1,0 @@
-<%# Renders DB-backed pages (builder or html mode) with fragment caching %>
-<%# Use compiled HTML if available and fresh, otherwise render on-the-fly %>
-<% if @page.compiled_html_fresh? %>
-  <%= @page.compiled_html.html_safe %>
-<% else %>
-  <% cache(["ruby_cms/page", @page.cache_key_with_version]) do %>
-    <%= render_cms_page(@page) %>
-  <% end %>
-<% end %>

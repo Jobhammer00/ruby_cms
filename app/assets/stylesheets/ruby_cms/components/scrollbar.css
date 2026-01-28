@@ -1,0 +1,21 @@
+/* ============================================
+     Scrollbar Styling
+     ============================================ */
+
+::-webkit-scrollbar {
+  width: 0.5rem;
+  height: 0.5rem;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--pelican-bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--pelican-border);
+  border-radius: 0.25rem;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--pelican-text-muted);
+}

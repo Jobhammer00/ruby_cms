@@ -12,6 +12,24 @@ module RubyCms
 
       def index
         collection = user_class.order(:id)
+
+        # Apply search filter if query parameter is present
+        if params[:q].present?
+          email_attr = user_class.column_names.include?("email_address") ? :email_address : :email
+          search_term = "%#{params[:q].downcase}%"
+          # Use database-agnostic search
+          # For ID search, check if query is numeric and include it
+          conditions = ["LOWER(#{email_attr}) LIKE ?"]
+          values = [search_term]
+          
+          if params[:q].match?(/^\d+$/)
+            conditions << "id = ?"
+            values << params[:q].to_i
+          end
+          
+          collection = collection.where(conditions.join(" OR "), *values)
+        end
+
         @users = paginate_collection(collection)
         # Ensure @users is always an iterable collection, never nil
         @users ||= user_class.none
@@ -35,7 +53,7 @@ module RubyCms
       end
 
       def bulk_delete
-        ids = Array(params[:item_ids]).map(&:to_i).compact
+        ids = Array(params[:item_ids]).filter_map(&:to_i)
         users = user_class.where(id: ids)
         count = users.count
         users.destroy_all
@@ -58,7 +76,7 @@ module RubyCms
                          else
                            []
                          end
-        params.require(:user).permit(email_attr, *password_attrs)
+        params.expect(user: [email_attr, *password_attrs])
       end
     end
   end

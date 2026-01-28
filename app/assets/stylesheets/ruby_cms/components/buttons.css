@@ -1,0 +1,113 @@
+/* ============================================
+     Buttons
+     ============================================ */
+
+/* Base button */
+.ruby_cms-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+/* Button variants */
+.ruby_cms-btn-primary {
+  background: var(--pelican-accent-blue);
+  color: white;
+}
+
+.ruby_cms-btn-primary:hover {
+  background: var(--pelican-accent-blue-hover);
+}
+
+.ruby_cms-btn-secondary {
+  background: var(--pelican-bg-primary);
+  color: var(--pelican-text-primary);
+  border-color: var(--pelican-border-light);
+}
+
+.ruby_cms-btn-secondary:hover {
+  background: var(--pelican-bg-secondary);
+}
+
+.ruby_cms-btn-danger {
+  color: var(--pelican-accent-red);
+  background: transparent;
+}
+
+.ruby_cms-btn-danger:hover {
+  background: var(--pelican-accent-red-bg);
+}
+
+/* Icon buttons */
+.ruby_cms-btn-icon-only {
+  padding: 0.375rem;
+  border-radius: 0.375rem;
+}
+
+.ruby_cms-btn-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
+}
+
+.ruby_cms-btn-icon-only .ruby_cms-btn-icon {
+  margin: 0;
+}
+
+/* Action button base - for edit/delete icons in tables */
+.ruby_cms-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem;
+  border-radius: 0.375rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  text-decoration: none;
+}
+
+.ruby_cms-action-btn--blue {
+  color: var(--pelican-accent-blue);
+}
+
+.ruby_cms-action-btn--blue:hover {
+  background: var(--pelican-accent-blue-bg);
+}
+
+.ruby_cms-action-btn--red {
+  color: var(--pelican-accent-red);
+}
+
+.ruby_cms-action-btn--red:hover {
+  background: var(--pelican-accent-red-bg);
+}
+
+.ruby_cms-action-btn--green {
+  color: var(--pelican-accent-green);
+}
+
+.ruby_cms-action-btn--green:hover {
+  background: var(--pelican-accent-green-bg);
+}
+
+.ruby_cms-action-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Button group */
+.ruby_cms-button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}

@@ -1,0 +1,13 @@
+<%# Row partial for permissions table %>
+<% permission = local_assigns[:permission] %>
+<%= tag.td permission.key %>
+<%= tag.td permission.name, class: "ruby_cms-bulk-action-table-cell-muted" %>
+<%= tag.td class: "text-right" do %>
+  <%= tag.div class: "bulk-action-table__actions" do %>
+    <%= render RubyCms::Admin::BulkActionTable::BulkActionTableActions.new(
+      delete_path: ruby_cms_admin_permission_path(permission),
+      item_id: permission.id,
+      controller_name: "ruby-cms--bulk-action-table"
+    ) %>
+  <% end %>
+<% end %>

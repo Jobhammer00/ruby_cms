@@ -1,0 +1,33 @@
+/* ============================================
+     Cards
+     ============================================ */
+
+.ruby_cms-card {
+  background: var(--pelican-bg-primary);
+  border: 1px solid var(--pelican-border);
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.ruby_cms-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--pelican-border);
+}
+
+.ruby_cms-card--padded {
+  padding: 1.5rem;
+}
+
+.ruby_cms-card--form {
+  max-width: 28rem;
+}
+
+.ruby_cms-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--pelican-text-primary);
+  margin: 0 0 0.75rem 0;
+}

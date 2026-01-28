@@ -1,0 +1,14 @@
+<%# Row partial for users table %>
+<% user = local_assigns[:user] %>
+<%= tag.td user.id %>
+<%= tag.td user.try(:email_address) || user.try(:email) || user.to_s %>
+<%= tag.td class: "text-right" do %>
+  <%= tag.div class: "bulk-action-table__actions" do %>
+    <%= link_to "Permissions", ruby_cms_admin_user_permissions_path(user), class: "bulk-action-table__link" %>
+    <%= render RubyCms::Admin::BulkActionTable::BulkActionTableActions.new(
+      delete_path: ruby_cms_admin_user_path(user),
+      item_id: user.id,
+      controller_name: "ruby-cms--bulk-action-table"
+    ) %>
+  <% end %>
+<% end %>

@@ -1,0 +1,25 @@
+/* ============================================
+     Breadcrumbs
+     ============================================ */
+
+.ruby_cms-breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--pelican-text-secondary);
+  margin-bottom: 1rem;
+}
+
+.ruby_cms-breadcrumbs a {
+  color: var(--pelican-accent-blue);
+  text-decoration: none;
+}
+
+.ruby_cms-breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+.ruby_cms-breadcrumbs-separator {
+  color: var(--pelican-text-muted);
+}

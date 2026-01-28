@@ -23,7 +23,7 @@ class AddLocaleToRubyCmsContentBlocks < ActiveRecord::Migration[7.1]
         rescue StandardError
           "en"
         end
-        execute <<-SQL
+        execute <<~SQL.squish
           UPDATE ruby_cms_content_blocks
           SET locale = '#{default_locale}'
           WHERE locale IS NULL OR locale = ''

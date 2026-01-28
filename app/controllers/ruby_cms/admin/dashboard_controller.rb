@@ -4,8 +4,8 @@ module RubyCms
   module Admin
     class DashboardController < BaseController
       def index
-        @content_blocks_count = RubyCms::ContentBlock.count
-        @content_blocks_published_count = RubyCms::ContentBlock.published.count
+        @content_blocks_count = ::ContentBlock.count
+        @content_blocks_published_count = ::ContentBlock.published.count
         @permissions_count = RubyCms::Permission.count
         @user_permissions_count = RubyCms::UserPermission.count
 

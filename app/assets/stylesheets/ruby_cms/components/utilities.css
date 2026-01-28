@@ -1,0 +1,143 @@
+/* ============================================
+     Utility Classes
+     ============================================ */
+
+/* Display */
+.u-hidden {
+  display: none;
+}
+.u-flex {
+  display: flex;
+}
+.u-inline-flex {
+  display: inline-flex;
+}
+
+/* Flex utilities */
+.u-flex-col {
+  flex-direction: column;
+}
+.u-flex-row {
+  flex-direction: row;
+}
+.u-items-center {
+  align-items: center;
+}
+.u-items-start {
+  align-items: flex-start;
+}
+.u-items-end {
+  align-items: flex-end;
+}
+.u-justify-between {
+  justify-content: space-between;
+}
+.u-justify-center {
+  justify-content: center;
+}
+.u-justify-end {
+  justify-content: flex-end;
+}
+.u-flex-1 {
+  flex: 1;
+}
+.u-flex-shrink-0 {
+  flex-shrink: 0;
+}
+
+/* Gap utilities */
+.u-gap-xs {
+  gap: 0.25rem;
+}
+.u-gap-sm {
+  gap: 0.5rem;
+}
+.u-gap-md {
+  gap: 0.75rem;
+}
+.u-gap-lg {
+  gap: 1rem;
+}
+.u-gap-xl {
+  gap: 1.5rem;
+}
+
+/* Text alignment */
+.u-text-left {
+  text-align: left;
+}
+.u-text-center {
+  text-align: center;
+}
+.u-text-right {
+  text-align: right;
+}
+
+/* Width */
+.u-w-full {
+  width: 100%;
+}
+.u-min-h-0 {
+  min-height: 0;
+}
+
+/* Positioning */
+.u-relative {
+  position: relative;
+}
+.u-absolute {
+  position: absolute;
+}
+.u-sticky {
+  position: sticky;
+}
+.u-top-0 {
+  top: 0;
+}
+
+/* Spacing - Margin */
+.u-mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+.u-ml-auto {
+  margin-left: auto;
+}
+
+/* Common transitions */
+.u-transition {
+  transition: background-color 0.15s;
+}
+
+/* Common patterns */
+.u-btn-reset {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Legacy support */
+.ruby_cms-hidden {
+  display: none;
+}
+.ruby_cms-text-center {
+  text-align: center;
+}
+.ruby_cms-mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}

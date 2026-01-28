@@ -19,13 +19,13 @@
   </div>
   <div class="ruby_cms-field">
     <%= f.label :content_type, class: "block text-sm font-medium text-gray-700 mb-1" %>
-    <%= f.select :content_type, RubyCms::ContentBlock::CONTENT_TYPES, {}, class: "ruby_cms-select block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" %>
+    <%= f.select :content_type, ::ContentBlock::CONTENT_TYPES, {}, class: "ruby_cms-select block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" %>
   </div>
   <div class="ruby_cms-field">
     <%= f.label :content, class: "block text-sm font-medium text-gray-700 mb-1" %>
     <%= f.text_area :content, rows: 4, class: "ruby_cms-textarea block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" %>
   </div>
-  <% if RubyCms::ContentBlock.respond_to?(:action_text_available?) && RubyCms::ContentBlock.action_text_available? %>
+  <% if ::ContentBlock.respond_to?(:action_text_available?) && ::ContentBlock.action_text_available? %>
     <div class="ruby_cms-field">
       <%= f.label :rich_content, class: "block text-sm font-medium text-gray-700 mb-1" %>
       <%= f.rich_text_area :rich_content, class: "block w-full rounded-md border border-gray-300" %>

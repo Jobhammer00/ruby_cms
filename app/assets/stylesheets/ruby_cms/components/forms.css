@@ -1,0 +1,74 @@
+/* ============================================
+     Forms - Common Input & Form Styles
+     ============================================ */
+
+.ruby_cms-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ruby_cms-form--inline {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.ruby_cms-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ruby_cms-field label,
+.ruby_cms-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--pelican-text-primary);
+}
+
+/* Base input styles - shared across all input types */
+.ruby_cms-input,
+.ruby_cms-textarea,
+.ruby_cms-select {
+  display: block;
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--pelican-text-primary);
+  background-color: var(--pelican-bg-primary);
+  border: 1px solid var(--pelican-border-light);
+  border-radius: 0.375rem;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+.ruby_cms-input:focus,
+.ruby_cms-textarea:focus,
+.ruby_cms-select:focus {
+  outline: none;
+  border-color: var(--pelican-accent-blue);
+  box-shadow: 0 0 0 3px var(--pelican-accent-blue-bg);
+}
+
+.ruby_cms-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+.ruby_cms-form--inline .ruby_cms-select {
+  width: auto;
+  min-width: 12rem;
+}
+
+.ruby_cms-hint {
+  font-size: 0.75rem;
+  color: var(--pelican-text-secondary);
+  margin-top: 0.25rem;
+}

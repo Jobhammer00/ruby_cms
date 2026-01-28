@@ -81,7 +81,7 @@ module RubyCms
 
       # Resolve parameter key for model params
       # Checks if a specific key exists in params, otherwise falls back to model's param_key
-      # @param model_class [Class] The model class (e.g., RubyCms::Page)
+      # @param model_class [Class] The model class (e.g., ContentBlock)
       # @param param_name [Symbol] The expected parameter name (e.g., :page)
       # @return [Symbol] The resolved parameter key
       def model_param_key(model_class, param_name)

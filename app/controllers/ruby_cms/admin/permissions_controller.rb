@@ -12,6 +12,13 @@ module RubyCms
 
       def index
         collection = RubyCms::Permission.order(:key)
+
+        # Apply search filter if query parameter is present
+        if params[:q].present?
+          search_term = "%#{params[:q].downcase}%"
+          collection = collection.where("LOWER(key) LIKE ? OR LOWER(name) LIKE ?", search_term, search_term)
+        end
+
         @permissions = paginate_collection(collection)
         # Ensure @permissions is always an iterable collection, never nil
         @permissions ||= RubyCms::Permission.none
@@ -36,7 +43,7 @@ module RubyCms
       end
 
       def bulk_delete
-        ids = Array(params[:item_ids]).map(&:to_i).compact
+        ids = Array(params[:item_ids]).filter_map(&:to_i)
         permissions = RubyCms::Permission.where(id: ids)
         count = permissions.count
         permissions.destroy_all
@@ -46,7 +53,7 @@ module RubyCms
       private
 
       def permission_params
-        params.require(:permission).permit(:key, :name)
+        params.expect(permission: %i[key name])
       end
     end
   end

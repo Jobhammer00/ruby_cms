@@ -1,4 +1,3 @@
-<%# Phlex-based Bulk Action Table View %>
 <%
   begin
     bulk_delete_url = bulk_delete_ruby_cms_admin_users_path
@@ -10,99 +9,62 @@
   email_attr = user_class.column_names.include?("email_address") ? :email_address : :email
 %>
 
-<%= render RubyCms::Admin::AdminPage.new(
-  title: "Users",
-  actions: [
-    { 
-      label: "New user", 
-      url: "#",
-      primary: true,
-      data: { 
-        controller: "ruby-cms--toggle",
-        action: "click->ruby-cms--toggle#toggle",
-        toggle_target_id: "new-user-form"
-      }
-    }
-  ]
-) do %>
+<%= render RubyCms::Admin::AdminPage.new do %>
   <% if flash[:alert] %>
-    <div class="ruby_cms-alert ruby_cms-alert--error">
-      <p><%= flash[:alert] %></p>
-    </div>
+    <%= tag.div class: "ruby_cms-alert ruby_cms-alert--error" do %>
+      <%= tag.p flash[:alert] %>
+    <% end %>
   <% end %>
 
-  <div id="new-user-form" class="hidden ruby_cms-card ruby_cms-card--padded ruby_cms-card--form">
-    <h2 class="ruby_cms-card-title">Create User</h2>
+  <%= tag.div id: "new-user-form", class: "hidden ruby_cms-card ruby_cms-card--padded ruby_cms-card--form" do %>
+    <%= tag.h2 "Create User", class: "ruby_cms-card-title" %>
     <%= form_with url: ruby_cms_admin_users_path, method: :post, class: "ruby_cms-form" do |f| %>
-      <div class="ruby_cms-field">
+      <%= tag.div class: "ruby_cms-field" do %>
         <%= f.label email_attr, class: "ruby_cms-label" %>
         <%= f.text_field email_attr, class: "ruby_cms-input", placeholder: "user@example.com" %>
-      </div>
+      <% end %>
       <% if user_class.column_names.include?("password") %>
-        <div class="ruby_cms-field">
+        <%= tag.div class: "ruby_cms-field" do %>
           <%= f.label :password, class: "ruby_cms-label" %>
           <%= f.password_field :password, class: "ruby_cms-input" %>
-        </div>
-        <div class="ruby_cms-field">
+        <% end %>
+        <%= tag.div class: "ruby_cms-field" do %>
           <%= f.label :password_confirmation, "Password Confirmation", class: "ruby_cms-label" %>
           <%= f.password_field :password_confirmation, class: "ruby_cms-input" %>
-        </div>
-      <% end %>
-      <div class="ruby_cms-button-group">
-        <%= f.submit "Create User", class: "ruby_cms-btn ruby_cms-btn-primary" %>
-        <button
-          type="button"
-          data-controller="ruby-cms--toggle"
-          data-action="click->ruby-cms--toggle#hide"
-          data-toggle-target-id="new-user-form"
-          class="ruby_cms-btn ruby_cms-btn-secondary"
-        >
-          Cancel
-        </button>
-      </div>
-    <% end %>
-  </div>
-
-  <div class="ruby_cms-card">
-    <%= render RubyCms::Admin::BulkActionTable::BulkActionTable.new(
-      turbo_frame: "admin_table_content",
-      pagination: @pagination,
-      pagination_path: @pagination_path,
-      bulk_actions_url: bulk_delete_url,
-      bulk_actions_buttons: [],
-      item_name: "user",
-      controller_name: "ruby-cms--bulk-action-table",
-      csrf_token: form_authenticity_token
-    ) do %>
-      <%= render RubyCms::Admin::BulkActionTable::BulkActionTableHeader.new(
-        headers: ["ID", "Email", { text: "Actions", class: "text-right" }],
-        bulk_actions_enabled: true,
-        controller_name: "ruby-cms--bulk-action-table"
-      ) %>
-      
-      <%= render RubyCms::Admin::BulkActionTable::BulkActionTableBody.new do %>
-        <% (@users || []).each do |u| %>
-          <% next if u.nil? %>
-          <%= render RubyCms::Admin::BulkActionTable::BulkActionTableRow.new(
-            data: { item_id: u.id },
-            bulk_actions_enabled: true,
-            controller_name: "ruby-cms--bulk-action-table"
-          ) do %>
-            <td><%= u.id %></td>
-            <td><%= u.try(:email_address) || u.try(:email) || u.to_s %></td>
-            <td class="ruby_cms-bulk-action-table-cell-right">
-              <div class="ruby_cms-bulk-action-table-actions">
-                <%= link_to "Permissions", ruby_cms_admin_user_permissions_path(u), class: "ruby_cms-bulk-action-table-link" %>
-                <%= render RubyCms::Admin::BulkActionTable::BulkActionTableActions.new(
-                  delete_path: ruby_cms_admin_user_path(u),
-                  item_id: u.id,
-                  controller_name: "ruby-cms--bulk-action-table"
-                ) %>
-              </div>
-            </td>
-          <% end %>
         <% end %>
       <% end %>
+      <%= tag.div class: "ruby_cms-button-group" do %>
+        <%= f.submit "Create User", class: "ruby_cms-btn ruby_cms-btn-primary" %>
+        <%= tag.button "Cancel", type: "button", class: "ruby_cms-btn ruby_cms-btn-secondary", data: { controller: "ruby-cms--toggle", action: "click->ruby-cms--toggle#hide", toggle_target_id: "new-user-form" } %>
+      <% end %>
     <% end %>
-  </div>
+  <% end %>
+
+  <%= render partial: "ruby_cms/admin/shared/bulk_action_table_index", locals: {
+    title: "Users",
+    collection: @users || [],
+    headers: ["ID", "Email", { text: "Actions", class: "text-right" }],
+    action_icons: [
+      {
+        url: "#",
+        title: "New user",
+        color: "blue",
+        icon: "M12 4.5v15m7.5-7.5h-15",
+        data: {
+          controller: "ruby-cms--toggle",
+          action: "click->ruby-cms--toggle#toggle",
+          toggle_target_id: "new-user-form"
+        }
+      }
+    ],
+    search_url: ruby_cms_admin_users_path,
+    search_param: "q",
+    turbo_frame: "admin_table_content",
+    bulk_actions_url: bulk_delete_url,
+    bulk_action_buttons: [],
+    item_name: "user",
+    pagination: @pagination,
+    pagination_path: @pagination_path,
+    row_partial: "ruby_cms/admin/users/row"
+  } %>
 <% end %>

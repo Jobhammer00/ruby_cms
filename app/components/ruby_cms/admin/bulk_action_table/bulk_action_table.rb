@@ -25,6 +25,7 @@ module RubyCms
           @item_name = options.fetch(:item_name, "item")
           @controller_name = options.fetch(:controller_name, "ruby-cms--bulk-action-table")
           @csrf_token = options[:csrf_token]
+          @header = options[:header]
           @user_attrs = extract_user_attrs(options)
           @has_bulk_actions = @bulk_actions_url.present? || @bulk_actions_buttons.any?
         end
@@ -32,22 +33,39 @@ module RubyCms
         def extract_user_attrs(options)
           excluded_keys = %i[
             turbo_frame pagination pagination_path bulk_actions_url
-            bulk_actions_buttons item_name controller_name csrf_token
+            bulk_actions_buttons item_name controller_name csrf_token header
           ]
-          options.reject { |key, _| excluded_keys.include?(key) }
+          options.reject {|key, _| excluded_keys.include?(key) }
         end
 
-        def view_template(&)
-          content = build_table_content(&)
-          wrap_with_turbo_frame(content)
+        def view_template(&block)
+          if @turbo_frame
+            # Use div with turbo-frame attributes as fallback
+            # This ensures the content always renders
+            div(id: @turbo_frame, data: { turbo_frame: @turbo_frame, turbo_action: "advance" },
+                **turbo_frame_options) do
+              render_table_content(&block)
+            end
+          else
+            render_table_content(&block)
+          end
         end
 
-        def build_table_content(&)
-          lambda do
-            div(class: "bulk-action-table", **table_data_attributes) do
-              render_table_wrapper(&)
-              render_bulk_actions if @has_bulk_actions
-              render_pagination if @pagination && @pagination_path
+        def render_table_content(&block)
+          div(class: "bulk-action-table", **table_data_attributes) do
+            render_header if @header
+            render_table_wrapper(&block)
+            render_bulk_actions if @has_bulk_actions
+            render_pagination if @pagination && @pagination_path
+          end
+        end
+
+        def render_header
+          div(class: "bulk-action-table__header-bar") do
+            if @header.respond_to?(:call)
+              @header.call
+            elsif @header.kind_of?(String)
+              raw(@header)
             end
           end
         end
@@ -82,14 +100,6 @@ module RubyCms
           )
         end
 
-        def wrap_with_turbo_frame(content)
-          if @turbo_frame
-            turbo_frame_tag(@turbo_frame, **turbo_frame_options, &content)
-          else
-            content.call
-          end
-        end
-
         private
 
         def table_data_attributes
@@ -114,17 +124,6 @@ module RubyCms
             class: "flex-1 flex flex-col min-h-0",
             data: { turbo_action: "advance" }
           }
-        end
-
-        def turbo_frame_tag(id, **, &)
-          if respond_to?(:helpers) && helpers.respond_to?(:turbo_frame_tag)
-            helpers.turbo_frame_tag(id, **, &)
-          elsif respond_to?(:turbo_frame_tag, true)
-            super
-          else
-            # Fallback: render as div with data-turbo-frame attribute
-            div(id: id, data: { turbo_frame: id, turbo_action: "advance" }, **, &)
-          end
         end
       end
     end

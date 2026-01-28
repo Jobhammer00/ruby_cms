@@ -1,0 +1,78 @@
+/* ============================================
+     Flash Messages
+     ============================================ */
+
+.flash-message {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.flash-notice {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #86efac;
+}
+
+.flash-alert {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+/* ============================================
+     Toast Notifications
+     ============================================ */
+
+.ruby_cms-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  padding: 1rem 1.25rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  z-index: 10000;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease-out;
+  font-size: 0.875rem;
+  font-weight: 500;
+  max-width: 24rem;
+}
+
+.ruby_cms-toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.ruby_cms-toast-success {
+  background: var(--pelican-bg-primary);
+  color: var(--pelican-accent-green);
+  border: 1px solid #86efac;
+}
+
+.ruby_cms-toast-error {
+  background: var(--pelican-bg-primary);
+  color: var(--pelican-accent-red);
+  border: 1px solid #fca5a5;
+}
