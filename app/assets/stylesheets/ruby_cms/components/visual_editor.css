@@ -1,7 +1,3 @@
-/* ============================================
-     Visual Editor
-     ============================================ */
-
 .ruby_cms-visual-editor-header__gradient {
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--pelican-border);
@@ -21,10 +17,6 @@
   height: 100%;
   border: 0;
 }
-
-/* ============================================
-   Visual Editor Styling
-   ============================================ */
 
 /* Main Container */
 .ruby_cms-visual-editor {
@@ -46,10 +38,6 @@
   min-height: 0;
   overflow: hidden;
 }
-
-/* ============================================
-   Visual Editor Header
-   ============================================ */
 
 /* Style the page header when visual editor is present on the page */
 /* Target admin page with no-overflow class (used by visual editor) */
@@ -285,10 +273,6 @@
   flex-shrink: 0;
 }
 
-/* ============================================
-   Preview Area
-   ============================================ */
-
 .ruby_cms-visual-editor-preview {
   background-color: white;
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -357,10 +341,6 @@
   height: 100%;
   border: 0;
 }
-
-/* ============================================
-   Edit Modal
-   ============================================ */
 
 .ruby_cms-visual-editor-modal {
   display: none;
@@ -626,10 +606,6 @@
     0 0 0 4px rgb(59 130 246 / 0.5);
 }
 
-/* ============================================
-   Preview Page Interaction Styles
-   ============================================ */
-
 .ruby_cms-preview-page {
   position: relative;
 }
@@ -699,10 +675,6 @@
   cursor: pointer;
 }
 
-/* ============================================
-   Success Toast
-   ============================================ */
-
 .ruby_cms-visual-editor-toast {
   display: none;
   position: fixed;
@@ -743,10 +715,6 @@
   font-weight: 500;
   color: rgb(22 101 52);
 }
-
-/* ============================================
-   Loading and Animation Utilities
-   ============================================ */
 
 .ruby_cms-visual-editor-loading-indicator {
   display: none;

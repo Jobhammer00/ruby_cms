@@ -40,7 +40,7 @@ module RubyCms
 
       def create
         @content_block = ::ContentBlock.new(content_block_params)
-        @content_block.updated_by = current_user_cms
+        @content_block.record_update_by(current_user_cms)
 
         if @content_block.save
           redirect_to ruby_cms_admin_content_block_path(@content_block),
@@ -51,7 +51,7 @@ module RubyCms
       end
 
       def update
-        @content_block.updated_by = current_user_cms
+        @content_block.record_update_by(current_user_cms)
 
         cp = content_block_params
         if @content_block.update(cp)
@@ -79,14 +79,18 @@ module RubyCms
 
       def bulk_publish
         ids = Array(params[:item_ids]).filter_map(&:to_i).compact
-        count = bulk_set_published(ids, published: true)
+        count = ::ContentBlock.where(id: ids).count do |block|
+          block.publish(user: current_user_cms)
+        end
         redirect_to ruby_cms_admin_content_blocks_path,
                     notice: "#{count} content block(s) published."
       end
 
       def bulk_unpublish
         ids = Array(params[:item_ids]).filter_map(&:to_i).compact
-        count = bulk_set_published(ids, published: false)
+        count = ::ContentBlock.where(id: ids).count do |block|
+          block.unpublish(user: current_user_cms)
+        end
         redirect_to ruby_cms_admin_content_blocks_path,
                     notice: "#{count} content block(s) unpublished."
       end
@@ -113,8 +117,9 @@ module RubyCms
         }
       end
 
+      # DHH-style: Use model scopes and methods
       def content_blocks_collection
-        collection = ::ContentBlock.by_key.includes(:updated_by)
+        collection = ::ContentBlock.alphabetically.preloaded
         collection = apply_locale_filter(collection)
         apply_search_filter(collection)
       end
@@ -126,12 +131,12 @@ module RubyCms
         collection.for_current_locale
       end
 
+      # DHH-style: Use model's search scope
       def apply_search_filter(collection)
         search_param = params[:q] || params[:search]
         return collection if search_param.blank?
 
-        search_term = "%#{search_param.downcase}%"
-        collection.where("LOWER(key) LIKE ? OR LOWER(title) LIKE ?", search_term, search_term)
+        collection.search_by_term(search_param)
       end
 
       def serialize_content_blocks(scope)

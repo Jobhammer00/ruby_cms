@@ -1,7 +1,3 @@
-/* ============================================
-     Alerts
-     ============================================ */
-
 .ruby_cms-alert {
   padding: 1rem;
   border-radius: 0.5rem;
@@ -37,9 +33,6 @@
   border-color: #bfdbfe;
   color: #1e40af;
 }
-/* ============================================
-     Links
-     ============================================ */
 
 .ruby_cms-link {
   color: var(--pelican-accent-blue);
@@ -58,9 +51,6 @@
 .ruby_cms-link-danger:hover {
   color: var(--pelican-accent-red-hover);
 }
-/* ============================================
-     Badges
-     ============================================ */
 
 .ruby_cms-badge {
   display: inline-block;

@@ -1,7 +1,3 @@
-/* ============================================
-     Bulk Action Table
-     ============================================ */
-
 .bulk-action-table {
   display: flex;
   flex-direction: column;

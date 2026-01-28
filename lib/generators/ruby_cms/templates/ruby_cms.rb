@@ -45,11 +45,7 @@ RubyCms.configure do |c|
 
   # Visual editor: allowlist of page_key => template path. You can also create Page records (Admin → Pages);
   # Page records are merged with this config. Example: "home" => "pages/home"
-<% if @detected_pages&.any? -%>
-  c.preview_templates = { <%= @detected_pages.map { |k, v| %("#{k}" => "#{v}") }.join(", ") %> }
-<% else -%>
   # c.preview_templates = { "home" => "pages/home", "about" => "pages/about" }
-<% end -%>
 
   # Preview data proc to pass instance variables to the preview template. Example:
   # c.preview_data = ->(page_key, view) { { products: Product.limit(5) } }

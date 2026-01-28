@@ -1,22 +1,3 @@
-<%# 
-  Reusable bulk action table partial for index pages
-  
-  Locals:
-  - title: Page title (rendered outside the table)
-  - collection: Array of items to display
-  - headers: Array of header strings or hashes with { text: "...", class: "..." }
-  - action_icons: Array of icon configs { url: "...", title: "...", data: {...} }
-  - search_url: URL for search form
-  - search_param: Search parameter name (default: "q")
-  - turbo_frame: Turbo frame ID (default: "admin_table_content")
-  - bulk_actions_url: URL for bulk delete
-  - bulk_action_buttons: Array of bulk action button configs
-  - item_name: Singular name for items (e.g., "user", "permission")
-  - pagination: Pagination hash
-  - pagination_path: Lambda for pagination URLs
-  - row_partial: Partial name for rendering each row (e.g., "users/row")
-  - row_block: Block for rendering rows (alternative to row_partial)
--%>
 <% title = local_assigns[:title] %>
 <% collection = local_assigns[:collection] || [] %>
 <% headers = local_assigns[:headers] || [] %>
@@ -82,20 +63,18 @@
   
   <%= render RubyCms::Admin::BulkActionTable::BulkActionTableBody.new do %>
     <% collection.each do |item| %>
-      <% next if item.nil? %>
-      <%= render RubyCms::Admin::BulkActionTable::BulkActionTableRow.new(
-        data: { item_id: item.id },
-        bulk_actions_enabled: true,
-        controller_name: "ruby-cms--bulk-action-table"
-      ) do %>
-        <% if row_partial %>
-          <%# Map item to the correct local variable name based on item_name %>
-          <% item_var = item_name.singularize.to_sym %>
-          <%= render partial: row_partial, locals: { item_var => item } %>
-        <% elsif row_block %>
-          <%= row_block.call(item) %>
+        <% next if item.nil? %>
+        <%= render RubyCms::Admin::BulkActionTable::BulkActionTableRow.new(
+          data: { item_id: item.id },
+          bulk_actions_enabled: true,
+          controller_name: "ruby-cms--bulk-action-table"
+        ) do %>
+          <% if row_partial %>
+            <%= render partial: row_partial, locals: { item.model_name.element.to_sym => item } %>
+          <% elsif row_block %>
+            <%= row_block.call(item) %>
+          <% end %>
         <% end %>
       <% end %>
-    <% end %>
   <% end %>
 <% end %>

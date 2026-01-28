@@ -8,6 +8,10 @@
 #
 # Data is stored in the existing RubyCMS table for compatibility.
 class ContentBlock < ApplicationRecord
+  # DHH-style concerns for horizontal behavior sharing
+  include Publishable
+  include Searchable
+
   self.table_name = "ruby_cms_content_blocks"
 
   # Optional integrations (host app may not have run action_text:install /
@@ -47,10 +51,30 @@ class ContentBlock < ApplicationRecord
   validate :image_content_type, if: -> { respond_to?(:image) && image.attached? }
   validate :image_size, if: -> { respond_to?(:image) && image.attached? }
 
-  scope :published, -> { where(published: true) }
-  scope :by_key, -> { order(:key) }
+  # DHH-style standard scope naming conventions
+  scope :chronologically, -> { order(created_at: :asc) }
+  scope :reverse_chronologically, -> { order(created_at: :desc) }
+  scope :alphabetically, -> { order(:key) }
   scope :for_locale, ->(locale) { where(locale: locale.to_s) }
   scope :for_current_locale, -> { where(locale: I18n.locale.to_s) }
+  scope :preloaded, -> { includes(:updated_by) }
+
+  # DHH-style parameterized scopes for filtering
+  scope :indexed_by, lambda {|index|
+    case index.to_s
+    when "published" then published
+    when "unpublished" then unpublished
+    else all
+    end
+  }
+
+  scope :sorted_by, lambda {|sort|
+    case sort.to_s
+    when "latest" then reverse_chronologically
+    when "oldest" then chronologically
+    else alphabetically
+    end
+  }
 
   # Scope for content blocks accessible by a user
   # Can be extended in the future for per-record permissions
@@ -60,6 +84,30 @@ class ContentBlock < ApplicationRecord
     # For now, all content blocks are accessible if user has manage_content_blocks permission
     # Future: Add per-record permission checks here
     all
+  end
+
+  # Legacy scope alias for backwards compatibility
+  def self.by_key
+    alphabetically
+  end
+
+  # DHH-style authorization in model
+  # @param user [User] The user to check
+  # @return [Boolean] True if user can edit this content block
+  def can_edit?(user)
+    user&.can?(:manage_content_blocks, record: self)
+  end
+
+  # @param user [User] The user to check
+  # @return [Boolean] True if user can delete this content block
+  def can_delete?(user)
+    user&.can?(:manage_content_blocks, record: self)
+  end
+
+  # Record the user who updated this content block.
+  # @param user [User] The user who made the update
+  def record_update_by(user)
+    self.updated_by = user if user
   end
 
   def content_body

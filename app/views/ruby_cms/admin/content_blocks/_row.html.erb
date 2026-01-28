@@ -1,5 +1,4 @@
-<%# Row partial for content blocks table %>
-<% content_block = local_assigns[:content_block] %>
+<% content_block = local_assigns.fetch(:content_block) %>
 <%= tag.td content_block.key %>
 <%= tag.td content_block.title %>
 <%= tag.td content_block.content_type, class: "text-muted" %>
