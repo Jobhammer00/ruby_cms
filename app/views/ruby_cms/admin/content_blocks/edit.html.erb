@@ -1,8 +1,23 @@
-<h1 class="text-2xl font-semibold text-gray-900 mb-4">Edit content block</h1>
+<div class="ruby_cms-page-header ruby_cms-content-blocks-edit-header">
+  <div class="ruby_cms-page-header__content">
+    <div class="ruby_cms-page-header__title-group">
+      <h1 class="ruby_cms-page-title">Edit content block</h1>
+    </div>
 
-<%= render "form" %>
+    <div class="ruby_cms-page-header__action-icons">
+      <%= link_to "Cancel",
+                  ruby_cms_admin_content_block_path(@content_block),
+                  class: "ruby_cms-pelican-button ruby_cms-pelican-button--ghost" %>
 
-<p class="mt-4 space-x-4">
-  <%= link_to "Show", ruby_cms_admin_content_block_path(@content_block), class: "text-blue-600 hover:text-blue-800" %>
-  <%= link_to "Back", ruby_cms_admin_content_blocks_path, class: "text-blue-600 hover:text-blue-800" %>
-</p>
+      <button type="submit"
+              form="content-block-form"
+              class="ruby_cms-pelican-button ruby_cms-pelican-button--primary">
+        Save
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="ruby_cms-pelican-card">
+  <%= render "form" %>
+</div>

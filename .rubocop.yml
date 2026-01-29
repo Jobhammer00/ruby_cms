@@ -75,6 +75,7 @@ Metrics/BlockLength:
     - "Guardfile"
     - "Gemfile"
     - "db/migrate/*"
+    - "lib/generators/**/*"
     - "spec/**/*"
 
 Metrics/BlockNesting:
@@ -177,6 +178,10 @@ Style/UnlessElse:
 # Rails rules
 Rails:
   Enabled: true
+
+Rails/RakeEnvironment:
+  Exclude:
+    - "Rakefile"
 
 Rails/Output:
   Severity: warning

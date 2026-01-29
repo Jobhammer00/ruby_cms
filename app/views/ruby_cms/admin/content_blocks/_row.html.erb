@@ -1,6 +1,8 @@
 <% content_block = local_assigns.fetch(:content_block) %>
 <% block = content_block.respond_to?(:content_block) ? content_block.content_block : content_block %>
-<%= tag.td block.key %>
+<%= tag.td do %>
+  <%= link_to block.key, ruby_cms_admin_content_block_path(block), class: "ruby_cms-content-blocks-key-link", data: { turbo_frame: "_top" } %>
+<% end %>
 <%= tag.td (content_block.respond_to?(:locale) ? content_block.locale : block.locale), class: "text-muted" %>
 <%= tag.td (content_block.respond_to?(:title) ? content_block.title : block.title) %>
 <%= tag.td (content_block.respond_to?(:content_type) ? content_block.content_type : block.content_type), class: "text-muted" %>
@@ -14,7 +16,8 @@
       edit_path: edit_ruby_cms_admin_content_block_path(block),
       delete_path: ruby_cms_admin_content_block_path(block),
       item_id: block.id,
-      controller_name: "ruby-cms--bulk-action-table"
+      controller_name: "ruby-cms--bulk-action-table",
+      turbo_frame: "_top"
     ) %>
   <% end %>
 <% end %>

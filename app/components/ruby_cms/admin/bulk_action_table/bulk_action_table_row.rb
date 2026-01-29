@@ -32,10 +32,10 @@ module RubyCms
           @user_attrs = user_attrs
         end
 
-        def view_template
+        def view_template(&block)
           tr(**row_attributes) do
             render_bulk_checkbox
-            render_cells_or_block
+            render_cells_or_block(&block)
           end
         end
 
@@ -57,8 +57,11 @@ module RubyCms
           )
         end
 
-        def render_cells_or_block
-          return yield if @cells.nil? && block_given?
+        def render_cells_or_block(&block)
+          if @cells.nil? && block
+            # Block returns HTML from render partial - output as raw to avoid escaping
+            return raw(yield) # rubocop:disable Rails/OutputSafety -- partial output is trusted
+          end
 
           Array(@cells).each do |cell|
             if cell.kind_of?(Hash)

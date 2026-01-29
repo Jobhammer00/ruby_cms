@@ -107,24 +107,25 @@ module RubyCms
     end
 
     def self.dashboard_icon_path
-      '<path stroke-linecap="round" stroke-linejoin="round" ' \
-        'stroke-width="2" ' \
-        'd="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 \
-        01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>'
+      # Heroicons HomeIcon (outline)
+      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
+        'd="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3' \
+        'm-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>'
     end
 
     def self.content_blocks_icon_path
-      '<path stroke-linecap="round" stroke-linejoin="round" ' \
-        'stroke-width="2" ' \
-        'd="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 \
-        012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>'
+      # Heroicons DocumentDuplicateIcon (outline)
+      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
+        'd="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414' \
+        'a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 ' \
+        '0 002-2v-2"></path>'
     end
 
     def self.visual_editor_icon_path
-      '<path stroke-linecap="round" stroke-linejoin="round" ' \
-        'stroke-width="2" ' \
-        'd="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 \
-        012.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>'
+      # Heroicons PencilSquareIcon (outline)
+      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
+        'd="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 ' \
+        '0 012.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>'
     end
 
     def self.register_settings_nav_items
@@ -145,18 +146,27 @@ module RubyCms
     end
 
     def self.permissions_icon_path
-      '<path stroke-linecap="round" stroke-linejoin="round" ' \
-        'stroke-width="2" ' \
-        'd="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 \
-         3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 \
-         9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>'
+      # Heroicons ShieldCheckIcon (outline)
+      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
+        'd="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01' \
+        '-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 ' \
+        '9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>'
     end
 
     def self.users_icon_path
-      '<path stroke-linecap="round" stroke-linejoin="round" ' \
-        'stroke-width="2" ' \
-        'd="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13\
-         7a4 4 0 11-8 0 4 4 0 018 0z"></path>'
+      # Heroicons UserGroupIcon (outline)
+      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
+        'd="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 ' \
+        '00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>'
+    end
+
+    def self.compile_admin_css(dest_path)
+      gem_root = begin
+        root
+      rescue StandardError
+        Pathname.new(File.expand_path("../..", __dir__))
+      end
+      RubyCms::CssCompiler.compile(gem_root, dest_path)
     end
 
     config.paths.add "db/migrate", with: "db/migrate"
@@ -237,6 +247,26 @@ module RubyCms
             RubyCms::Engine.display_sync_summary(result, import_after)
           end
         end
+
+        namespace :css do
+          desc "Compile RubyCMS admin.css from component files (for gem development)"
+          task compile_gem: :environment do
+            dest = RubyCms::Engine.root.join("app/assets/stylesheets/ruby_cms/admin.css")
+            RubyCms::Engine.compile_admin_css(dest)
+            puts "✓ Compiled admin.css in gem" # rubocop:disable Rails/Output
+          end
+
+          desc "Compile RubyCMS CSS to host app (combines component files)"
+          task compile: :environment do
+            require "fileutils"
+            dest_dir = Rails.root.join("app/assets/stylesheets/ruby_cms")
+            FileUtils.mkdir_p(dest_dir)
+            dest = dest_dir.join("admin.css")
+            RubyCms::Engine.compile_admin_css(dest)
+            puts "✓ Compiled admin.css to #{dest}" # rubocop:disable Rails/Output
+            puts "✓ RubyCMS CSS compilation complete!" # rubocop:disable Rails/Output
+          end
+        end
       end
     end
 
@@ -290,7 +320,7 @@ module RubyCms
     def self.grant_manage_admin_permission(user, email)
       perm = RubyCms::Permission.find_by!(key: "manage_admin")
       RubyCms::UserPermission.find_or_create_by!(user: user, permission: perm)
-      $stdout.puts "Granted manage_admin to #{email}"
+      puts "Granted manage_admin to #{email}" # rubocop:disable Rails/Output
     end
 
     def self.parse_locales_dir(locales_dir_arg)
@@ -309,12 +339,14 @@ module RubyCms
 
     def self.display_export_summary(summary)
       if summary.empty?
-        $stdout.puts "No content blocks found to export."
+        puts "No content blocks found to export." # rubocop:disable Rails/Output
       else
-        $stdout.puts "Exported content blocks to locale files:"
+        puts "Exported content blocks to locale files:" # rubocop:disable Rails/Output
         summary.each do |locale, count|
-          $stdout.puts "  #{locale}: #{count} block(s) updated " \
-                       "in config/locales/#{locale}.yml"
+          # rubocop:disable Rails/Output
+          puts "  #{locale}: #{count} block(s) updated " \
+               "in config/locales/#{locale}.yml"
+          # rubocop:enable Rails/Output
         end
       end
     end

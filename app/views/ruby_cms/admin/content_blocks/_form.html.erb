@@ -1,7 +1,44 @@
-<%= form_with model: @content_block, url: @content_block.persisted? ? ruby_cms_admin_content_block_path(@content_block) : ruby_cms_admin_content_blocks_path, method: (@content_block.persisted? ? :patch : :post), class: "space-y-4 max-w-2xl", data: { turbo: false } do |f| %>
+<%= form_with model: @content_block,
+              url: @content_block.persisted? ? ruby_cms_admin_content_block_path(@content_block) : ruby_cms_admin_content_blocks_path,
+              method: (@content_block.persisted? ? :patch : :post),
+              id: "content-block-form",
+              class: "ruby_cms-content-blocks-form ruby_cms-pelican-form",
+              data: { turbo: false } do |f| %>
+
+
+  <div class="ruby_cms-pelican-form__header">
+    <div class="ruby_cms-pelican-form__meta">
+      <div class="ruby_cms-field">
+        <%= f.label :key, class: "ruby_cms-content-blocks-field-label" %>
+        <% if @content_block.persisted? %>
+          <%= f.hidden_field :key, name: nil, value: @content_block.key %>
+          <span class="ruby_cms-content-blocks-key-readonly"><%= @content_block.key %></span>
+        <% else %>
+          <%= f.text_field :key, name: "content_block[key]", class: "ruby_cms-input" %>
+        <% end %>
+      </div>
+
+      <% if @content_block.persisted? %>
+        <div class="ruby_cms-field">
+          <label class="ruby_cms-content-blocks-field-label"><%= t("ruby_cms.admin.content_blocks.content_type") %></label>
+          <%= select_tag "content_block[content_type]",
+                         options_for_select(::ContentBlock::CONTENT_TYPES, @content_block.content_type),
+                         class: "ruby_cms-select" %>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="ruby_cms-pelican-form__actions">
+      <%= link_to "Cancel",
+                  @content_block.persisted? ? ruby_cms_admin_content_block_path(@content_block) : ruby_cms_admin_content_blocks_path,
+                  class: "ruby_cms-pelican-button ruby_cms-pelican-button--ghost" %>
+      <%= f.submit "Save", class: "ruby_cms-pelican-button ruby_cms-pelican-button--primary" %>
+    </div>
+  </div>
+
   <% if @content_block.errors.any? %>
-    <div class="rounded-lg bg-red-50 border border-red-200 p-4">
-      <ul class="list-disc list-inside text-sm text-red-800">
+    <div class="ruby_cms-content-blocks-form-errors">
+      <ul>
         <% @content_block.errors.full_messages.each do |msg| %>
           <li><%= msg %></li>
         <% end %>
@@ -9,95 +46,118 @@
     </div>
   <% end %>
 
-  <div class="ruby_cms-field">
-    <%= f.label :key, class: "block text-sm font-medium text-gray-700 mb-1" %>
-    <% if @content_block.persisted? %>
-      <%= f.hidden_field :key, name: nil, value: @content_block.key %>
-      <%= tag.span @content_block.key, class: "ruby_cms-input block rounded-md border border-gray-300 px-3 py-2 bg-gray-50 text-gray-600" %>
-    <% else %>
-      <%= f.text_field :key, name: "content_block[key]", class: "ruby_cms-input block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" %>
-    <% end %>
-  </div>
-
   <% if @content_block.persisted? && @blocks_by_locale.present? %>
-    <%# Unified multi-locale form %>
-    <div class="ruby_cms-field">
-      <label class="block text-sm font-medium text-gray-700 mb-2"><%= t("ruby_cms.admin.content_blocks.content_type") %></label>
-      <%= select_tag "content_block[content_type]", options_for_select(::ContentBlock::CONTENT_TYPES, @content_block.content_type), class: "ruby_cms-select block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" %>
+    <%# ===== Multi-locale Pelican layout ===== %>
+
+    <div class="ruby_cms-content-blocks-published-row">
+      <%= hidden_field_tag "content_block[published]", "0" %>
+      <%= check_box_tag "content_block[published]", "1",
+                        @blocks_by_locale.values.any?(&:published?),
+                        class: "ruby_cms-content-blocks-checkbox" %>
+      <label><%= t("ruby_cms.admin.content_blocks.published") %> (all translations)</label>
     </div>
 
-    <div class="border border-gray-200 rounded-lg overflow-hidden" data-controller="ruby-cms--locale-tabs">
-      <div class="flex border-b border-gray-200 bg-gray-50" role="tablist">
-        <% @blocks_by_locale.each_with_index do |(locale_s, block), idx| %>
-          <button type="button" role="tab" aria-selected="<%= idx == 0 %>" aria-controls="locale-panel-<%= locale_s %>" id="locale-tab-<%= locale_s %>" data-ruby-cms--locale-tabs-target="tab" data-panel-id="locale-panel-<%= locale_s %>" data-action="click->ruby-cms--locale-tabs#switchTab" class="px-4 py-3 text-sm font-medium <%= idx == 0 ? 'bg-white border-b-2 border-blue-500 text-blue-600' : 'text-gray-600 hover:text-gray-900' %>">
+    <div class="ruby_cms-content-blocks-locale-switcher" data-controller="ruby-cms--locale-tabs">
+      <div class="ruby_cms-content-blocks-locale-switcher__tabs" role="tablist">
+        <% @blocks_by_locale.each_with_index do |(locale_s, _), idx| %>
+          <button type="button"
+                  role="tab"
+                  aria-selected="<%= idx == 0 %>"
+                  aria-controls="locale-panel-<%= locale_s %>"
+                  id="locale-tab-<%= locale_s %>"
+                  data-ruby-cms--locale-tabs-target="tab"
+                  data-panel-id="locale-panel-<%= locale_s %>"
+                  data-action="click->ruby-cms--locale-tabs#switchTab"
+                  class="ruby_cms-content-blocks-locale-switcher__tab <%= idx == 0 ? 'is-active' : '' %>">
             <%= ruby_cms_locale_display_name(locale_s) %>
           </button>
         <% end %>
       </div>
+
       <% @blocks_by_locale.each_with_index do |(locale_s, block), idx| %>
-        <div id="locale-panel-<%= locale_s %>" role="tabpanel" aria-labelledby="locale-tab-<%= locale_s %>" class="p-4 <%= idx > 0 ? 'hidden' : '' %>" data-locale-panel>
+        <div id="locale-panel-<%= locale_s %>"
+             role="tabpanel"
+             aria-labelledby="locale-tab-<%= locale_s %>"
+             class="ruby_cms-content-blocks-locale-panel <%= idx > 0 ? 'is-hidden' : '' %>"
+             data-locale-panel>
+
           <%= hidden_field_tag "content_block[locales][#{locale_s}][locale]", locale_s %>
-          <div class="space-y-4">
+
+          <div class="ruby_cms-content-blocks-locale-panel__grid">
             <div class="ruby_cms-field">
-              <label class="block text-sm font-medium text-gray-700 mb-1"><%= t("ruby_cms.admin.content_blocks.title") %></label>
-              <%= text_field_tag "content_block[locales][#{locale_s}][title]", block.title, class: "ruby_cms-input block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" %>
+              <label class="ruby_cms-content-blocks-field-label"><%= t("ruby_cms.admin.content_blocks.title") %></label>
+              <%= text_field_tag "content_block[locales][#{locale_s}][title]",
+                                 block.title,
+                                 class: "ruby_cms-input" %>
             </div>
+
             <div class="ruby_cms-field">
-              <label class="block text-sm font-medium text-gray-700 mb-1"><%= t("ruby_cms.admin.content_blocks.content") %></label>
-              <%= text_area_tag "content_block[locales][#{locale_s}][content]", block.content, rows: 4, class: "ruby_cms-textarea block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" %>
+              <label class="ruby_cms-content-blocks-field-label"><%= t("ruby_cms.admin.content_blocks.content") %></label>
+              <%= text_area_tag "content_block[locales][#{locale_s}][content]",
+                                block.content,
+                                rows: 5,
+                                class: "ruby_cms-textarea" %>
             </div>
+
             <% if ::ContentBlock.respond_to?(:action_text_available?) && ::ContentBlock.action_text_available? && block.persisted? && block.respond_to?(:rich_content) %>
-              <div class="ruby_cms-field">
-                <label class="block text-sm font-medium text-gray-700 mb-1"><%= t("ruby_cms.admin.content_blocks.rich_content") %></label>
-                <%= rich_text_area_tag "content_block[locales][#{locale_s}][rich_content]", block.rich_content.present? ? block.rich_content.to_s : "", class: "block w-full rounded-md border border-gray-300" %>
+              <div class="ruby_cms-field ruby_cms-field--full">
+                <label class="ruby_cms-content-blocks-field-label"><%= t("ruby_cms.admin.content_blocks.rich_content") %></label>
+                <%= rich_text_area_tag "content_block[locales][#{locale_s}][rich_content]",
+                                       block.rich_content.present? ? block.rich_content.to_s : "",
+                                       class: "ruby_cms-textarea" %>
               </div>
             <% end %>
-            <div class="flex items-center">
-              <%= check_box_tag "content_block[locales][#{locale_s}][published]", "1", block.published?, class: "h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" %>
-              <label class="ml-2 block text-sm text-gray-700"><%= t("ruby_cms.admin.content_blocks.published") %></label>
-            </div>
           </div>
         </div>
       <% end %>
     </div>
+
   <% else %>
-    <%# Single-locale form (new block) %>
-    <div class="ruby_cms-field">
-      <%= f.label :locale, class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.select :locale, I18n.available_locales.map { |l| [ruby_cms_locale_display_name(l), l.to_s] }, { include_blank: t("ruby_cms.admin.content_blocks.select_locale") }, class: "ruby_cms-select block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500", name: "content_block[locale]" %>
-    </div>
-    <div class="ruby_cms-field">
-      <%= f.label :title, class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.text_field :title, class: "ruby_cms-input block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" %>
-    </div>
-    <div class="ruby_cms-field">
-      <%= f.label :content_type, class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.select :content_type, ::ContentBlock::CONTENT_TYPES, {}, class: "ruby_cms-select block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" %>
-    </div>
-    <div class="ruby_cms-field">
-      <%= f.label :content, class: "block text-sm font-medium text-gray-700 mb-1" %>
-      <%= f.text_area :content, rows: 4, class: "ruby_cms-textarea block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500" %>
-    </div>
-    <% if ::ContentBlock.respond_to?(:action_text_available?) && ::ContentBlock.action_text_available? %>
+    <%# ===== Single-locale (new block) ===== %>
+
+    <div class="ruby_cms-content-blocks-single-grid">
       <div class="ruby_cms-field">
-        <%= f.label :rich_content, class: "block text-sm font-medium text-gray-700 mb-1" %>
-        <%= f.rich_text_area :rich_content, class: "block w-full rounded-md border border-gray-300" %>
+        <%= f.label :locale, class: "ruby_cms-content-blocks-field-label" %>
+        <%= f.select :locale,
+                     I18n.available_locales.map { |l| [ruby_cms_locale_display_name(l), l.to_s] },
+                     { include_blank: t("ruby_cms.admin.content_blocks.select_locale") },
+                     class: "ruby_cms-select",
+                     name: "content_block[locale]" %>
       </div>
-    <% else %>
-      <div class="ruby_cms-card ruby_cms-card--padded" style="margin-top: 0.5rem;">
-        <p class="text-gray-700" style="margin: 0;">
-          Rich text requires Action Text. Run:
-          <code>bin/rails action_text:install</code> and <code>bin/rails db:migrate</code>
-        </p>
+
+      <div class="ruby_cms-field">
+        <%= f.label :title, class: "ruby_cms-content-blocks-field-label" %>
+        <%= f.text_field :title, class: "ruby_cms-input" %>
       </div>
-    <% end %>
-    <div class="flex items-center">
-      <%= f.check_box :published, class: "h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" %>
-      <%= f.label :published, class: "ml-2 block text-sm text-gray-700" %>
+
+      <div class="ruby_cms-field">
+        <%= f.label :content_type, class: "ruby_cms-content-blocks-field-label" %>
+        <%= f.select :content_type, ::ContentBlock::CONTENT_TYPES, {}, class: "ruby_cms-select" %>
+      </div>
+
+      <div class="ruby_cms-field ruby_cms-field--full">
+        <%= f.label :content, class: "ruby_cms-content-blocks-field-label" %>
+        <%= f.text_area :content, rows: 5, class: "ruby_cms-textarea" %>
+      </div>
+
+      <% if ::ContentBlock.respond_to?(:action_text_available?) && ::ContentBlock.action_text_available? %>
+        <div class="ruby_cms-field ruby_cms-field--full">
+          <%= f.label :rich_content, class: "ruby_cms-content-blocks-field-label" %>
+          <%= f.rich_text_area :rich_content, class: "ruby_cms-textarea" %>
+        </div>
+      <% else %>
+        <div class="ruby_cms-card ruby_cms-card--padded ruby_cms-content-blocks-action-text-hint ruby_cms-field--full">
+          <p class="ruby_cms-content-blocks-action-text-hint__text">
+            Rich text requires Action Text. Run:
+            <code>bin/rails action_text:install</code> and <code>bin/rails db:migrate</code>
+          </p>
+        </div>
+      <% end %>
+
+      <div class="ruby_cms-field ruby_cms-content-blocks-field-row ruby_cms-field--full">
+        <%= f.check_box :published, class: "ruby_cms-content-blocks-checkbox" %>
+        <%= f.label :published %>
+      </div>
     </div>
   <% end %>
-
-  <div class="pt-2">
-    <%= f.submit class: "ruby_cms-btn ruby_cms-btn-primary inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700" %>
-  </div>
 <% end %>

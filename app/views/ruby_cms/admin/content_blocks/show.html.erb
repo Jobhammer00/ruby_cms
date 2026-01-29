@@ -1,14 +1,96 @@
-<div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden max-w-2xl">
-  <dl class="divide-y divide-gray-200">
-    <div class="px-4 py-3"><dt class="text-sm font-medium text-gray-500">Key</dt><dd class="mt-1 text-sm text-gray-900"><%= @content_block.key %></dd></div>
-    <div class="px-4 py-3"><dt class="text-sm font-medium text-gray-500">Title</dt><dd class="mt-1 text-sm text-gray-900"><%= @content_block.title %></dd></div>
-    <div class="px-4 py-3"><dt class="text-sm font-medium text-gray-500">Type</dt><dd class="mt-1 text-sm text-gray-900"><%= @content_block.content_type %></dd></div>
-    <div class="px-4 py-3"><dt class="text-sm font-medium text-gray-500">Published</dt><dd class="mt-1"><%= @content_block.published? ? tag.span("Yes", class: "px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800") : tag.span("No", class: "px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600") %></dd></div>
-    <div class="px-4 py-3"><dt class="text-sm font-medium text-gray-500">Content</dt><dd class="mt-1 text-sm text-gray-900"><%= @content_block.content_body %></dd></div>
-  </dl>
+<div class="ruby_cms-page-header ruby_cms-content-blocks-edit-header">
+  <div class="ruby_cms-page-header__content">
+    <div class="ruby_cms-page-header__title-group">
+      <h1 class="ruby_cms-page-title">Content block</h1>
+    </div>
+
+    <div class="ruby_cms-page-header__action-icons">
+      <%= link_to "Edit",
+                  edit_ruby_cms_admin_content_block_path(@content_block),
+                  class: "ruby_cms-pelican-button ruby_cms-pelican-button--primary" %>
+
+      <%= link_to "Back",
+                  ruby_cms_admin_content_blocks_path,
+                  class: "ruby_cms-pelican-button ruby_cms-pelican-button--ghost" %>
+    </div>
+  </div>
 </div>
 
-<p class="mt-4 space-x-4">
-  <%= link_to "Edit", edit_ruby_cms_admin_content_block_path(@content_block), class: "text-blue-600 hover:text-blue-800" %>
-  <%= link_to "Back", ruby_cms_admin_content_blocks_path, class: "text-blue-600 hover:text-blue-800" %>
-</p>
+<div class="ruby_cms-pelican-card ruby_cms-content-blocks-show">
+
+  <div class="ruby_cms-content-blocks-show__meta">
+    <div>
+      <div class="ruby_cms-content-blocks-show__label">Key</div>
+      <div class="ruby_cms-content-blocks-show__value ruby_cms-content-blocks-show__mono"><%= @content_block.key %></div>
+    </div>
+
+    <div>
+      <div class="ruby_cms-content-blocks-show__label">Type</div>
+      <div class="ruby_cms-content-blocks-show__value"><%= @content_block.content_type %></div>
+    </div>
+
+    <div>
+      <div class="ruby_cms-content-blocks-show__label">Published</div>
+      <div class="ruby_cms-content-blocks-show__value">
+        <% if @content_block.published? %>
+          <span class="ruby_cms-status-pill ruby_cms-status-pill--success">Published</span>
+        <% else %>
+          <span class="ruby_cms-status-pill ruby_cms-status-pill--muted">Draft</span>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <% if @blocks_by_locale.present? %>
+    <div class="ruby_cms-content-blocks-show__locales">
+      <% @blocks_by_locale.each do |locale_s, block| %>
+        <div class="ruby_cms-content-blocks-show__locale-card">
+          <div class="ruby_cms-content-blocks-show__locale-header">
+            <span class="ruby_cms-content-blocks-show__locale-pill">
+              <%= ruby_cms_locale_display_name(locale_s) %>
+            </span>
+          </div>
+
+          <div class="ruby_cms-content-blocks-show__fields">
+            <div>
+              <div class="ruby_cms-content-blocks-show__label">Title</div>
+              <div class="ruby_cms-content-blocks-show__value"><%= block.title.presence || "—" %></div>
+            </div>
+
+            <div class="ruby_cms-content-blocks-show__field-full">
+              <div class="ruby_cms-content-blocks-show__label">Content</div>
+              <div class="ruby_cms-content-blocks-show__value ruby_cms-content-blocks-show__content">
+                <%= block.content_body.presence || "—" %>
+              </div>
+            </div>
+
+            <% if block.respond_to?(:rich_content) && block.rich_content.present? %>
+              <div class="ruby_cms-content-blocks-show__field-full">
+                <div class="ruby_cms-content-blocks-show__label">Rich content</div>
+                <div class="ruby_cms-content-blocks-show__value ruby_cms-content-blocks-show__rich-content">
+                  <%= block.rich_content %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <%# fallback single-locale %>
+    <div class="ruby_cms-content-blocks-show__single">
+      <div>
+        <div class="ruby_cms-content-blocks-show__label">Title</div>
+        <div class="ruby_cms-content-blocks-show__value"><%= @content_block.title %></div>
+      </div>
+
+      <div>
+        <div class="ruby_cms-content-blocks-show__label">Content</div>
+        <div class="ruby_cms-content-blocks-show__value ruby_cms-content-blocks-show__content">
+          <%= @content_block.content_body %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+</div>

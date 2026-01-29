@@ -8,34 +8,24 @@ export default class extends Controller {
     const panelId = tab.dataset.panelId;
     if (!panelId) return;
 
+    const hideClass = "is-hidden";
+
     // Hide all panels
     this.tabTargets.forEach((t) => {
       const pid = t.dataset.panelId;
       if (pid) {
         const panel = document.getElementById(pid);
-        if (panel) panel.classList.add("hidden");
+        if (panel) panel.classList.add(hideClass);
       }
-      t.classList.remove(
-        "bg-white",
-        "border-b-2",
-        "border-blue-500",
-        "text-blue-600",
-      );
-      t.classList.add("text-gray-600");
+      t.classList.remove("is-active");
     });
 
     // Show selected panel
     const panel = document.getElementById(panelId);
-    if (panel) panel.classList.remove("hidden");
+    if (panel) panel.classList.remove(hideClass);
 
     // Highlight selected tab
-    tab.classList.add(
-      "bg-white",
-      "border-b-2",
-      "border-blue-500",
-      "text-blue-600",
-    );
-    tab.classList.remove("text-gray-600");
+    tab.classList.add("is-active");
     tab.setAttribute("aria-selected", "true");
     this.tabTargets
       .filter((t) => t !== tab)

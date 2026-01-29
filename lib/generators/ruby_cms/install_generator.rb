@@ -120,56 +120,18 @@ module RubyCms
         return unless src_dir.exist?
 
         FileUtils.mkdir_p(dest_dir)
-        copy_admin_css(src_dir, dest_dir)
+        copy_admin_css(dest_dir)
         # Don't copy component files - only the compiled admin.css is needed
         # copy_components_css(src_dir, dest_dir)
-        notify_css_copy
+        say "✓ Task css/copy: Combined component CSS into " \
+            "app/assets/stylesheets/ruby_cms/admin.css", :green
       rescue StandardError => e
         say "⚠ Task css/copy: Could not copy CSS files: #{e.message}.", :yellow
       end
-
-      def notify_css_copy
-        say "✓ Task css/copy: Compiled and copied RubyCMS CSS to " \
-            "app/assets/stylesheets/ruby_cms/admin.css", :green
-        say "  (admin.css is compiled with all component styles inlined - no @import statements)",
-            :green
-      end
-
-      no_tasks do # rubocop:disable Metrics/BlockLength
-        def copy_admin_css(src_dir, dest_dir)
-          admin_css_src = src_dir.join("admin.css")
+      no_tasks do
+        def copy_admin_css(dest_dir)
           admin_css_dest = dest_dir.join("admin.css")
-          return unless admin_css_src.exist?
-
-          # Read the admin.css file
-          admin_css_content = File.read(admin_css_src)
-
-          # Find all @import statements and replace them with actual file contents
-          components_dir = src_dir.join("components")
-          if components_dir.exist? && components_dir.directory?
-            admin_css_content = resolve_css_imports(admin_css_content, components_dir)
-          end
-
-          # Write the compiled CSS file (always write to ensure imports are resolved)
-          # This creates a single compiled admin.css with all CSS inlined (no @import statements)
-          File.write(admin_css_dest, admin_css_content)
-        end
-
-        def resolve_css_imports(css_content, components_dir)
-          # Match @import "ruby_cms/components/X.css" or @import "components/X.css"
-          pattern = %r{@import\s+["'](?:ruby_cms/)?components/([^"']+)\.css["'];?}
-          css_content.gsub(pattern) {|m| resolve_css_import_match(m, components_dir) }
-        end
-
-        def resolve_css_import_match(match, components_dir)
-          component_name = Regexp.last_match(1)
-          component_file = components_dir.join("#{component_name}.css")
-          if component_file.exist?
-            "\n/* ===== Component: #{component_name} ===== */\n#{File.read(component_file)}\n"
-          else
-            say "⚠ Warning: Component file not found: #{component_file}", :yellow
-            match
-          end
+          RubyCms::Engine.compile_admin_css(admin_css_dest)
         end
 
         def copy_components_css(src_dir, dest_dir)
@@ -289,7 +251,7 @@ module RubyCms
         install_ruby_ui_generator
       end
 
-      no_tasks do # rubocop:disable Metrics/BlockLength
+      no_tasks do
         def ruby_ui_in_gemfile?(content)
           content.include?("ruby_ui") || content.include?("rails_ui")
         end
@@ -357,14 +319,23 @@ module RubyCms
             "  include RubyUI\n"
           end
         end
+
+        def generate_ruby_ui_components
+          # Skip component generation - page builder removed.
+          # Generate manually: rails g ruby_ui:component ComponentName
+          say "ℹ Task ruby_ui/components: Skipping automatic component generation " \
+              "(page builder removed). " \
+              "Generate components manually if needed: rails g ruby_ui:component ComponentName",
+              :cyan
+        end
       end
 
       # Directories to skip when scanning for page templates
-      SKIP_PAGE_DIRS = %w[layouts shared mailers components admin].freeze
+      SKIP_VIEW_DIRS = %w[layouts shared mailers components admin].freeze
 
       # NOTE: Rails generators are Thor groups; private methods can still be
       # treated as "tasks" unless wrapped in `no_tasks`.
-      no_tasks do # rubocop:disable Metrics/BlockLength
+      no_tasks do
         def detect_page_templates
           views_dir = Rails.root.join("app/views")
           return {} unless Dir.exist?(views_dir)
@@ -379,61 +350,54 @@ module RubyCms
           {}
         end
 
+        # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
         def scan_for_templates(dir_path, pages, views_base, relative_path="")
-          scan_files_in_directory(dir_path, pages, relative_path)
-          scan_subdirectories(dir_path, pages, views_base, relative_path)
-        end
-
-        private
-
-        def scan_files_in_directory(dir_path, pages, relative_path)
+          # Find all template files in this directory
           Dir.glob(File.join(dir_path, "*.{html.erb,html.haml,html.slim}")).each do |template_file|
             base_name = File.basename(template_file, ".*")
-            base_name = File.basename(base_name, ".*") # remove .html extension
+            base_name = File.basename(base_name, ".*") # Remove .html extension
 
-            next if skip_template?(base_name, relative_path)
+            # Skip partials
+            next if base_name.start_with?("_")
+            # Skip admin pages
+            next if relative_path.start_with?("admin") || relative_path == "admin"
 
-            page_key, template_path = build_template_path(base_name, relative_path)
+            # Build template path relative to app/views
+            if relative_path.empty?
+              template_path = base_name
+              page_key = base_name
+            elsif base_name == "index"
+              page_key = relative_path.split("/").last
+              template_path = "#{relative_path}/index"
+            # pages/index.html.erb -> "pages" => "pages/index"
+            else
+              # pages/home.html.erb -> "home" => "pages/home"
+              page_key = base_name
+              template_path = "#{relative_path}/#{base_name}"
+            end
+
             pages[page_key] = template_path
           end
-        end
 
-        def skip_template?(base_name, relative_path)
-          base_name.start_with?("_") || relative_path.start_with?("admin") ||
-            relative_path == "admin"
-        end
-
-        def build_template_path(base_name, relative_path)
-          if relative_path.empty?
-            [base_name, base_name]
-          elsif base_name == "index"
-            [relative_path.split("/").last, "#{relative_path}/index"]
-          else
-            [base_name, "#{relative_path}/#{base_name}"]
-          end
-        end
-
-        def scan_subdirectories(dir_path, pages, views_base, relative_path)
+          # Recursively scan subdirectories (skip common non-page dirs, limit depth)
           Dir.glob(File.join(dir_path, "*")).each do |path|
             next unless File.directory?(path)
 
             dir_name = File.basename(path)
-            next if skip_directory?(dir_name, relative_path)
+            # Skip admin directories and common non-page directories
+            next if SKIP_VIEW_DIRS.include?(dir_name)
+            # Skip if we're already in an admin path
+            next if relative_path.start_with?("admin")
+
+            # Limit depth to 2 levels (e.g., app/views/pages/home is OK, but not deeper)
+            depth = relative_path.empty? ? 1 : relative_path.split("/").length + 1
+            next if depth > 2
 
             new_relative_path = relative_path.empty? ? dir_name : "#{relative_path}/#{dir_name}"
             scan_for_templates(path, pages, views_base, new_relative_path)
           end
         end
-
-        def skip_directory?(dir_name, relative_path)
-          InstallGenerator::SKIP_PAGE_DIRS.include?(dir_name) ||
-            relative_path.start_with?("admin") || directory_too_deep?(relative_path)
-        end
-
-        def directory_too_deep?(relative_path)
-          depth = relative_path.empty? ? 1 : relative_path.split("/").length + 1
-          depth > 2
-        end
+        # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
 
         def log_detected_pages(pages)
           say "✓ Task pages: Detected #{pages.size} page template(s): " \
@@ -550,60 +514,47 @@ module RubyCms
               :green
         end
 
-        def import_rubycms_controllers(controllers_app_path, _content=nil)
-          content = reload_content(controllers_app_path)
-          return if already_imported?(content)
+        # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
+        def import_rubycms_controllers(controllers_app_path, content)
+          # Re-read content in case it was modified by expose_stimulus_application
+          content = File.read(controllers_app_path) if File.exist?(controllers_app_path)
 
-          return say_success if inject_after_first_import?(controllers_app_path, content)
-          return say_success if inject_at_top(controllers_app_path)
+          return if content.include?('import "ruby_cms"') || content.include?("import 'ruby_cms'")
+          return if content.include?("registerRubyCmsControllers")
 
-          say_success if inject_after_stimulus_import?(controllers_app_path, content)
-        rescue StandardError => e
-          say_import_error(e)
-        end
-
-        def reload_content(path)
-          File.read(path) if File.exist?(path)
-        end
-
-        def already_imported?(content)
-          content.include?('import "ruby_cms"') || content.include?("import 'ruby_cms'") ||
-            content.include?("registerRubyCmsControllers")
-        end
-
-        def inject_after_stimulus_import?(path, content)
-          pattern = %r{import\s+.*@hotwired/stimulus.*$}
-          return false unless content.match?(pattern)
-
-          inject_into_file path.to_s, after: pattern, verbose: false do
-            "\nimport \"ruby_cms\""
+          # Try to add after the Stimulus import (most common pattern)
+          stimulus_import_pattern = %r{import\s+.*@hotwired/stimulus.*$}
+          if content.match?(stimulus_import_pattern)
+            inject_into_file controllers_app_path.to_s,
+                             after: stimulus_import_pattern,
+                             verbose: false do
+              "\nimport \"ruby_cms\""
+            end
+            say "✓ Task stimulus: Added RubyCMS controllers import.", :green
+            return
           end
-          true
-        end
 
-        def inject_after_first_import?(path, content)
-          pattern = /^import\s+.*$/m
-          return false unless content.match?(pattern)
-
-          inject_into_file path.to_s, after: pattern, verbose: false do
-            "\nimport \"ruby_cms\""
+          # Try to add after any import statement
+          first_import_pattern = /^import\s+.*$/m
+          if content.match?(first_import_pattern)
+            inject_into_file controllers_app_path.to_s,
+                             after: first_import_pattern,
+                             verbose: false do
+              "\nimport \"ruby_cms\""
+            end
+            say "✓ Task stimulus: Added RubyCMS controllers import.", :green
+            return
           end
-          true
-        end
 
-        def inject_at_top(path)
-          prepend_to_file path.to_s, "import \"ruby_cms\"\n"
-        end
-
-        def say_success
+          # Add at the very top if no imports found
+          prepend_to_file controllers_app_path.to_s, "import \"ruby_cms\"\n"
           say "✓ Task stimulus: Added RubyCMS controllers import.", :green
-        end
-
-        def say_import_error(error)
-          say "⚠ Task stimulus: Could not add RubyCMS import: #{error.message}. " \
+        rescue StandardError => e
+          say "⚠ Task stimulus: Could not add RubyCMS import: #{e.message}. " \
               "Add 'import \"ruby_cms\"' manually to controllers/application.js.",
               :yellow
         end
+        # rubocop:enable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
 
         def cleanup_old_registration_code
           js_files = find_js_files_to_check
@@ -732,7 +683,7 @@ module RubyCms
         say_setup_admin_error(e)
       end
 
-      no_tasks do # rubocop:disable Metrics/BlockLength
+      no_tasks do
         def seed_permissions_via_open3
           require "open3"
 

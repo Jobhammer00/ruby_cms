@@ -5,20 +5,18 @@
 #
 # @example
 #   ContentBlock.search_by_term("welcome")
-module ContentBlock
-  module Searchable
-    extend ActiveSupport::Concern
+module ContentBlock::Searchable # rubocop:disable Style/ClassAndModuleChildren
+  extend ActiveSupport::Concern
 
-    included do
-      # Search content blocks by key or title.
-      # @param term [String] The search term
-      # @return [ActiveRecord::Relation]
-      scope :search_by_term, lambda {|term|
-        return all if term.blank?
+  included do
+    # Search content blocks by key or title.
+    # @param term [String] The search term
+    # @return [ActiveRecord::Relation]
+    scope :search_by_term, lambda {|term|
+      return all if term.blank?
 
-        search_pattern = "%#{term.to_s.downcase}%"
-        where("LOWER(key) LIKE ? OR LOWER(title) LIKE ?", search_pattern, search_pattern)
-      }
-    end
+      search_pattern = "%#{term.to_s.downcase}%"
+      where("LOWER(key) LIKE ? OR LOWER(title) LIKE ?", search_pattern, search_pattern)
+    }
   end
 end

@@ -1,0 +1,289 @@
+/* ============================================
+   Pelican Card Wrapper
+   ============================================ */
+
+.ruby_cms-pelican-card {
+  background-color: var(--pelican-bg-primary);
+  border: 1px solid var(--pelican-border);
+  border-radius: 0.5rem;
+  padding: 1.25rem 1.5rem;
+  max-width: 64rem;
+}
+
+/* ============================================
+     Form Header (meta + actions)
+     ============================================ */
+
+.ruby_cms-pelican-form__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--pelican-border);
+}
+
+.ruby_cms-pelican-form__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.ruby_cms-pelican-form__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Buttons */
+
+.ruby_cms-pelican-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.ruby_cms-pelican-button--primary {
+  background-color: var(--pelican-accent-blue);
+  color: white;
+  border-color: var(--pelican-accent-blue);
+}
+
+.ruby_cms-pelican-button--primary:hover {
+  background-color: var(--pelican-accent-blue-dark);
+  border-color: var(--pelican-accent-blue-dark);
+}
+
+.ruby_cms-pelican-button--ghost {
+  background: transparent;
+  color: var(--pelican-text-secondary);
+  border-color: var(--pelican-border);
+}
+
+.ruby_cms-pelican-button--ghost:hover {
+  background-color: var(--pelican-bg-secondary);
+  color: var(--pelican-text-primary);
+}
+
+/* ============================================
+     Published row
+     ============================================ */
+
+.ruby_cms-content-blocks-published-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+  color: var(--pelican-text-secondary);
+}
+
+/* ============================================
+     Locale Switcher (Pelican pills)
+     ============================================ */
+
+.ruby_cms-content-blocks-locale-switcher {
+  border: 1px solid var(--pelican-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.ruby_cms-content-blocks-locale-switcher__tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.5rem;
+  background-color: var(--pelican-bg-secondary);
+  border-bottom: 1px solid var(--pelican-border);
+}
+
+.ruby_cms-content-blocks-locale-switcher__tab {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  color: var(--pelican-text-secondary);
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.ruby_cms-content-blocks-locale-switcher__tab:hover {
+  background-color: var(--pelican-bg-tertiary);
+  color: var(--pelican-text-primary);
+}
+
+.ruby_cms-content-blocks-locale-switcher__tab.is-active {
+  background-color: var(--pelican-bg-primary);
+  color: var(--pelican-accent-blue);
+  box-shadow: 0 0 0 1px var(--pelican-border);
+}
+
+/* ============================================
+     Locale Panels
+     ============================================ */
+
+.ruby_cms-content-blocks-locale-panel {
+  padding: 1.25rem;
+}
+
+.ruby_cms-content-blocks-locale-panel.is-hidden {
+  display: none;
+}
+
+.ruby_cms-content-blocks-locale-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
+}
+
+.ruby_cms-content-blocks-locale-panel__grid .ruby_cms-field--full {
+  grid-column: 1 / -1;
+}
+
+/* ============================================
+     Single locale layout
+     ============================================ */
+
+.ruby_cms-content-blocks-single-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
+}
+
+.ruby_cms-content-blocks-single-grid .ruby_cms-field--full {
+  grid-column: 1 / -1;
+}
+
+/* ============================================
+   Content Blocks — Show page
+   ============================================ */
+
+.ruby_cms-content-blocks-show {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Meta row */
+
+.ruby_cms-content-blocks-show__meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--pelican-border);
+}
+
+.ruby_cms-content-blocks-show__label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--pelican-text-secondary);
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.ruby_cms-content-blocks-show__value {
+  font-size: 0.875rem;
+  color: var(--pelican-text-primary);
+  line-height: 1.4;
+}
+
+.ruby_cms-content-blocks-show__mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Status pills */
+
+.ruby_cms-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.ruby_cms-status-pill--success {
+  background-color: var(--pelican-accent-emerald-bg);
+  color: var(--pelican-accent-emerald);
+}
+
+.ruby_cms-status-pill--muted {
+  background-color: var(--pelican-bg-tertiary);
+  color: var(--pelican-text-secondary);
+}
+
+/* Locale cards */
+
+.ruby_cms-content-blocks-show__locales {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+  gap: 1.25rem;
+}
+
+.ruby_cms-content-blocks-show__locale-card {
+  border: 1px solid var(--pelican-border);
+  border-radius: 0.5rem;
+  background-color: var(--pelican-bg-secondary);
+  overflow: hidden;
+}
+
+.ruby_cms-content-blocks-show__locale-header {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--pelican-border);
+  background-color: var(--pelican-bg-tertiary);
+}
+
+.ruby_cms-content-blocks-show__locale-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: var(--pelican-bg-primary);
+  color: var(--pelican-text-secondary);
+  box-shadow: 0 0 0 1px var(--pelican-border);
+}
+
+/* Locale content */
+
+.ruby_cms-content-blocks-show__fields {
+  padding: 0.75rem 1rem 1rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem 1.25rem;
+}
+
+.ruby_cms-content-blocks-show__field-full {
+  grid-column: 1 / -1;
+}
+
+.ruby_cms-content-blocks-show__content,
+.ruby_cms-content-blocks-show__rich-content {
+  white-space: pre-wrap;
+}
+
+/* Single locale fallback */
+
+.ruby_cms-content-blocks-show__single {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}

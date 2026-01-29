@@ -13,39 +13,12 @@
 <% row_partial = local_assigns[:row_partial] %>
 <% row_block = local_assigns[:row_block] %>
 
-<% if title %>
-  <%= tag.h1 title, class: "ruby_cms-page-title" %>
-<% end %>
-
 <%= render RubyCms::Admin::BulkActionTable::BulkActionTable.new(
-  header: capture do %>
-    <%= tag.div class: "bulk-action-table__header-content", style: "display: flex; align-items: center; justify-content: space-between; width: 100%;" do %>
-      <% if action_icons.any? %>
-        <%= tag.div class: "ruby_cms-page-header__action-icons" do %>
-          <% action_icons.each do |icon_config| %>
-            <%= link_to icon_config[:url] || "#", 
-                class: "ruby_cms-page-header__icon-action ruby_cms-page-header__icon-action--#{icon_config[:color] || 'blue'}", 
-                title: icon_config[:title],
-                data: icon_config[:data] || {} do %>
-              <%= tag.svg class: "ruby_cms-page-header__icon", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24" do %>
-                <%= tag.path stroke_linecap: "round", stroke_linejoin: "round", stroke_width: "2", d: icon_config[:icon] || "M12 4.5v15m7.5-7.5h-15" %>
-              <% end %>
-            <% end %>
-          <% end %>
-        <% end %>
-      <% else %>
-        <%= tag.div %>
-      <% end %>
-      <%= form_with url: search_url, method: :get, class: "ruby_cms-page-header__search-form", data: { turbo_frame: turbo_frame } do %>
-        <%= tag.div class: "ruby_cms-page-header__search-wrapper" do %>
-          <%= tag.svg class: "ruby_cms-page-header__search-icon", fill: "none", stroke: "currentColor", viewBox: "0 0 24 24" do %>
-            <%= tag.path stroke_linecap: "round", stroke_linejoin: "round", stroke_width: "2", d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" %>
-          <% end %>
-          <%= tag.input type: "search", name: search_param, placeholder: "Search", class: "ruby_cms-page-header__search-input", value: params[search_param.to_sym], data: { action: "input->turbo-frame#submit" } %>
-        <% end %>
-      <% end %>
-    <% end %>
-  <% end,
+  header_title: title,
+  header_filter: local_assigns[:header_filter],
+  header_action_icons: action_icons,
+  header_search_url: search_url,
+  header_search_param: search_param,
   turbo_frame: turbo_frame,
   pagination: pagination,
   pagination_path: pagination_path,

@@ -13,8 +13,10 @@ module RubyCms
 
       def index
         collection = content_blocks_collection
+        @content_blocks = html_index_blocks(collection)
+
         respond_to do |format|
-          format.html { @content_blocks = html_index_blocks(collection) }
+          format.html { render_index_html }
           format.json { render json: json_index_blocks(collection) }
         end
       end
@@ -53,6 +55,14 @@ module RubyCms
 
       private
 
+      def render_index_html
+        if turbo_frame_request?
+          render :index, layout: false
+        else
+          render :index
+        end
+      end
+
       def html_index_blocks(collection)
         grouped_or_paginated(collection) || []
       end
@@ -85,8 +95,9 @@ module RubyCms
       end
 
       def turbo_redirect_with_count(action, count)
-        turbo_redirect_to ruby_cms_admin_content_blocks_path,
-                          notice: "#{count} content block(s) #{action.to_s.remove('bulk_')}."
+        action_name = action.to_s.remove("bulk_")
+        notice = "#{count} content block(s) #{action_name}."
+        turbo_redirect_to ruby_cms_admin_content_blocks_path, notice:
       end
 
       def update_all_locales
@@ -98,7 +109,9 @@ module RubyCms
         locale_keys = content_block_permitted_params - %i[key locale]
         root_params = permitted_locale_params
         shared_content_type = root_params[:content_type].presence || @content_block.content_type
-        update_locale_blocks(root_params[:locales] || {}, locale_keys, shared_content_type)
+        shared_published = root_params[:published].to_s == "1"
+        update_locale_blocks(root_params[:locales] || {}, locale_keys, shared_content_type,
+                             shared_published)
       end
 
       def handle_locale_update_errors(errors)
@@ -190,26 +203,35 @@ module RubyCms
         end
       end
 
-      def update_locale_blocks(locales_params, keys, shared_content_type)
-        locales_params.each_with_object([]) do |(locale_s, attrs), errors|
+      def update_locale_blocks(locales_params, keys, shared_content_type, shared_published)
+        locales_params.each.with_object([]) do |(locale_s, attrs), errors|
           next if attrs.blank?
 
-          block = ::ContentBlock.find_or_initialize_by(key: @content_block.key, locale: locale_s)
-          block.record_update_by(current_user_cms)
-          block.assign_attributes(attrs.permit(keys).merge(
-                                    key: @content_block.key,
-                                    locale: locale_s, content_type: shared_content_type
-                                  ))
+          block = update_locale_block(locale_s, attrs, keys, shared_content_type, shared_published)
           next if block.save
 
-          errors.concat(block.errors.full_messages.map do |m|
-            "#{locale_s}: #{m}"
-          end)
+          errors.concat(block.errors.full_messages.map {|m| "#{locale_s}: #{m}" })
         end
       end
 
+      def update_locale_block(locale_s, attrs, keys, shared_content_type, shared_published)
+        block = ::ContentBlock.find_or_initialize_by(key: @content_block.key, locale: locale_s)
+        block.record_update_by(current_user_cms)
+        attrs_permitted = attrs.permit(keys).to_h
+        attrs_permitted.delete(:published)
+        block.assign_attributes(
+          attrs_permitted.merge(
+            key: @content_block.key,
+            locale: locale_s,
+            content_type: shared_content_type,
+            published: shared_published
+          )
+        )
+        block
+      end
+
       def permitted_locale_params
-        params.expect(content_block: [:content_type, { locales: {} }])
+        params.expect(content_block: [:content_type, :published, { locales: {} }])
       end
 
       def unified_locale_params?
@@ -218,7 +240,12 @@ module RubyCms
 
       def bulk_set_published(ids, published:)
         updated_by_id = current_user_cms&.id
-        ::ContentBlock.where(id: ids).find_each.reduce(0) do |sum, block|
+        # Expand to all locale variants of each selected block's key
+        block_ids = ::ContentBlock.where(id: ids).flat_map do |b|
+          ::ContentBlock.where(key: b.key).pluck(:id)
+        end.uniq
+        block_ids.reduce(0) do |sum, id|
+          block = ::ContentBlock.find(id)
           block.updated_by_id = updated_by_id
           sum + (block.update(published:) ? 1 : 0)
         end

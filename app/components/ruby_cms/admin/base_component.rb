@@ -13,6 +13,7 @@ module RubyCms
         if defined?(Phlex::Rails::Helpers::TurboFrameTag)
           include Phlex::Rails::Helpers::TurboFrameTag
         end
+        include Phlex::Rails::Helpers::Sanitize if defined?(Phlex::Rails::Helpers::Sanitize)
         include Phlex::Rails::Helpers::LinkTo if defined?(Phlex::Rails::Helpers::LinkTo)
         include Phlex::Rails::Helpers::ButtonTo if defined?(Phlex::Rails::Helpers::ButtonTo)
         include Phlex::Rails::Helpers::FormWith if defined?(Phlex::Rails::Helpers::FormWith)

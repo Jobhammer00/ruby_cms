@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "ruby_cms/version"
+require_relative "ruby_cms/css_compiler"
 require_relative "ruby_cms/engine"
 require_relative "ruby_cms/app_integration"
 require_relative "ruby_cms/content_blocks_sync"
