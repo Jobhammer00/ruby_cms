@@ -13,96 +13,215 @@ module RubyCms
 
       def index
         collection = content_blocks_collection
-
         respond_to do |format|
-          format.html do
-            @content_blocks = paginate_collection(collection)
-            @content_blocks ||= ::ContentBlock.none
-          end
-          format.json do
-            render json: { content_blocks: serialize_content_blocks(collection.limit(100)) }
-          end
+          format.html { @content_blocks = html_index_blocks(collection) }
+          format.json { render json: json_index_blocks(collection) }
         end
       end
 
       def show
-        respond_to do |format|
-          format.html
-          format.json { render json: content_block_editor_json(@content_block) }
-        end
+        respond_with_block(@content_block)
       end
 
       def new
-        @content_block = ::ContentBlock.new
+        @content_block = ::ContentBlock.new(new_block_params)
       end
 
-      def edit; end
+      def edit
+        @blocks_by_locale = load_blocks_by_locale_for_edit
+      end
 
       def create
         @content_block = ::ContentBlock.new(content_block_params)
         @content_block.record_update_by(current_user_cms)
-
-        if @content_block.save
-          redirect_to ruby_cms_admin_content_block_path(@content_block),
-                      notice: t("ruby_cms.admin.content_blocks.created")
-        else
-          render :new, status: :unprocessable_content
-        end
+        save_and_respond(@content_block, :new)
       end
 
       def update
-        @content_block.record_update_by(current_user_cms)
-
-        cp = content_block_params
-        if @content_block.update(cp)
-          audit_visual_editor_edit(cp) if request.format.json?
-          respond_after_update_success
-        else
-          respond_after_update_failure
-        end
+        unified_locale_params? ? update_all_locales : update_single_block
       end
 
       def destroy
         @content_block.destroy
-        redirect_to ruby_cms_admin_content_blocks_path,
-                    notice: t("ruby_cms.admin.content_blocks.deleted")
+        redirect_with_notice("deleted")
       end
 
-      def bulk_delete
-        ids = Array(params[:item_ids]).filter_map(&:to_i).compact
-        content_blocks = ::ContentBlock.where(id: ids)
-        count = content_blocks.count
-        content_blocks.destroy_all
-        turbo_redirect_to ruby_cms_admin_content_blocks_path,
-                          notice: "#{count} content block(s) deleted."
-      end
-
-      def bulk_publish
-        ids = Array(params[:item_ids]).filter_map(&:to_i).compact
-        count = ::ContentBlock.where(id: ids).count do |block|
-          block.publish(user: current_user_cms)
-        end
-        redirect_to ruby_cms_admin_content_blocks_path,
-                    notice: "#{count} content block(s) published."
-      end
-
-      def bulk_unpublish
-        ids = Array(params[:item_ids]).filter_map(&:to_i).compact
-        count = ::ContentBlock.where(id: ids).count do |block|
-          block.unpublish(user: current_user_cms)
-        end
-        redirect_to ruby_cms_admin_content_blocks_path,
-                    notice: "#{count} content block(s) unpublished."
+      # Bulk actions
+      %i[bulk_delete bulk_publish bulk_unpublish].each do |action|
+        define_method(action) { bulk_action(action) }
       end
 
       private
+
+      def html_index_blocks(collection)
+        grouped_or_paginated(collection) || []
+      end
+
+      def grouped_or_paginated(collection)
+        if params[:locale].blank? && params[:q].blank?
+          grouped_by_key_collection(collection)
+        else
+          paginate_collection(collection)
+        end
+      end
+
+      def json_index_blocks(collection)
+        { content_blocks: serialize_content_blocks(collection.limit(100)) }
+      end
+
+      def bulk_action(action)
+        ids = Array(params[:item_ids]).filter_map(&:to_i).compact
+        count = bulk_count_for(action, ids)
+        turbo_redirect_with_count(action, count)
+      end
+
+      def bulk_count_for(action, ids)
+        case action
+        when :bulk_delete   then ::ContentBlock.where(id: ids).destroy_all.size
+        when :bulk_publish  then bulk_set_published(ids, published: true)
+        when :bulk_unpublish then bulk_set_published(ids, published: false)
+        else 0
+        end
+      end
+
+      def turbo_redirect_with_count(action, count)
+        turbo_redirect_to ruby_cms_admin_content_blocks_path,
+                          notice: "#{count} content block(s) #{action.to_s.remove('bulk_')}."
+      end
+
+      def update_all_locales
+        errors = build_locale_blocks_errors
+        errors.any? ? handle_locale_update_errors(errors) : redirect_with_notice("updated")
+      end
+
+      def build_locale_blocks_errors
+        locale_keys = content_block_permitted_params - %i[key locale]
+        root_params = permitted_locale_params
+        shared_content_type = root_params[:content_type].presence || @content_block.content_type
+        update_locale_blocks(root_params[:locales] || {}, locale_keys, shared_content_type)
+      end
+
+      def handle_locale_update_errors(errors)
+        @content_block.errors.add(:base, errors.join("; "))
+        @blocks_by_locale = load_blocks_by_locale_for_edit
+        render :edit, status: :unprocessable_content
+      end
+
+      def update_single_block
+        @content_block.record_update_by(current_user_cms)
+        save_and_respond(@content_block, :edit)
+      end
+
+      def save_and_respond(block, failure_view)
+        if block.save
+          audit_if_json(block)
+          respond_to_success(block)
+        else
+          respond_to_failure(block, failure_view)
+        end
+      end
+
+      def audit_if_json(block)
+        audit_visual_editor_edit(block.attributes) if request.format.json?
+      end
+
+      def respond_to_success(block)
+        respond_to do |f|
+          f.html do
+            redirect_to ruby_cms_admin_content_block_path(block),
+                        notice: t("ruby_cms.admin.content_blocks.updated")
+          end
+          f.json { head :no_content }
+        end
+      end
+
+      def respond_to_failure(block, view)
+        respond_to do |f|
+          f.html { render view, status: :unprocessable_content }
+          f.json do
+            render json: { errors: block.errors.full_messages },
+                   status: :unprocessable_content
+          end
+        end
+      end
+
+      def respond_with_block(block)
+        respond_to do |f|
+          f.html
+          f.json { render json: content_block_editor_json(block) }
+        end
+      end
+
+      def redirect_with_notice(action)
+        redirect_to ruby_cms_admin_content_blocks_path,
+                    notice: t("ruby_cms.admin.content_blocks.#{action}")
+      end
 
       def set_content_block
         @content_block = ::ContentBlock.find(params[:id])
       end
 
+      def load_blocks_by_locale_for_edit
+        blocks = ::ContentBlock.where(key: @content_block.key).index_by(&:locale)
+        I18n.available_locales.each_with_object({}) do |loc, hash|
+          loc_s = loc.to_s
+          hash[loc_s] = blocks[loc_s] || ::ContentBlock.new(
+            key: @content_block.key, locale: loc_s,
+            content_type: @content_block.content_type
+          )
+        end
+      end
+
+      def new_block_params
+        return {} unless params[:content_block].kind_of?(ActionController::Parameters)
+
+        params[:content_block].permit(:key, :locale).to_h
+      end
+
       def content_block_params
         params.expect(content_block_param_root => [*content_block_permitted_params])
+      end
+
+      def content_block_param_root
+        if params.key?(:content_block)
+          :content_block
+        else
+          params.key?(:ruby_cms_content_block) ? :ruby_cms_content_block : :content_block
+        end
+      end
+
+      def update_locale_blocks(locales_params, keys, shared_content_type)
+        locales_params.each_with_object([]) do |(locale_s, attrs), errors|
+          next if attrs.blank?
+
+          block = ::ContentBlock.find_or_initialize_by(key: @content_block.key, locale: locale_s)
+          block.record_update_by(current_user_cms)
+          block.assign_attributes(attrs.permit(keys).merge(
+                                    key: @content_block.key,
+                                    locale: locale_s, content_type: shared_content_type
+                                  ))
+          next if block.save
+
+          errors.concat(block.errors.full_messages.map do |m|
+            "#{locale_s}: #{m}"
+          end)
+        end
+      end
+
+      def permitted_locale_params
+        params.expect(content_block: [:content_type, { locales: {} }])
+      end
+
+      def unified_locale_params?
+        params.dig(:content_block, :locales).present?
+      end
+
+      def bulk_set_published(ids, published:)
+        updated_by_id = current_user_cms&.id
+        ::ContentBlock.where(id: ids).find_each.reduce(0) do |sum, block|
+          block.updated_by_id = updated_by_id
+          sum + (block.update(published:) ? 1 : 0)
+        end
       end
 
       def content_block_editor_json(block)
@@ -113,15 +232,12 @@ module RubyCms
           content: block.content.to_s,
           content_type: block.content_type,
           published: block.published?,
-          rich_content_html: (block.respond_to?(:rich_content) ? block.rich_content.to_s : "")
+          rich_content_html: block.respond_to?(:rich_content) ? block.rich_content.to_s : ""
         }
       end
 
-      # DHH-style: Use model scopes and methods
       def content_blocks_collection
-        collection = ::ContentBlock.alphabetically.preloaded
-        collection = apply_locale_filter(collection)
-        apply_search_filter(collection)
+        apply_search_filter(apply_locale_filter(::ContentBlock.alphabetically.preloaded))
       end
 
       def apply_locale_filter(collection)
@@ -131,12 +247,13 @@ module RubyCms
         collection.for_current_locale
       end
 
-      # DHH-style: Use model's search scope
       def apply_search_filter(collection)
-        search_param = params[:q] || params[:search]
-        return collection if search_param.blank?
+        search_term = params[:q] || params[:search]
+        search_term.present? ? collection.search_by_term(search_term) : collection
+      end
 
-        collection.search_by_term(search_param)
+      def grouped_by_key_collection(collection)
+        RubyCms::ContentBlocksGrouping.group_by_key(collection)
       end
 
       def serialize_content_blocks(scope)
@@ -149,7 +266,7 @@ module RubyCms
             content: block.content.to_s,
             content_type: block.content_type,
             published: block.published?,
-            rich_content: (block.respond_to?(:rich_content) ? block.rich_content.to_s : ""),
+            rich_content: block.respond_to?(:rich_content) ? block.rich_content.to_s : "",
             updated_at: block.updated_at.strftime("%B %d, %Y at %I:%M %p")
           }
         end
@@ -158,60 +275,19 @@ module RubyCms
       def audit_visual_editor_edit(changes)
         Rails.application.config.ruby_cms.audit_editor_edit&.call(
           @content_block.id,
-          current_user_cms&.id,
-          changes.to_h
+          current_user_cms&.id, changes.to_h
         )
       end
 
-      def respond_after_update_success
-        respond_to do |format|
-          format.html do
-            redirect_to ruby_cms_admin_content_block_path(@content_block),
-                        notice: t("ruby_cms.admin.content_blocks.updated")
-          end
-          format.json { head :no_content }
-        end
-      end
-
-      def respond_after_update_failure
-        respond_to do |format|
-          format.html { render :edit, status: :unprocessable_content }
-          format.json do
-            render json: { errors: @content_block.errors.full_messages },
-                   status: :unprocessable_content
-          end
-        end
-      end
-
-      def bulk_set_published(ids, published:)
-        updated_by_id = current_user_cms&.id
-        count = 0
-
-        ::ContentBlock.where(id: ids).find_each do |block|
-          block.updated_by_id = updated_by_id
-          count += 1 if block.update(published:)
-        end
-
-        count
-      end
-
-      def content_block_param_root
-        return :content_block if params.key?(:content_block)
-        return :ruby_cms_content_block if params.key?(:ruby_cms_content_block)
-
-        :content_block
-      end
-
       def content_block_permitted_params
-        permitted = %i[key locale title content content_type published]
-        permitted << :rich_content if action_text_available?
-        permitted << :image if active_storage_available?
-        permitted
+        %i[key locale title content content_type published].tap do |arr|
+          arr << :rich_content if action_text_available?
+          arr << :image if active_storage_available?
+        end
       end
 
       def action_text_available?
-        ::ContentBlock.respond_to?(:action_text_available?) &&
-          ::ContentBlock.action_text_available?
+        ::ContentBlock.respond_to?(:action_text_available?) && ::ContentBlock.action_text_available?
       end
 
       def active_storage_available?

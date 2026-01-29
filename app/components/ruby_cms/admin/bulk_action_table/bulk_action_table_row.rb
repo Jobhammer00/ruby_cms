@@ -13,7 +13,7 @@ module RubyCms
       # @param controller_name [String] Stimulus controller identifier
       # @param class [String, nil] Additional CSS classes
       class BulkActionTableRow < BaseComponent
-        def initialize(
+        def initialize( # rubocop:disable Metrics/ParameterLists
           click_url: nil,
           data: {},
           cells: nil,
@@ -22,6 +22,7 @@ module RubyCms
           class: nil,
           **user_attrs
         )
+          super
           @click_url = click_url
           @data = data || {}
           @cells = cells
@@ -32,38 +33,41 @@ module RubyCms
         end
 
         def view_template
-          base_data = build_row_data_attributes
-          # Merge @data into base_data, but don't override built attributes
-          merged_data = base_data.merge(@data || {})
-
-          row_attributes = {
-            class: build_row_classes,
-            data: merged_data
-          }
-
           tr(**row_attributes) do
-            if @bulk_actions_enabled && @data[:item_id]
-              render BulkActionTableCheckboxCell.new(
-                item_id: @data[:item_id],
-                controller_name: @controller_name
-              )
-            end
-
-            if @cells
-              @cells.each do |cell|
-                if cell.kind_of?(Hash)
-                  td(class: cell[:class]) { cell[:content] }
-                else
-                  td { cell }
-                end
-              end
-            elsif block_given?
-              yield
-            end
+            render_bulk_checkbox
+            render_cells_or_block
           end
         end
 
         private
+
+        def row_attributes
+          {
+            class: build_row_classes,
+            data: (build_row_data_attributes || {}).merge(@data || {})
+          }
+        end
+
+        def render_bulk_checkbox
+          return unless @bulk_actions_enabled && @data&.[](:item_id)
+
+          render BulkActionTableCheckboxCell.new(
+            item_id: @data[:item_id],
+            controller_name: @controller_name
+          )
+        end
+
+        def render_cells_or_block
+          return yield if @cells.nil? && block_given?
+
+          Array(@cells).each do |cell|
+            if cell.kind_of?(Hash)
+              td(class: cell[:class]) { cell[:content] }
+            else
+              td { cell }
+            end
+          end
+        end
 
         def build_row_classes
           classes = ["bulk-action-table__row"]

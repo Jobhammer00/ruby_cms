@@ -15,6 +15,7 @@ module RubyCms
         - rails db:migrate
         - rails ruby_cms:seed_permissions
         - rails ruby_cms:setup_admin (or: rails ruby_cms:grant_manage_admin email=you@example.com)
+        - To seed content blocks from YAML: add content under content_blocks in config/locales/<locale>.yml, then run rails ruby_cms:content_blocks:seed (or call it from db/seeds.rb).
 
         Notes:
         - If the host uses /admin already, remove or change those routes.
@@ -103,9 +104,7 @@ module RubyCms
       def add_current_user_to_authentication
         auth_path = Rails.root.join("app/controllers/concerns/authentication.rb")
         return unless auth_path.exist?
-
-        content = File.read(auth_path)
-        return if content.include?("def current_user")
+        return if File.read(auth_path).include?("def current_user")
 
         gsub_file auth_path, "    helper_method :authenticated?\n",
                   "    helper_method :authenticated?, :current_user\n"
@@ -124,14 +123,19 @@ module RubyCms
         copy_admin_css(src_dir, dest_dir)
         # Don't copy component files - only the compiled admin.css is needed
         # copy_components_css(src_dir, dest_dir)
-        say "✓ Task css/copy: Compiled and copied RubyCMS CSS to app/assets/stylesheets/ruby_cms/admin.css",
-            :green
-        say "  (admin.css is compiled with all component styles inlined - no @import statements)",
-            :green
+        notify_css_copy
       rescue StandardError => e
         say "⚠ Task css/copy: Could not copy CSS files: #{e.message}.", :yellow
       end
-      no_tasks do
+
+      def notify_css_copy
+        say "✓ Task css/copy: Compiled and copied RubyCMS CSS to " \
+            "app/assets/stylesheets/ruby_cms/admin.css", :green
+        say "  (admin.css is compiled with all component styles inlined - no @import statements)",
+            :green
+      end
+
+      no_tasks do # rubocop:disable Metrics/BlockLength
         def copy_admin_css(src_dir, dest_dir)
           admin_css_src = src_dir.join("admin.css")
           admin_css_dest = dest_dir.join("admin.css")
@@ -152,17 +156,19 @@ module RubyCms
         end
 
         def resolve_css_imports(css_content, components_dir)
-          # Match @import statements like: @import "ruby_cms/components/tokens.css"; or @import "components/tokens.css";
-          # Replace them with the actual CSS content from component files
-          css_content.gsub(%r{@import\s+["'](?:ruby_cms/)?components/([^"']+)\.css["'];?}) do |match|
-            component_name = Regexp.last_match(1)
-            component_file = components_dir.join("#{component_name}.css")
-            if component_file.exist?
-              "\n/* ===== Component: #{component_name} ===== */\n" + File.read(component_file) + "\n"
-            else
-              say "⚠ Warning: Component file not found: #{component_file}", :yellow
-              match # Keep original if file not found
-            end
+          # Match @import "ruby_cms/components/X.css" or @import "components/X.css"
+          pattern = %r{@import\s+["'](?:ruby_cms/)?components/([^"']+)\.css["'];?}
+          css_content.gsub(pattern) {|m| resolve_css_import_match(m, components_dir) }
+        end
+
+        def resolve_css_import_match(match, components_dir)
+          component_name = Regexp.last_match(1)
+          component_file = components_dir.join("#{component_name}.css")
+          if component_file.exist?
+            "\n/* ===== Component: #{component_name} ===== */\n#{File.read(component_file)}\n"
+          else
+            say "⚠ Warning: Component file not found: #{component_file}", :yellow
+            match
           end
         end
 
@@ -283,7 +289,7 @@ module RubyCms
         install_ruby_ui_generator
       end
 
-      no_tasks do
+      no_tasks do # rubocop:disable Metrics/BlockLength
         def ruby_ui_in_gemfile?(content)
           content.include?("ruby_ui") || content.include?("rails_ui")
         end
@@ -351,16 +357,10 @@ module RubyCms
             "  include RubyUI\n"
           end
         end
-
-        def generate_ruby_ui_components
-          # Skip component generation - components were mainly for page builder which has been removed
-          # Users can generate components manually if needed: rails g ruby_ui:component ComponentName
-          say "ℹ Task ruby_ui/components: Skipping automatic component generation " \
-              "(page builder removed). Generate components manually if needed: " \
-              "rails g ruby_ui:component ComponentName",
-              :cyan
-        end
       end
+
+      # Directories to skip when scanning for page templates
+      SKIP_PAGE_DIRS = %w[layouts shared mailers components admin].freeze
 
       # NOTE: Rails generators are Thor groups; private methods can still be
       # treated as "tasks" unless wrapped in `no_tasks`.
@@ -380,50 +380,59 @@ module RubyCms
         end
 
         def scan_for_templates(dir_path, pages, views_base, relative_path="")
-          # Find all template files in this directory
+          scan_files_in_directory(dir_path, pages, relative_path)
+          scan_subdirectories(dir_path, pages, views_base, relative_path)
+        end
+
+        private
+
+        def scan_files_in_directory(dir_path, pages, relative_path)
           Dir.glob(File.join(dir_path, "*.{html.erb,html.haml,html.slim}")).each do |template_file|
             base_name = File.basename(template_file, ".*")
-            base_name = File.basename(base_name, ".*") # Remove .html extension
+            base_name = File.basename(base_name, ".*") # remove .html extension
 
-            # Skip partials
-            next if base_name.start_with?("_")
-            # Skip admin pages
-            next if relative_path.start_with?("admin") || relative_path == "admin"
+            next if skip_template?(base_name, relative_path)
 
-            # Build template path relative to app/views
-            if relative_path.empty?
-              template_path = base_name
-              page_key = base_name
-            elsif base_name == "index"
-              page_key = relative_path.split("/").last
-              template_path = "#{relative_path}/index"
-            # pages/index.html.erb -> "pages" => "pages/index"
-            else
-              # pages/home.html.erb -> "home" => "pages/home"
-              page_key = base_name
-              template_path = "#{relative_path}/#{base_name}"
-            end
-
+            page_key, template_path = build_template_path(base_name, relative_path)
             pages[page_key] = template_path
           end
+        end
 
-          # Recursively scan subdirectories (skip common non-page dirs, limit depth)
+        def skip_template?(base_name, relative_path)
+          base_name.start_with?("_") || relative_path.start_with?("admin") ||
+            relative_path == "admin"
+        end
+
+        def build_template_path(base_name, relative_path)
+          if relative_path.empty?
+            [base_name, base_name]
+          elsif base_name == "index"
+            [relative_path.split("/").last, "#{relative_path}/index"]
+          else
+            [base_name, "#{relative_path}/#{base_name}"]
+          end
+        end
+
+        def scan_subdirectories(dir_path, pages, views_base, relative_path)
           Dir.glob(File.join(dir_path, "*")).each do |path|
             next unless File.directory?(path)
 
             dir_name = File.basename(path)
-            # Skip admin directories and common non-page directories
-            next if %w[layouts shared mailers components admin].include?(dir_name)
-            # Skip if we're already in an admin path
-            next if relative_path.start_with?("admin")
-
-            # Limit depth to 2 levels (e.g., app/views/pages/home is OK, but not deeper)
-            depth = relative_path.empty? ? 1 : relative_path.split("/").length + 1
-            next if depth > 2
+            next if skip_directory?(dir_name, relative_path)
 
             new_relative_path = relative_path.empty? ? dir_name : "#{relative_path}/#{dir_name}"
             scan_for_templates(path, pages, views_base, new_relative_path)
           end
+        end
+
+        def skip_directory?(dir_name, relative_path)
+          InstallGenerator::SKIP_PAGE_DIRS.include?(dir_name) ||
+            relative_path.start_with?("admin") || directory_too_deep?(relative_path)
+        end
+
+        def directory_too_deep?(relative_path)
+          depth = relative_path.empty? ? 1 : relative_path.split("/").length + 1
+          depth > 2
         end
 
         def log_detected_pages(pages)
@@ -451,8 +460,8 @@ module RubyCms
         end
 
         def importmap_already_configured?(content, gem_js_path)
-          content.include?("RubyCMS Stimulus controllers") ||
-            content.include?(%(pin_all_from "#{gem_js_path}/controllers", under: "controllers"))
+          pin_pattern = %(pin_all_from "#{gem_js_path}/controllers", under: "controllers")
+          content.include?("RubyCMS Stimulus controllers") || content.include?(pin_pattern)
         end
 
         def inject_importmap_pins(importmap_path, gem_js_path)
@@ -541,42 +550,57 @@ module RubyCms
               :green
         end
 
-        def import_rubycms_controllers(controllers_app_path, content)
-          # Re-read content in case it was modified by expose_stimulus_application
-          content = File.read(controllers_app_path) if File.exist?(controllers_app_path)
+        def import_rubycms_controllers(controllers_app_path, _content=nil)
+          content = reload_content(controllers_app_path)
+          return if already_imported?(content)
 
-          return if content.include?('import "ruby_cms"') || content.include?("import 'ruby_cms'")
-          return if content.include?("registerRubyCmsControllers")
+          return say_success if inject_after_first_import?(controllers_app_path, content)
+          return say_success if inject_at_top(controllers_app_path)
 
-          # Try to add after the Stimulus import (most common pattern)
-          stimulus_import_pattern = %r{import\s+.*@hotwired/stimulus.*$}
-          if content.match?(stimulus_import_pattern)
-            inject_into_file controllers_app_path.to_s,
-                             after: stimulus_import_pattern,
-                             verbose: false do
-              "\nimport \"ruby_cms\""
-            end
-            say "✓ Task stimulus: Added RubyCMS controllers import.", :green
-            return
-          end
-
-          # Try to add after any import statement
-          first_import_pattern = /^import\s+.*$/m
-          if content.match?(first_import_pattern)
-            inject_into_file controllers_app_path.to_s,
-                             after: first_import_pattern,
-                             verbose: false do
-              "\nimport \"ruby_cms\""
-            end
-            say "✓ Task stimulus: Added RubyCMS controllers import.", :green
-            return
-          end
-
-          # Add at the very top if no imports found
-          prepend_to_file controllers_app_path.to_s, "import \"ruby_cms\"\n"
-          say "✓ Task stimulus: Added RubyCMS controllers import.", :green
+          say_success if inject_after_stimulus_import?(controllers_app_path, content)
         rescue StandardError => e
-          say "⚠ Task stimulus: Could not add RubyCMS import: #{e.message}. " \
+          say_import_error(e)
+        end
+
+        def reload_content(path)
+          File.read(path) if File.exist?(path)
+        end
+
+        def already_imported?(content)
+          content.include?('import "ruby_cms"') || content.include?("import 'ruby_cms'") ||
+            content.include?("registerRubyCmsControllers")
+        end
+
+        def inject_after_stimulus_import?(path, content)
+          pattern = %r{import\s+.*@hotwired/stimulus.*$}
+          return false unless content.match?(pattern)
+
+          inject_into_file path.to_s, after: pattern, verbose: false do
+            "\nimport \"ruby_cms\""
+          end
+          true
+        end
+
+        def inject_after_first_import?(path, content)
+          pattern = /^import\s+.*$/m
+          return false unless content.match?(pattern)
+
+          inject_into_file path.to_s, after: pattern, verbose: false do
+            "\nimport \"ruby_cms\""
+          end
+          true
+        end
+
+        def inject_at_top(path)
+          prepend_to_file path.to_s, "import \"ruby_cms\"\n"
+        end
+
+        def say_success
+          say "✓ Task stimulus: Added RubyCMS controllers import.", :green
+        end
+
+        def say_import_error(error)
+          say "⚠ Task stimulus: Could not add RubyCMS import: #{error.message}. " \
               "Add 'import \"ruby_cms\"' manually to controllers/application.js.",
               :yellow
         end

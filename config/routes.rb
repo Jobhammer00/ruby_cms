@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-RubyCms::Engine.routes.draw do
-  scope path: "admin", module: "ruby_cms/admin", as: "ruby_cms_admin" do
+RubyCms::Engine.routes.draw do # rubocop:disable Metrics/BlockLength
+  scope path: "admin", module: "ruby_cms/admin", as: "ruby_cms_admin" do # rubocop:disable Metrics/BlockLength
     root to: "dashboard#index"
     resources :content_blocks do
       collection do

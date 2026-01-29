@@ -15,7 +15,7 @@ module RubyCms
       # @param controller_name [String] Stimulus controller identifier
       #   (default: "ruby-cms--bulk-action-table")
       class BulkActionTable < BaseComponent
-        def initialize(**options)
+        def initialize(**options) # rubocop:disable Metrics/MethodLength
           super()
           @turbo_frame = options[:turbo_frame]
           @pagination = options[:pagination]
@@ -35,7 +35,7 @@ module RubyCms
             turbo_frame pagination pagination_path bulk_actions_url
             bulk_actions_buttons item_name controller_name csrf_token header
           ]
-          options.reject {|key, _| excluded_keys.include?(key) }
+          options.except(*excluded_keys)
         end
 
         def view_template(&block)
@@ -65,7 +65,7 @@ module RubyCms
             if @header.respond_to?(:call)
               @header.call
             elsif @header.kind_of?(String)
-              raw(@header)
+              sanitize(@header)
             end
           end
         end

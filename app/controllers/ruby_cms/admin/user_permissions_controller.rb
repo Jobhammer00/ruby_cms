@@ -8,23 +8,30 @@ module RubyCms
 
       def index
         @permissions = RubyCms::Permission.order(:key)
-        @user_permissions = @user ? RubyCms::UserPermission.where(user: @user).includes(:permission) : []
+        @user_permissions = if @user
+                              RubyCms::UserPermission.where(user: @user)
+                                                     .includes(:permission)
+                            else
+                              []
+                            end
       end
 
       def create
         permission = RubyCms::Permission.find(params[:permission_id])
         if RubyCms::UserPermission.find_or_create_by!(user: @user, permission: permission)
-          redirect_to ruby_cms_admin_user_permissions_path(@user), notice: "Permission granted."
+          redirect_to ruby_cms_admin_user_permissions_path(@user),
+                      notice: t("ruby_cms.admin.user_permissions.granted")
         end
       rescue ActiveRecord::RecordInvalid
         redirect_to ruby_cms_admin_user_permissions_path(@user),
-                    alert: "Could not grant permission."
+                    alert: t("ruby_cms.admin.user_permissions.could_not_grant")
       end
 
       def destroy
         up = RubyCms::UserPermission.find_by!(user: @user, id: params[:id])
         up.destroy
-        redirect_to ruby_cms_admin_user_permissions_path(@user), notice: "Permission revoked."
+        redirect_to ruby_cms_admin_user_permissions_path(@user),
+                    notice: t("ruby_cms.admin.user_permissions.revoked")
       end
 
       def bulk_delete
@@ -33,7 +40,9 @@ module RubyCms
         count = user_permissions.count
         user_permissions.destroy_all
         redirect_to ruby_cms_admin_user_permissions_path(@user),
-                    notice: "#{count} permission(s) revoked."
+                    notice: "#{count} permission(s) #{
+                      t('ruby_cms.admin.user_permissions.revoked')
+                    }."
       end
 
       private

@@ -17,6 +17,7 @@ module RubyCms
           bulk_actions_url: nil,
           bulk_action_buttons: []
         )
+          super
           @controller_name = controller_name
           @item_name = item_name
           @bulk_actions_url = bulk_actions_url
@@ -75,33 +76,40 @@ module RubyCms
           end
         end
 
-        def render_custom_action_button(button_config)
-          label = button_config[:label] || button_config[:text] || button_config[:name]&.humanize || "Button"
-          action_name = button_config[:name] || button_config[:action_name]
-
-          data_attrs = {
-            action: "click->#{@controller_name}#showActionDialog",
-            action_name: action_name,
-            action_url: button_config[:url]&.to_s
-          }
-
-          if button_config[:action_type] == "redirect" || button_config[:action] == "redirect"
-            data_attrs[:action_type] = "redirect"
-          end
-
-          if button_config[:confirm].present?
-            data_attrs[:action_confirm] = button_config[:confirm]
-            data_attrs[:action_label] = label
-          end
-
-          button_class = "bulk-action-button"
-          button_class += " #{button_config[:class]}" if button_config[:class].present?
+        def render_custom_action_button(config)
+          label = config[:label] || config[:text] || config[:name]&.humanize || "Button"
+          action_name = config[:name] || config[:action_name]
 
           button(
             type: "button",
-            class: button_class,
-            data: data_attrs
+            class: build_button_class(config),
+            data: build_button_data_attrs(config, label, action_name)
           ) { label }
+        end
+
+        def build_button_class(config)
+          classes = ["bulk-action-button"]
+          classes << config[:class] if config[:class].present?
+          classes.join(" ")
+        end
+
+        def build_button_data_attrs(config, label, action_name)
+          data_attrs = {
+            action: "click->#{@controller_name}#showActionDialog",
+            action_name: action_name,
+            action_url: config[:url]&.to_s
+          }
+
+          if config[:action_type] == "redirect" || config[:action] == "redirect"
+            data_attrs[:action_type] =
+              "redirect"
+          end
+          if config[:confirm].present?
+            data_attrs[:action_confirm] = config[:confirm]
+            data_attrs[:action_label] = label
+          end
+
+          data_attrs
         end
 
         def render_delete_button
@@ -112,7 +120,8 @@ module RubyCms
               action: "click->#{@controller_name}#showActionDialog",
               action_name: "delete",
               action_label: "Delete Selected",
-              action_confirm: "Are you sure you want to delete the selected items? This action cannot be undone.",
+              action_confirm: "Are you sure you want to delete the selected \
+               items? This action cannot be undone.",
               action_url: @bulk_actions_url&.to_s
             }
           ) { "Delete Selected" }

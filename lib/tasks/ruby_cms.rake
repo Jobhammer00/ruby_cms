@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-namespace :ruby_cms do
-  namespace :css do
+namespace :ruby_cms do # rubocop:disable Metrics/BlockLength
+  namespace :css do # rubocop:disable Metrics/BlockLength
     desc "Compile RubyCMS CSS files (resolves @import statements)"
-    task compile: :environment do
+    task compile: :environment do # rubocop:disable Metrics/BlockLength
       require "pathname"
       require "fileutils"
 
@@ -29,16 +29,18 @@ namespace :ruby_cms do
       # Resolve @import statements
       components_dir = src_dir.join("components")
       if components_dir.exist? && components_dir.directory?
-        admin_css_content = admin_css_content.gsub(%r{@import\s+["'](?:ruby_cms/)?components/([^"']+)\.css["'];?}) do |match|
-          component_name = Regexp.last_match(1)
-          component_file = components_dir.join("#{component_name}.css")
-          if component_file.exist?
-            "\n/* ===== Component: #{component_name} ===== */\n" + File.read(component_file) + "\n"
-          else
-            puts "Warning: Component file not found: #{component_file}"
-            match
+        admin_css_content =
+          admin_css_content
+          .gsub(%r{@import\s+["'](?:ruby_cms/)?components/([^"']+)\.css["'];?}) do |match|
+            component_name = Regexp.last_match(1)
+            component_file = components_dir.join("#{component_name}.css")
+            if component_file.exist?
+              "\n/* ===== Component: #{component_name} ===== */\n#{File.read(component_file)}\n"
+            else
+              puts "Warning: Component file not found: #{component_file}"
+              match
+            end
           end
-        end
       end
 
       # Write compiled CSS

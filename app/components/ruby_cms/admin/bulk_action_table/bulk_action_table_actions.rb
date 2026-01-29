@@ -13,9 +13,15 @@ module RubyCms
       # @param turbo_frame [String, nil] Turbo Frame ID for updates
       # @param controller_name [String] Stimulus controller identifier
       class BulkActionTableActions < BaseComponent
-        def initialize(delete_path:, item_id:, edit_path: nil,
-                       delete_confirm: "Are you sure you want to delete this item?",
-                       require_confirm: true, turbo_frame: nil, controller_name: "ruby-cms--bulk-action-table")
+        def initialize( # rubocop:disable Metrics/ParameterLists
+          delete_path:,
+          item_id:,
+          edit_path: nil,
+          delete_confirm: "Are you sure you want to delete this item?",
+          require_confirm: true,
+          turbo_frame: nil,
+          controller_name: "ruby-cms--bulk-action-table"
+        )
           super
           @edit_path = edit_path
           @delete_path = delete_path

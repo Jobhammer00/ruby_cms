@@ -222,7 +222,7 @@ module RubyCms
       new_key = prefix ? "#{prefix}.#{key}" : key.to_s
 
       if value.kind_of?(Hash)
-        result.merge!(flatten_hash(value, new_key))
+        result.merge!(flatten_hash(value, prefix: new_key))
         return
       end
 
@@ -242,18 +242,23 @@ module RubyCms
       locale_data = YAML.load_file(locale_file)
       blocks_data = extract_blocks_from_locale(locale_data, loc)
 
-      blocks_data.each do |key, content|
-        result = import_block(
-          key, content, locale:, create_missing:, update_existing:, published:
-        )
-        summary[result[:action]] += 1
-        summary[:errors] << result[:error] if result[:error]
-      end
+      assign_blocks_data_to_summary(summary, blocks_data, loc, create_missing:, update_existing:,
+                                                               published:)
     rescue StandardError => e
       summary[:errors] << "Error processing #{loc}: #{e.message}"
     end
 
-    def import_block(key, content, locale, create_missing:, update_existing:, published:)
+    def assign_blocks_data_to_summary(summary, blocks_data, locale, create_missing:, # rubocop:disable Metrics/ParameterLists
+                                      update_existing:, published:)
+      blocks_data.each do |key, content|
+        result = import_block(key, content, locale, create_missing:, update_existing:, published:)
+        summary[result[:action]] += 1
+        summary[:errors] << result[:error] if result[:error]
+      end
+      summary
+    end
+
+    def import_block(key, content, locale, create_missing:, update_existing:, published:) # rubocop:disable Metrics/ParameterLists
       block = RubyCms::ContentBlock.find_by(key: key, locale: locale.to_s)
       return import_new_block(key, content, locale, published) if block.nil? && create_missing
       return { action: :skipped, error: nil } if block.nil?

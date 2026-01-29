@@ -7,6 +7,7 @@ import MobileMenuController from "ruby_cms/mobile_menu_controller";
 import FlashMessagesController from "ruby_cms/flash_messages_controller";
 import BulkActionTableController from "ruby_cms/bulk_action_table_controller";
 import ToggleController from "ruby_cms/toggle_controller";
+import LocaleTabsController from "ruby_cms/locale_tabs_controller";
 
 export {
   VisualEditorController,
@@ -15,6 +16,7 @@ export {
   FlashMessagesController,
   BulkActionTableController,
   ToggleController,
+  LocaleTabsController,
 };
 
 // Helper function to register all RubyCms controllers with a Stimulus application
@@ -31,6 +33,7 @@ export function registerRubyCmsControllers(application) {
     BulkActionTableController,
   );
   application.register("ruby-cms--toggle", ToggleController);
+  application.register("ruby-cms--locale-tabs", LocaleTabsController);
 }
 
 // Auto-register controllers when this module is imported

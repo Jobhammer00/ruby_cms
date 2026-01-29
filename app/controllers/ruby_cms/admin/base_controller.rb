@@ -31,7 +31,7 @@ module RubyCms
         if respond_to?(:require_authentication, true)
           send(:require_authentication)
         else
-          redirect_to cms_redirect_path, alert: "Authentication required."
+          redirect_to cms_redirect_path, alert: t("ruby_cms.admin.base.authentication_required")
         end
       end
 
@@ -40,7 +40,9 @@ module RubyCms
         return if current_user_cms&.can?(permission_key, record:)
 
         respond_to do |format|
-          format.html { redirect_to(cms_redirect_path, alert: "Not authorized.") }
+          format.html do
+            redirect_to(cms_redirect_path, alert: t("ruby_cms.admin.base.not_authorized"))
+          end
           format.any { head :forbidden }
         end
       end
@@ -52,7 +54,9 @@ module RubyCms
         return if role == :admin && current_user_cms.respond_to?(:admin?) && current_user_cms.admin?
 
         respond_to do |format|
-          format.html { redirect_to cms_redirect_path, alert: "Not authorized." }
+          format.html do
+            redirect_to cms_redirect_path, alert: t("ruby_cms.admin.base.not_authorized")
+          end
           format.any { head :forbidden }
         end
       end
@@ -74,7 +78,8 @@ module RubyCms
       end
 
       def set_cms_locale
-        if session[:ruby_cms_locale].present? && I18n.available_locales.include?(session[:ruby_cms_locale].to_sym)
+        if session[:ruby_cms_locale].present? &&
+           I18n.available_locales.include?(session[:ruby_cms_locale].to_sym)
           I18n.locale = session[:ruby_cms_locale].to_sym
         end
       end

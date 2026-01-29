@@ -31,10 +31,18 @@
 %>
 
 <%= render RubyCms::Admin::AdminPage.new do %>
+  <% locale_filter_url = ruby_cms_admin_content_blocks_path %>
+  <%= tag.div class: "mb-4 flex flex-wrap items-center gap-2" do %>
+    <%= tag.span class: "text-sm font-medium text-gray-700" do %>Locale:<% end %>
+    <% ([nil] + I18n.available_locales.to_a).each do |loc| %>
+      <% is_active = (params[:locale].blank? && loc.nil?) || (loc && params[:locale].to_s == loc.to_s) %>
+      <%= link_to (loc ? ruby_cms_locale_display_name(loc) : "All"), (loc ? "#{locale_filter_url}?locale=#{loc}" : locale_filter_url), class: "text-sm px-3 py-1 rounded #{is_active ? 'bg-blue-100 text-blue-800 font-medium' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}" %>
+    <% end %>
+  <% end %>
   <%= render partial: "ruby_cms/admin/shared/bulk_action_table_index", locals: {
     title: "Content blocks",
     collection: @content_blocks || [],
-    headers: ["Key", "Title", "Type", "Published", { text: "Actions", class: "text-right" }],
+    headers: ["Key", "Locale", "Title", "Type", "Published", { text: "Actions", class: "text-right" }],
     action_icons: [
       {
         url: new_ruby_cms_admin_content_block_path,

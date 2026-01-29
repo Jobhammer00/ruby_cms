@@ -13,21 +13,22 @@ module RubyCms
       def index
         collection = RubyCms::Permission.order(:key)
 
-        # Apply search filter if query parameter is present
         if params[:q].present?
           search_term = "%#{params[:q].downcase}%"
-          collection = collection.where("LOWER(key) LIKE ? OR LOWER(name) LIKE ?", search_term, search_term)
+          collection = collection.where("LOWER(key) LIKE ? OR LOWER(name) LIKE ?", search_term,
+                                        search_term)
         end
 
         @permissions = paginate_collection(collection)
         # Ensure @permissions is always an iterable collection, never nil
-        @permissions ||= RubyCms::Permission.none
+        @index ||= RubyCms::Permission.none
       end
 
       def create
         @permission = RubyCms::Permission.new(permission_params)
         if @permission.save
-          redirect_to ruby_cms_admin_permissions_path, notice: "Permission created."
+          redirect_to ruby_cms_admin_permissions_path,
+                      notice: t("ruby_cms.admin.permissions.created")
         else
           @permissions = RubyCms::Permission.order(:key)
           flash.now[:alert] =
@@ -39,7 +40,8 @@ module RubyCms
       def destroy
         @permission = RubyCms::Permission.find(params[:id])
         @permission.destroy
-        redirect_to ruby_cms_admin_permissions_path, notice: "Permission deleted."
+        redirect_to ruby_cms_admin_permissions_path,
+                    notice: t("ruby_cms.admin.permissions.deleted")
       end
 
       def bulk_delete
@@ -47,7 +49,10 @@ module RubyCms
         permissions = RubyCms::Permission.where(id: ids)
         count = permissions.count
         permissions.destroy_all
-        turbo_redirect_to ruby_cms_admin_permissions_path, notice: "#{count} permission(s) deleted."
+        turbo_redirect_to ruby_cms_admin_permissions_path,
+                          notice: "#{count} permission(s) #{
+                            t('ruby_cms.admin.permissions.deleted')
+                          }."
       end
 
       private

@@ -32,7 +32,6 @@ module RubyCms
         # For Turbo Frame requests, we can't redirect directly
         # Instead, we should render a Turbo Stream that updates the frame
         # or redirect the parent window
-        redirect_to(url, **)
       else
         redirect_to(url, **)
       end

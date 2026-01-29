@@ -4,6 +4,7 @@ require_relative "ruby_cms/version"
 require_relative "ruby_cms/engine"
 require_relative "ruby_cms/app_integration"
 require_relative "ruby_cms/content_blocks_sync"
+require_relative "ruby_cms/content_blocks_grouping"
 
 module RubyCms
   class Error < StandardError; end
@@ -16,8 +17,9 @@ module RubyCms
   end
 
   # Register a link for the admin navigation.
-  # Options: key:, label:, path: (string or callable receiving the view), icon: (optional), section: (optional, for grouping), if: (optional callable to show/hide).
-  def self.nav_register(key:, label:, path:, icon: nil, section: nil, **options)
+  # Options: key:, label:, path: (string or callable receiving the view), icon: (optional),
+  # section: (optional, for grouping), if: (optional callable to show/hide).
+  def self.nav_register(key:, label:, path:, icon: nil, section: nil, **options) # rubocop:disable Metrics/ParameterLists
     return if nav_registry.any? {|e| e[:key] == key }
 
     self.nav_registry += [
@@ -30,7 +32,7 @@ module RubyCms
 
   # Navigation API: RubyCms::Nav.register(key:, label:, path:, icon: nil, section: nil, if: nil)
   module Nav
-    def self.register(key:, label:, path:, icon: nil, section: nil, **)
+    def self.register(key:, label:, path:, icon: nil, section: nil, **) # rubocop:disable Metrics/ParameterLists
       RubyCms.nav_register(key:, label:, path:, icon:, section:,
                            **)
     end

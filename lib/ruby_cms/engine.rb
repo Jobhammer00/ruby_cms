@@ -109,19 +109,22 @@ module RubyCms
     def self.dashboard_icon_path
       '<path stroke-linecap="round" stroke-linejoin="round" ' \
         'stroke-width="2" ' \
-        'd="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>'
+        'd="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 \
+        01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>'
     end
 
     def self.content_blocks_icon_path
       '<path stroke-linecap="round" stroke-linejoin="round" ' \
         'stroke-width="2" ' \
-        'd="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>'
+        'd="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 \
+        012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>'
     end
 
     def self.visual_editor_icon_path
       '<path stroke-linecap="round" stroke-linejoin="round" ' \
         'stroke-width="2" ' \
-        'd="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>'
+        'd="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 \
+        012.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>'
     end
 
     def self.register_settings_nav_items
@@ -144,19 +147,22 @@ module RubyCms
     def self.permissions_icon_path
       '<path stroke-linecap="round" stroke-linejoin="round" ' \
         'stroke-width="2" ' \
-        'd="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>'
+        'd="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 \
+         3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 \
+         9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>'
     end
 
     def self.users_icon_path
       '<path stroke-linecap="round" stroke-linejoin="round" ' \
         'stroke-width="2" ' \
-        'd="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>'
+        'd="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13\
+         7a4 4 0 11-8 0 4 4 0 018 0z"></path>'
     end
 
     config.paths.add "db/migrate", with: "db/migrate"
 
-    rake_tasks do
-      namespace :ruby_cms do
+    rake_tasks do # rubocop:disable Metrics/BlockLength
+      namespace :ruby_cms do # rubocop:disable Metrics/BlockLength
         desc "Create default permissions and optionally grant manage_admin " \
              "to admin users"
         task seed_permissions: :environment do
@@ -175,29 +181,29 @@ module RubyCms
         desc "Grant manage_admin to a user by email. " \
              "Usage: rails ruby_cms:grant_manage_admin email=user@example.com"
         task :grant_manage_admin, [:email] => :environment do |_t, args|
-          email = extract_email_from_args(args)
-          validate_email_present(email)
+          email = RubyCms::Engine.extract_email_from_args(args)
+          RubyCms::Engine.validate_email_present(email)
 
           RubyCms::Permission.ensure_defaults!
-          user = find_user_by_email(email)
-          validate_user_found(user, email)
+          user = RubyCms::Engine.find_user_by_email(email)
+          RubyCms::Engine.validate_user_found(user, email)
 
-          grant_manage_admin_permission(user, email)
+          RubyCms::Engine.grant_manage_admin_permission(user, email)
         end
 
-        namespace :content_blocks do
+        namespace :content_blocks do # rubocop:disable Metrics/BlockLength
           desc "Export content blocks from database to YAML locale files"
           task :export, %i[namespace locales_dir] => :environment do |_t, args|
             require "ruby_cms/content_blocks_sync"
 
             namespace = args[:namespace].presence
-            locales_dir = parse_locales_dir(args[:locales_dir])
+            locales_dir = RubyCms::Engine.parse_locales_dir(args[:locales_dir])
             flatten = ENV["flatten"] == "true"
 
             sync = RubyCms::ContentBlocksSync.new(namespace:, locales_dir:)
             summary = sync.export_to_yaml(only_published: true, flatten_keys: flatten)
 
-            display_export_summary(summary)
+            RubyCms::Engine.display_export_summary(summary)
           end
 
           desc "Import content blocks from YAML locale files to database"
@@ -205,14 +211,16 @@ module RubyCms
             require "ruby_cms/content_blocks_sync"
 
             locale = args[:locale].presence&.to_sym
-            namespace = args[:namespace].presence
-            locales_dir = parse_locales_dir(args[:locales_dir])
-            import_options = parse_import_options
+            namespace = args[:namespace].presence ||
+                        Rails.application.config.ruby_cms.content_blocks_translation_namespace
+            locales_dir = RubyCms::Engine.parse_locales_dir(args[:locales_dir]) ||
+                          Rails.root.join("config/locales")
+            import_options = RubyCms::Engine.parse_import_options
 
             sync = RubyCms::ContentBlocksSync.new(namespace:, locales_dir:)
             summary = sync.import_from_yaml(locale:, **import_options)
 
-            display_import_summary(summary)
+            RubyCms::Engine.display_import_summary(summary)
           end
 
           desc "Sync content blocks: export DB to YAML, optionally import from YAML"
@@ -220,13 +228,13 @@ module RubyCms
             require "ruby_cms/content_blocks_sync"
 
             namespace = args[:namespace].presence
-            locales_dir = parse_locales_dir(args[:locales_dir])
+            locales_dir = RubyCms::Engine.parse_locales_dir(args[:locales_dir])
             import_after = ENV["import_after"] == "true"
 
             sync = RubyCms::ContentBlocksSync.new(namespace:, locales_dir:)
             result = sync.sync(import_after_export: import_after)
 
-            display_sync_summary(result, import_after)
+            RubyCms::Engine.display_sync_summary(result, import_after)
           end
         end
       end

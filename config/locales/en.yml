@@ -14,7 +14,25 @@ en:
 
   ruby_cms:
     admin:
+      base:
+        authentication_required: "Authentication required."
+        not_authorized: "Not authorized."
+      locales:
+        en: "English"
+        nl: "Dutch"
+        de: "German"
+        fr: "French"
+        es: "Spanish"
       content_blocks:
         created: "Content block created."
         updated: "Content block updated."
         deleted: "Content block deleted."
+        locale_read_only: "(locale cannot be changed for existing blocks)"
+        select_locale: "Select locale"
+        edit_in_locale: "Edit in %{locale_name}"
+        other_languages: "Other languages"
+        content_type: "Content type"
+        title: "Title"
+        content: "Content"
+        rich_content: "Rich content"
+        published: "Published"

@@ -33,22 +33,18 @@ module RubyCms
         condition ? attributes : {}
       end
 
-      # Access Rails helpers (works in both Phlex and RubyUI contexts)
+      # Access Rails helpers (works in Phlex and RubyUI contexts)
       def helpers
-        @helpers ||= if respond_to?(:view_context)
-                       view_context
-                     elsif defined?(Phlex::Rails::ViewContext)
-                       Phlex::Rails::ViewContext.current
-                     elsif defined?(Phlex::HTML) && respond_to?(:call)
-                       # Phlex components have access to view_context when rendered
-                       # Try to get it from the rendering context
-                       Thread.current[:phlex_view_context] || raise("View context not available")
-                     else
-                       # Fallback: try to get from thread-local or raise helpful error
-                       raise(
-                         "View context not available. Ensure component is rendered from a Rails view."
-                       )
-                     end
+        @helpers ||=
+          if respond_to?(:view_context)
+            view_context
+          elsif defined?(Phlex::Rails::ViewContext)
+            Phlex::Rails::ViewContext.current
+          elsif defined?(Phlex::HTML) && respond_to?(:call)
+            Thread.current[:phlex_view_context] || raise("View context not available")
+          else
+            raise("View context not available. Ensure component is rendered from a Rails view.")
+          end
       end
 
       # Get form authenticity token

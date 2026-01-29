@@ -15,5 +15,6 @@ pin "ruby_cms/flash_messages_controller", to: "controllers/ruby_cms/flash_messag
 pin "ruby_cms/bulk_action_table_controller",
     to: "controllers/ruby_cms/bulk_action_table_controller.js"
 pin "ruby_cms/toggle_controller", to: "controllers/ruby_cms/toggle_controller.js"
+pin "ruby_cms/locale_tabs_controller", to: "controllers/ruby_cms/locale_tabs_controller.js"
 pin "ruby_cms/visual_editor_header_controller",
     to: "controllers/ruby_cms/visual_editor_header_controller.js"

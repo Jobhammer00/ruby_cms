@@ -1,0 +1,6 @@
+# Test database configuration for gem specs
+test:
+  adapter: sqlite3
+  database: ":memory:"
+  pool: 5
+  timeout: 5000

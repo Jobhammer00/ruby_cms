@@ -6,7 +6,7 @@ module RubyCms
 
     # Check if the user has a permission. record: reserved for future record-scoped permissions.
     # Default-deny: unknown permission key = forbidden. Permission lookups are cached per-request.
-    def can?(permission_key, record: nil)
+    def can?(permission_key)
       return bootstrap_allowed?(permission_key) if bootstrap?
 
       k = permission_key.to_s
@@ -29,7 +29,8 @@ module RubyCms
     # Per-request cache of this user's permission keys. Never rely on client-side checks.
     def cms_permission_keys_cached
       @cms_permission_keys_cached ||=
-        RubyCms::UserPermission.where(user: self).joins(:permission).pluck("ruby_cms_permissions.key")
+        RubyCms::UserPermission.where(user: self)
+                               .joins(:permission).pluck("ruby_cms_permissions.key")
     end
   end
 end
