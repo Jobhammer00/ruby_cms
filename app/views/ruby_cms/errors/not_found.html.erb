@@ -1,0 +1,19 @@
+<div class="visitor-error-show">
+  <div class="visitor-error-header">
+    <div class="visitor-error-breadcrumbs">
+      <%= link_to t("ruby_cms.admin.navigation.admin", default: "Admin"), ruby_cms_admin_root_path %> /
+      <span><%= t("ruby_cms.errors.not_found", default: "Page Not Found") %></span>
+    </div>
+
+    <h1 class="visitor-error-title">404</h1>
+    <h2 class="visitor-error-status-title"><%= t("ruby_cms.errors.page_not_found", default: "Page Not Found") %></h2>
+
+    <p style="margin: 0 0 24px; color: #6b7280; font-size: 16px;">
+      <%= t("ruby_cms.errors.not_found_message", default: "The page you are looking for doesn't exist or has been moved.") %>
+    </p>
+
+    <div class="visitor-error-actions">
+      <%= link_to t("ruby_cms.errors.back_to_admin", default: "Back to Admin"), ruby_cms_admin_root_path, class: "visitor-error-btn visitor-error-btn-secondary" %>
+    </div>
+  </div>
+</div>

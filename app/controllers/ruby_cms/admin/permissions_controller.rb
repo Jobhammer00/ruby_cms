@@ -6,7 +6,8 @@ module RubyCms
       include RubyCms::AdminPagination
       include RubyCms::AdminTurboTable
 
-      paginates per_page: 50, turbo_frame: "admin_table_content"
+      paginates per_page: -> { RubyCms::Preference.get(:permissions_per_page, default: 50) },
+                turbo_frame: "admin_table_content"
 
       before_action { require_permission!(:manage_permissions) }
 

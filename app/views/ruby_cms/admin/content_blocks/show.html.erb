@@ -20,8 +20,18 @@
 
   <div class="ruby_cms-content-blocks-show__meta">
     <div>
+      <div class="ruby_cms-content-blocks-show__label">ID</div>
+      <div class="ruby_cms-content-blocks-show__value"><%= @content_block.id %></div>
+    </div>
+
+    <div>
       <div class="ruby_cms-content-blocks-show__label">Key</div>
       <div class="ruby_cms-content-blocks-show__value ruby_cms-content-blocks-show__mono"><%= @content_block.key %></div>
+    </div>
+
+    <div>
+      <div class="ruby_cms-content-blocks-show__label">Locale</div>
+      <div class="ruby_cms-content-blocks-show__value"><%= ruby_cms_locale_display_name(@content_block.locale) %></div>
     </div>
 
     <div>
@@ -39,6 +49,23 @@
         <% end %>
       </div>
     </div>
+
+    <div>
+      <div class="ruby_cms-content-blocks-show__label">Created At</div>
+      <div class="ruby_cms-content-blocks-show__value"><%= @content_block.created_at.strftime("%B %d, %Y at %I:%M %p") %></div>
+    </div>
+
+    <div>
+      <div class="ruby_cms-content-blocks-show__label">Last Updated</div>
+      <div class="ruby_cms-content-blocks-show__value"><%= @content_block.updated_at.strftime("%B %d, %Y at %I:%M %p") %></div>
+    </div>
+
+    <% if @content_block.updated_by.present? %>
+      <div>
+        <div class="ruby_cms-content-blocks-show__label">Updated By</div>
+        <div class="ruby_cms-content-blocks-show__value"><%= @content_block.updated_by.email %></div>
+      </div>
+    <% end %>
   </div>
 
   <% if @blocks_by_locale.present? %>

@@ -11,6 +11,8 @@ export default class extends Controller {
     "dialogOverlay",
     "dialogConfirmButton",
     "dialogContent",
+    "dialogTitle",
+    "dialogMessage",
   ];
   static values = {
     csrfToken: String,
@@ -179,26 +181,66 @@ export default class extends Controller {
       return;
     }
 
-    const actionName =
-      event.params.actionName || event.currentTarget.dataset.actionName;
+    const button = event.currentTarget;
+    const actionName = event.params.actionName || button.dataset.actionName;
     const actionUrl =
       event.params.actionUrl ||
-      event.currentTarget.dataset.actionUrl ||
-      event.currentTarget.dataset.deleteUrl ||
+      button.dataset.actionUrl ||
+      button.dataset.deleteUrl ||
       this.bulkActionUrlValue;
+    const actionLabel =
+      button.dataset.actionLabel || this.getDefaultActionLabel(actionName);
+    const actionConfirm =
+      button.dataset.actionConfirm || this.getDefaultActionConfirm(actionName);
 
     if (
-      event.currentTarget.dataset.actionType === "redirect" ||
+      button.dataset.actionType === "redirect" ||
       actionName === "bulk_edit"
     ) {
       this.redirectToBulkAction(actionUrl, actionName);
       return;
     }
 
+    // Direct action: perform immediately without confirmation
+    if (button.dataset.actionType === "direct") {
+      this.currentAction = actionName;
+      this.currentActionUrl = actionUrl;
+      this.performDirectAction();
+      return;
+    }
+
     this.currentAction = actionName;
     this.currentActionUrl = actionUrl;
+    this.currentActionLabel = actionLabel;
+    this.currentActionConfirm = actionConfirm;
 
     this.showDialog();
+  }
+
+  async performDirectAction() {
+    const itemIds = this.getSelectedIds();
+    if (itemIds.length === 0) return;
+
+    await this.performBulkAction(
+      null,
+      this.currentAction,
+      this.currentActionUrl,
+      itemIds,
+    );
+  }
+
+  getDefaultActionLabel(actionName) {
+    if (actionName === "delete") return "Delete Selected";
+    return actionName
+      ? actionName.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+      : "Confirm";
+  }
+
+  getDefaultActionConfirm(actionName) {
+    if (actionName === "delete") {
+      return "Are you sure you want to delete the selected items? This action cannot be undone.";
+    }
+    return "Are you sure you want to proceed?";
   }
 
   redirectToBulkAction(url, actionName) {
@@ -219,16 +261,27 @@ export default class extends Controller {
   }
 
   showDialog() {
+    const label = this.currentActionLabel || "Confirm";
+    const message =
+      this.currentActionConfirm || "Are you sure you want to proceed?";
+
+    if (this.hasDialogTitleTarget) {
+      this.dialogTitleTarget.textContent = label;
+    }
+    if (this.hasDialogMessageTarget) {
+      this.dialogMessageTarget.innerHTML = message
+        .split("\n")
+        .map((p) => `<p>${p}</p>`)
+        .join("");
+    }
     if (this.hasDialogConfirmButtonTarget) {
       this.dialogConfirmButtonTarget.disabled = false;
+      this.dialogConfirmButtonTarget.textContent = label;
     }
 
-    // Show the dialog overlay
     if (this.hasDialogOverlayTarget) {
       this.dialogOverlayTarget.classList.remove("hidden");
-      // Prevent body scroll
       document.body.classList.add("overflow-hidden");
-      // Focus the dialog for accessibility
       if (this.hasDialogContentTarget) {
         this.dialogContentTarget.focus();
       }
@@ -418,17 +471,12 @@ export default class extends Controller {
         }),
       });
 
-      if (response.ok) {
+      if (response.ok || response.redirected) {
         this.clearSelection();
         this.clearItemIdsFromUrl();
 
         if (window.Turbo) {
-          const turboFrame = document.getElementById("admin_table_content");
-          if (turboFrame) {
-            turboFrame.src = window.location.href;
-          } else {
-            window.Turbo.visit(window.location.href);
-          }
+          window.Turbo.visit(window.location.href, { action: "replace" });
         } else {
           window.location.reload();
         }

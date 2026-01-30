@@ -46,6 +46,11 @@ module RubyCms
     config.ruby_cms.image_content_types = %w[image/png image/jpeg image/gif image/webp]
     config.ruby_cms.image_max_size = 5.megabytes
 
+    # Ensure Ahoy is loaded before host's config/initializers/ahoy.rb runs
+    initializer "ruby_cms.require_ahoy", before: :load_config_initializers do
+      require "ahoy_matey"
+    end
+
     initializer "ruby_cms.i18n" do |app|
       app.config.i18n.load_path += Dir[config.root.join("config", "locales", "**", "*.yml")]
     end
@@ -54,15 +59,16 @@ module RubyCms
       ActiveSupport.on_load(:action_controller_base) do
         helper RubyCms::ApplicationHelper
         helper RubyCms::ContentBlocksHelper
+        helper RubyCms::SettingsHelper
         helper RubyCms::BulkActionTableHelper
         helper RubyCms::Admin::BulkActionTableHelper
       end
     end
 
-    initializer "ruby_cms.assets" do |app|
-      # Add JavaScript controllers to asset pipeline
+    initializer "ruby_cms.assets", before: :load_config_initializers do |app|
+      # Add JavaScript controllers to asset pipeline (before importmap resolves)
       if app.config.respond_to?(:assets)
-        app.config.assets.paths << config.root.join("app/javascript")
+        app.config.assets.paths.unshift(config.root.join("app/javascript"))
       end
       # Add stylesheets to asset pipeline
       if app.config.respond_to?(:assets)
@@ -130,6 +136,20 @@ module RubyCms
 
     def self.register_settings_nav_items
       RubyCms.nav_register(
+        key: :settings,
+        label: "Settings",
+        path: lambda(&:ruby_cms_admin_settings_path),
+        section: "Settings",
+        icon: settings_icon_path
+      )
+      RubyCms.nav_register(
+        key: :visitor_errors,
+        label: "Visitor errors",
+        path: lambda(&:ruby_cms_admin_visitor_errors_path),
+        section: "Settings",
+        icon: visitor_errors_icon_path
+      )
+      RubyCms.nav_register(
         key: :permissions,
         label: "Permissions",
         path: lambda(&:ruby_cms_admin_permissions_path),
@@ -143,6 +163,28 @@ module RubyCms
         section: "Settings",
         icon: users_icon_path
       )
+    end
+
+    def self.settings_icon_path
+      # Heroicons Cog6ToothIcon (outline)
+      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
+        'd="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 ' \
+        '1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 ' \
+        '1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 ' \
+        '6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 ' \
+        '0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 ' \
+        '1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 ' \
+        '6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 ' \
+        '1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 ' \
+        '1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"></path>' \
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>'
+    end
+
+    def self.visitor_errors_icon_path
+      # Heroicons ExclamationTriangleIcon (outline)
+      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
+        'd="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 ' \
+        '4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>'
     end
 
     def self.permissions_icon_path
@@ -177,6 +219,7 @@ module RubyCms
              "to admin users"
         task seed_permissions: :environment do
           RubyCms::Permission.ensure_defaults!
+          RubyCms::Preference.ensure_defaults!
           RubyCms::Engine.grant_admin_permissions_to_admin_users
         end
 
@@ -318,9 +361,12 @@ module RubyCms
     end
 
     def self.grant_manage_admin_permission(user, email)
-      perm = RubyCms::Permission.find_by!(key: "manage_admin")
-      RubyCms::UserPermission.find_or_create_by!(user: user, permission: perm)
-      puts "Granted manage_admin to #{email}" # rubocop:disable Rails/Output
+      RubyCms::Permission.ensure_defaults!
+      %w[manage_admin manage_permissions manage_content_blocks manage_visitor_errors].each do |key|
+        perm = RubyCms::Permission.find_by!(key:)
+        RubyCms::UserPermission.find_or_create_by!(user: user, permission: perm)
+      end
+      puts "Granted full admin permissions to #{email}" # rubocop:disable Rails/Output
     end
 
     def self.parse_locales_dir(locales_dir_arg)

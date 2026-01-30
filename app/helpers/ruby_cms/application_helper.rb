@@ -11,7 +11,7 @@ module RubyCms
     end
 
     def ruby_cms_nav_entries
-      RubyCms.nav_registry.select do |e|
+      RubyCms.visible_nav_registry.select do |e|
         next false if e[:if].present? && (!e[:if].respond_to?(:call) || !e[:if].call(self))
 
         true

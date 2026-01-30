@@ -59,8 +59,10 @@ module RubyCms
           div(class: "bulk-action-table", **table_data_attributes) do
             render_header
             render_table_wrapper(&block)
-            render_bulk_actions if @has_bulk_actions
-            render_pagination if @pagination && @pagination_path
+            div(class: "bulk-action-table__footer") do
+              render_bulk_actions if @has_bulk_actions
+              render_pagination if @pagination && @pagination_path
+            end
           end
         end
 

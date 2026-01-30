@@ -62,6 +62,7 @@
     item_name: "content block",
     pagination: @pagination,
     pagination_path: @pagination_path,
-    row_partial: "ruby_cms/admin/content_blocks/row"
+    row_partial: "ruby_cms/admin/content_blocks/row",
+    row_click_url: ->(item) { ruby_cms_admin_content_block_path(item.respond_to?(:content_block) ? item.content_block : item) }
   } %>
 <% end %>

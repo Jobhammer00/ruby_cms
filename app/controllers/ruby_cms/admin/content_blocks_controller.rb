@@ -6,7 +6,8 @@ module RubyCms
       include RubyCms::AdminPagination
       include RubyCms::AdminTurboTable
 
-      paginates per_page: 50, turbo_frame: "admin_table_content"
+      paginates per_page: -> { RubyCms::Preference.get(:content_blocks_per_page, default: 50) },
+                turbo_frame: "admin_table_content"
 
       before_action { require_permission!(:manage_content_blocks) }
       before_action :set_content_block, only: %i[show edit update destroy]
@@ -22,6 +23,7 @@ module RubyCms
       end
 
       def show
+        @blocks_by_locale = load_blocks_by_locale_for_show
         respond_with_block(@content_block)
       end
 
@@ -69,7 +71,8 @@ module RubyCms
 
       def grouped_or_paginated(collection)
         if params[:locale].blank? && params[:q].blank?
-          grouped_by_key_collection(collection)
+          grouped_rows = grouped_by_key_collection(collection)
+          paginate_collection(grouped_rows)
         else
           paginate_collection(collection)
         end
@@ -183,6 +186,10 @@ module RubyCms
             content_type: @content_block.content_type
           )
         end
+      end
+
+      def load_blocks_by_locale_for_show
+        ::ContentBlock.where(key: @content_block.key).index_by {|b| b.locale.to_s }
       end
 
       def new_block_params

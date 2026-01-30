@@ -47,11 +47,17 @@ module RubyCms
         def render_dialog_container
           div(class: "bulk-action-dialog__container") do
             div(**dialog_content_attributes) do
-              render_close_button
-              render_header
+              render_header_with_close
               render_message
               render_footer
             end
+          end
+        end
+
+        def render_header_with_close
+          div(class: "bulk-action-dialog__header-row") do
+            render_header
+            render_close_button
           end
         end
 
@@ -110,15 +116,13 @@ module RubyCms
         end
 
         def render_header
-          div(class: "bulk-action-dialog__header") do
-            h3(
-              id: "dialog-title",
-              class: "bulk-action-dialog__title",
-              data: {
-                "#{@controller_name}-target": "dialogTitle"
-              }
-            ) { "Delete Selected Items" }
-          end
+          h3(
+            id: "dialog-title",
+            class: "bulk-action-dialog__title",
+            data: {
+              "#{@controller_name}-target": "dialogTitle"
+            }
+          ) { "Delete Selected Items" }
         end
 
         def render_message

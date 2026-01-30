@@ -1,0 +1,129 @@
+/* Visual Editor - Edit mode on preview page, content blocks, toast, loading */
+
+.ruby_cms-preview-page {
+  position: relative;
+}
+
+.ruby_cms-preview-page--edit-mode {
+  position: relative;
+}
+
+.ruby_cms-preview-page__edit-indicator {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 50;
+}
+
+.ruby_cms-preview-page__edit-badge {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  background-color: rgb(220 252 231);
+  border: 1px solid rgb(187 247 208);
+  border-radius: 9999px;
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(22 101 52);
+}
+
+.ruby_cms-preview-page__edit-badge-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  background-color: rgb(34 197 94);
+  border-radius: 9999px;
+  animation: ruby_cms-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes ruby_cms-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.ruby_cms-content-block {
+  position: relative;
+}
+
+.ruby_cms-content-block.editing {
+  outline: 2px solid rgb(34 197 94);
+  outline-offset: 2px;
+  background-color: rgba(34, 197, 94, 0.05);
+  transition: all 0.2s ease;
+}
+
+.ruby_cms-preview-page--edit-mode .ruby_cms-content-block:hover {
+  outline: 2px dashed rgb(59 130 246);
+  outline-offset: 2px;
+  cursor: pointer;
+}
+
+.ruby_cms-visual-editor-toast {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 50;
+}
+
+.ruby_cms-visual-editor-toast--visible {
+  display: block;
+}
+
+.ruby_cms-visual-editor-toast__content {
+  background-color: rgb(240 253 244);
+  border: 1px solid rgb(187 247 208);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.ruby_cms-visual-editor-toast__inner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.ruby_cms-visual-editor-toast__icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: rgb(34 197 94);
+  flex-shrink: 0;
+}
+
+.ruby_cms-visual-editor-toast__message {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: rgb(22 101 52);
+}
+
+.ruby_cms-visual-editor-loading-indicator {
+  display: none;
+}
+
+.ruby_cms-visual-editor-loading-indicator--visible {
+  display: block;
+}
+
+.ruby_cms-visual-editor-sidebar__content--fade-out {
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.ruby_cms-visual-editor-sidebar__content--fade-in {
+  opacity: 1;
+  transition: opacity 300ms ease;
+}

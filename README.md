@@ -10,6 +10,8 @@ Reusable Rails engine: admin-only auth, permissions, admin shell, content blocks
 - **Content Blocks** - Reusable content snippets with rich text support
 - **Permissions** - Fine-grained permission system
 - **Users** - User management with permission assignments
+- **Visitor Error Tracking** - Automatic exception logging with admin interface
+- **Page View Tracking** - Ahoy-based analytics for page views and events
 
 ## Documentation
 
@@ -125,5 +127,109 @@ Create and edit blocks under **Admin → Content blocks**.
 3. Open **Admin → Visual editor**, pick a page, and click any content block in the preview to edit in the modal.
 
 4. **postMessage**: The preview iframe and parent communicate via postMessage for content block editing and updates.
+
+### Visitor Error Tracking
+
+RubyCMS automatically captures unhandled exceptions from public pages (non-admin) and logs them to the `ruby_cms_visitor_errors` table.
+
+**Note**: Error logging is disabled in development environment (errors are skipped and only re-raised for normal Rails error pages).
+
+#### How it works
+
+1. The install generator adds `RubyCms::VisitorErrorCapture` to your `ApplicationController` with `rescue_from StandardError`
+2. When an exception occurs in production/staging, it's logged with full context (backtrace, request params, IP, user agent, etc.)
+3. The exception is re-raised so users still see the standard error page
+4. Admin users can view and manage errors at `/admin/visitor_errors`
+
+#### What gets logged
+
+- Error class and message
+- Request path and method
+- IP address and user agent
+- Session ID
+- First 10 lines of backtrace
+- Sanitized request params (passwords/tokens excluded)
+
+#### Admin interface
+
+Visit `/admin/visitor_errors` to:
+
+- View all errors with filtering by path, error type, and resolved status
+- See full error details including backtrace and request context
+- Mark errors as resolved (single or bulk)
+- Delete errors (bulk action)
+
+### Page View Tracking (Ahoy)
+
+RubyCMS includes Ahoy for visit and event tracking. The install generator sets up Ahoy with server-side tracking (no JavaScript required).
+
+#### Tracking page views
+
+Include `RubyCms::PageTracking` in your public controllers to automatically track page views:
+
+```ruby
+class PagesController < ApplicationController
+  include RubyCms::PageTracking
+
+  def home
+    # @page_name is set to controller_name by default
+    # Override if needed: @page_name = "home"
+  end
+end
+```
+
+Page views are stored in `ahoy_events` with:
+
+- `name: "page_view"`
+- `page_name`: Controller-specific identifier
+- `request_path`: Full request path
+- `visit`: Associated Ahoy visit (includes IP, user agent, browser, etc.)
+
+#### What Ahoy tracks
+
+**Visits** (`ahoy_visits` table):
+
+- Visit token (unique per session)
+- IP address and user agent
+- Browser, OS, device type
+- Landing page and referrer
+- UTM parameters
+- User ID (when authenticated)
+
+**Events** (`ahoy_events` table):
+
+- Event name (e.g., "page_view")
+- Timestamp
+- Associated visit
+- Custom properties (page_name, request_path, etc.)
+- User ID (when authenticated)
+
+#### Accessing analytics data
+
+Query the Ahoy tables directly or use the Ahoy gem's built-in methods:
+
+```ruby
+# Get all page views
+Ahoy::Event.where(name: "page_view")
+
+# Page views for a specific page
+Ahoy::Event.where(name: "page_view", page_name: "home")
+
+# Unique visitors (visits)
+Ahoy::Visit.count
+
+# Page views by page
+Ahoy::Event.where(name: "page_view")
+          .group(:page_name)
+          .count
+```
+
+#### Architecture notes
+
+**Visitor Errors** and **Ahoy** are independent systems:
+
+- Visitor Errors log exceptions via `ApplicationController#rescue_from`
+- Ahoy tracks visits/events via Rack middleware and controller callbacks
+- No direct relationship between the two systems
 
 ---

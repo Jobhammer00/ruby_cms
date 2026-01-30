@@ -12,6 +12,7 @@
 <% pagination_path = local_assigns[:pagination_path] %>
 <% row_partial = local_assigns[:row_partial] %>
 <% row_block = local_assigns[:row_block] %>
+<% row_click_url = local_assigns[:row_click_url] %>
 
 <%= render RubyCms::Admin::BulkActionTable::BulkActionTable.new(
   header_title: title,
@@ -38,9 +39,11 @@
     <% collection.each do |item| %>
         <% next if item.nil? %>
         <%= render RubyCms::Admin::BulkActionTable::BulkActionTableRow.new(
+          click_url: row_click_url.is_a?(Proc) ? row_click_url.call(item) : nil,
           data: { item_id: item.id },
           bulk_actions_enabled: true,
-          controller_name: "ruby-cms--bulk-action-table"
+          controller_name: "ruby-cms--bulk-action-table",
+          class: local_assigns[:row_class].is_a?(Proc) ? local_assigns[:row_class].call(item) : nil
         ) do %>
           <% if row_partial %>
             <%= render partial: row_partial, locals: { item.model_name.element.to_sym => item } %>

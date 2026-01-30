@@ -7,7 +7,8 @@
   border: 1px solid var(--pelican-border);
   border-radius: 0.5rem;
   padding: 1.25rem 1.5rem;
-  max-width: 64rem;
+  width: 70%;
+  margin: 0 auto;
 }
 
 /* ============================================
@@ -183,7 +184,7 @@
 
 .ruby_cms-content-blocks-show__meta {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1.25rem;
   padding-bottom: 1.25rem;
   border-bottom: 1px solid var(--pelican-border);

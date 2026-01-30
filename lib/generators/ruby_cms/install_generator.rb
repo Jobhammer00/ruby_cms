@@ -13,7 +13,7 @@ module RubyCms
 
         Next steps (if not already done):
         - rails db:migrate
-        - rails ruby_cms:seed_permissions
+        - rails ruby_cms:seed_permissions (includes manage_visitor_errors)
         - rails ruby_cms:setup_admin (or: rails ruby_cms:grant_manage_admin email=you@example.com)
         - To seed content blocks from YAML: add content under content_blocks in config/locales/<locale>.yml, then run rails ruby_cms:content_blocks:seed (or call it from db/seeds.rb).
 
@@ -23,6 +23,12 @@ module RubyCms
         - Review config/initializers/ruby_cms.rb (session, CSP).
         - Add 'css: bin/rails tailwindcss:watch' to Procfile.dev for Tailwind in development.
         - Visit /admin (sign in as the admin you configured).
+
+        Tracking:
+        - Visitor errors: Automatically captured via ApplicationController (see /admin/visitor_errors)
+        - Page views (Ahoy): Include RubyCms::PageTracking in your public controllers to track page views
+          Example: class PagesController < ApplicationController; include RubyCms::PageTracking; end
+        - Analytics: View visit/event data in Ahoy tables (ahoy_visits, ahoy_events)
       TEXT
 
       def run_authentication
@@ -87,6 +93,34 @@ module RubyCms
         route 'mount RubyCms::Engine => "/"'
       end
 
+      def add_catch_all_route
+        routes_path = Rails.root.join("config/routes.rb")
+        return unless routes_path.exist?
+
+        content = File.read(routes_path)
+        return if content.include?("ruby_cms/errors#not_found")
+
+        # Add catch-all route at the end of the routes block (before final 'end')
+        catch_all = <<~ROUTE
+
+          # RubyCMS: Catch-all route for 404 error tracking (must be LAST)
+          match "*path", to: "ruby_cms/errors#not_found", via: :all,
+                constraints: ->(req) { !req.path.start_with?("/rails/", "/assets/") }
+        ROUTE
+
+        # Insert before the last 'end' in the file
+        gsub_file routes_path, /(\nend)\s*\z/ do
+          "#{catch_all}end\n"
+        end
+        say "✓ Catch-all route: Added for 404 error tracking", :green
+      rescue StandardError => e
+        say "⚠ Catch-all route: Could not add automatically: #{e.message}. " \
+            "Add manually at the END of routes.rb:\n  " \
+            'match "*path", to: "ruby_cms/errors#not_found", via: :all, ' \
+            'constraints: ->(req) { !req.path.start_with?("/rails/", "/assets/") }',
+            :yellow
+      end
+
       def add_permittable_to_user
         user_path = Rails.root.join("app/models/user.rb")
         unless File.exist?(user_path)
@@ -111,6 +145,27 @@ module RubyCms
         inject_into_file auth_path, after: "  private\n" do
           "    def current_user\n      Current.user\n    end\n\n"
         end
+      end
+
+      def add_visitor_error_capture
+        ac_path = Rails.root.join("app/controllers/application_controller.rb")
+        return unless ac_path.exist?
+
+        content = File.read(ac_path)
+        return if content.include?("RubyCms::VisitorErrorCapture")
+
+        to_inject = "  include RubyCms::VisitorErrorCapture\n"
+        to_inject += "  rescue_from StandardError, with: :handle_visitor_error\n" \
+          unless content.include?("rescue_from StandardError")
+
+        inject_into_file ac_path, after: /class ApplicationController.*\n/ do
+          to_inject
+        end
+        say "✓ Visitor error capture: Added to ApplicationController", :green
+      rescue StandardError => e
+        say "⚠ Visitor error capture: Could not add to ApplicationController: #{e.message}. " \
+            "Add manually: include RubyCms::VisitorErrorCapture and rescue_from StandardError, with: :handle_visitor_error",
+            :yellow
       end
 
       def copy_fallback_css
@@ -154,6 +209,20 @@ module RubyCms
         end
       end
 
+      def install_ahoy
+        return if ahoy_already_installed?
+
+        say "ℹ Task ahoy: Installing Ahoy for visit/event tracking.", :cyan
+        run "bin/rails generate ahoy:install"
+        add_ahoy_security_fields_migration
+        configure_ahoy_server_side_only
+        say "✓ Task ahoy: Installed Ahoy (visits, events, tracking)", :green
+      rescue StandardError => e
+        say "⚠ Task ahoy: Could not install: #{e.message}. " \
+            "Run 'rails g ahoy:install' manually.",
+            :yellow
+      end
+
       def install_action_text
         migrate_dir = Rails.root.join("db/migrate")
         return unless migrate_dir.directory?
@@ -168,6 +237,58 @@ module RubyCms
       end
 
       no_tasks do
+        def ahoy_already_installed?
+          migrate_dir = Rails.root.join("db/migrate")
+          return false unless migrate_dir.directory?
+
+          Dir.glob(migrate_dir.join("*.rb").to_s).any? {|f| File.read(f).include?("ahoy_visits") }
+        end
+
+        def add_ahoy_security_fields_migration
+          run "bin/rails generate migration AddRubyCmsFieldsToAhoyEvents"
+          migration_file = Dir.glob(Rails.root.join("db/migrate/*add_ruby_cms*fields*.rb")).max_by do |f|
+            File.basename(f)
+          end
+          return unless migration_file
+
+          content = <<~RUBY
+            class AddRubyCmsFieldsToAhoyEvents < ActiveRecord::Migration[#{ActiveRecord::VERSION::MAJOR}.#{ActiveRecord::VERSION::MINOR}]
+              def change
+                add_column :ahoy_events, :page_name, :string
+                add_column :ahoy_events, :ip_address, :string
+                add_column :ahoy_events, :request_path, :string
+                add_column :ahoy_events, :user_agent, :text
+                add_column :ahoy_events, :description, :text
+
+                add_index :ahoy_events, :page_name, if_not_exists: true
+                add_index :ahoy_events, :ip_address, if_not_exists: true
+                add_index :ahoy_events, :request_path, if_not_exists: true
+                add_index :ahoy_events, [:name, :page_name], if_not_exists: true
+                add_index :ahoy_events, [:name, :request_path], if_not_exists: true
+              end
+            end
+          RUBY
+          File.write(migration_file, content)
+        end
+
+        def configure_ahoy_server_side_only
+          ahoy_path = Rails.root.join("config/initializers/ahoy.rb")
+          return unless ahoy_path.exist?
+
+          content = File.read(ahoy_path)
+
+          # Ensure Ahoy is loaded before any references (fixes NameError when
+          # ahoy_matey loads after initializers)
+          unless content.include?('require "ahoy_matey"')
+            content = %(require "ahoy_matey"\n\n) + content
+          end
+
+          return if content.include?("Ahoy.api = false")
+
+          append = "\n\n# RubyCMS: server-side tracking only (no JavaScript)\nAhoy.api = false\nAhoy.geocode = false\n"
+          File.write(ahoy_path, content + append)
+        end
+
         def action_text_already_installed?(migrate_dir)
           return true if active_storage_tables_exist? || action_text_tables_exist?
 
@@ -778,12 +899,24 @@ module RubyCms
             # Ensure permissions exist first
             RubyCms::Permission.ensure_defaults!
 
-            # Check if any user has the manage_admin permission
-            manage_admin_perm = RubyCms::Permission.find_by(key: "manage_admin")
-            return false unless manage_admin_perm
+            # Check if any user has ALL required admin permissions
+            required_keys = %w[
+              manage_admin
+              manage_permissions
+              manage_content_blocks
+              manage_visitor_errors
+            ]
+            required_permission_ids = RubyCms::Permission.where(key: required_keys).pluck(:id)
+            return false if required_permission_ids.size != required_keys.size
 
-            # Check if any UserPermission exists for manage_admin
-            RubyCms::UserPermission.exists?(permission: manage_admin_perm)
+            # Find users who have all required permissions
+            user_ids_with_all_perms = RubyCms::UserPermission
+                                      .where(permission_id: required_permission_ids)
+                                      .group(:user_id)
+                                      .having("COUNT(DISTINCT permission_id) = ?", required_keys.size)
+                                      .pluck(:user_id)
+
+            user_ids_with_all_perms.any?
           rescue StandardError
             # If there's an error (e.g., tables don't exist yet), assume no admin exists
             false

@@ -31,6 +31,23 @@ module RubyCms
     ]
   end
 
+  # Filter navigation items based on preferences
+  def self.visible_nav_registry
+    return nav_registry unless defined?(RubyCms::Preference)
+
+    nav_registry.select do |item|
+      # Check :if condition first (legacy behavior)
+      next false if item[:if].respond_to?(:call) && !item[:if].call
+
+      # Then check preference
+      pref_key = :"nav_show_#{item[:key]}"
+      RubyCms::Preference.get(pref_key, default: true)
+    end
+  rescue StandardError => e
+    Rails.logger.error("[RubyCMS] Error filtering navigation: #{e.message}")
+    nav_registry
+  end
+
   # Navigation API: RubyCms::Nav.register(key:, label:, path:, icon: nil, section: nil, if: nil)
   module Nav
     def self.register(key:, label:, path:, icon: nil, section: nil, **) # rubocop:disable Metrics/ParameterLists

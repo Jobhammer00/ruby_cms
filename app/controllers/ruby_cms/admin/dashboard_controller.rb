@@ -14,6 +14,14 @@ module RubyCms
         rescue StandardError
           0
         end
+
+        # Visitor errors metrics
+        @visitor_errors_count = RubyCms::VisitorError.count
+        @unresolved_errors_count = RubyCms::VisitorError.unresolved.count
+        @recent_errors = RubyCms::VisitorError.order(created_at: :desc).limit(5)
+
+        # Recent activity
+        @recent_content_blocks = ::ContentBlock.order(updated_at: :desc).limit(5)
       end
 
       private

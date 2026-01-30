@@ -16,6 +16,20 @@ RubyCms::Engine.routes.draw do # rubocop:disable Metrics/BlockLength
         delete "bulk_delete", to: "permissions#bulk_delete"
       end
     end
+    resources :visitor_errors, only: %i[index show] do
+      member do
+        patch :resolve
+      end
+      collection do
+        delete :bulk_delete, to: "visitor_errors#bulk_delete"
+        patch :bulk_mark_as_resolved, to: "visitor_errors#bulk_mark_as_resolved"
+      end
+    end
+
+    get "settings", to: "settings#index", as: :settings
+    patch "settings", to: "settings#update", as: nil
+    post "settings/reset_defaults", to: "settings#reset_defaults", as: :settings_reset_defaults
+
     resources :users, only: %i[index create destroy] do
       collection do
         delete "bulk_delete", to: "users#bulk_delete"

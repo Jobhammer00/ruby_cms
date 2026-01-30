@@ -3,20 +3,26 @@
 
 import VisualEditorController from "ruby_cms/visual_editor_controller";
 import VisualEditorHeaderController from "ruby_cms/visual_editor_header_controller";
+import PagePreviewController from "ruby_cms/page_preview_controller";
 import MobileMenuController from "ruby_cms/mobile_menu_controller";
 import FlashMessagesController from "ruby_cms/flash_messages_controller";
 import BulkActionTableController from "ruby_cms/bulk_action_table_controller";
 import ToggleController from "ruby_cms/toggle_controller";
 import LocaleTabsController from "ruby_cms/locale_tabs_controller";
+import ClickableRowController from "ruby_cms/clickable_row_controller";
+import AutoSavePreferenceController from "ruby_cms/auto_save_preference_controller";
 
 export {
   VisualEditorController,
   VisualEditorHeaderController,
+  PagePreviewController,
   MobileMenuController,
   FlashMessagesController,
   BulkActionTableController,
   ToggleController,
   LocaleTabsController,
+  ClickableRowController,
+  AutoSavePreferenceController,
 };
 
 // Helper function to register all RubyCms controllers with a Stimulus application
@@ -26,6 +32,7 @@ export function registerRubyCmsControllers(application) {
     "ruby-cms--visual-editor-header",
     VisualEditorHeaderController,
   );
+  application.register("ruby-cms--page-preview", PagePreviewController);
   application.register("ruby-cms--mobile-menu", MobileMenuController);
   application.register("ruby-cms--flash-messages", FlashMessagesController);
   application.register(
@@ -34,6 +41,11 @@ export function registerRubyCmsControllers(application) {
   );
   application.register("ruby-cms--toggle", ToggleController);
   application.register("ruby-cms--locale-tabs", LocaleTabsController);
+  application.register("clickable-row", ClickableRowController);
+  application.register(
+    "ruby-cms--auto-save-preference",
+    AutoSavePreferenceController,
+  );
 }
 
 // Auto-register controllers when this module is imported

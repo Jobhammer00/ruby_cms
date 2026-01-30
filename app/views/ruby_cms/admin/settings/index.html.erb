@@ -1,0 +1,61 @@
+<%= render RubyCms::Admin::AdminPage.new do %>
+  <div class="ruby_cms-settings-header">
+    <h1 class="ruby_cms-page-title"><%= t("ruby_cms.admin.settings.title", default: "Settings") %></h1>
+    <p class="ruby_cms-dashboard-subtitle"><%= t("ruby_cms.admin.settings.subtitle", default: "Configure admin interface preferences") %></p>
+  </div>
+
+  <div class="ruby_cms-card ruby_cms-card--padded">
+
+    <!-- Tabs Navigation -->
+    <div class="ruby_cms-tabs">
+      <div class="ruby_cms-tabs__nav">
+        <% tab_configs = {
+          'general' => { icon: '🏠', label: 'General' },
+          'navigation' => { icon: '🧭', label: 'Navigation' },
+          'pagination' => { icon: '📄', label: 'Pagination' }
+        } %>
+        <% @preference_groups.keys.sort.each do |category| %>
+          <% config = tab_configs[category.to_s] || { icon: '⚙️', label: category.to_s.humanize } %>
+          <%= link_to ruby_cms_admin_settings_path(tab: category),
+              class: "ruby_cms-tabs__tab #{'ruby_cms-tabs__tab--active' if @active_tab == category.to_s}",
+              data: { turbo_frame: "settings_content" } do %>
+            <span class="ruby_cms-tabs__icon"><%= config[:icon] %></span>
+            <span class="ruby_cms-tabs__label"><%= config[:label] %></span>
+          <% end %>
+        <% end %>
+      </div>
+
+      <%= turbo_frame_tag "settings_content" do %>
+        <div class="ruby_cms-tabs__content">
+          <% category_prefs = @preference_groups[@active_tab] || [] %>
+          
+          <% if category_prefs.any? %>
+            <%= form_with url: ruby_cms_admin_settings_path, method: :post, class: "ruby_cms-settings-form" do |f| %>
+              <div class="ruby_cms-settings-grid">
+                <% category_prefs.each do |pref| %>
+                  <div class="ruby_cms-setting-item">
+                    <%= label_tag "pref_#{pref.key}", pref.key.humanize.gsub(/^Nav show /, '').gsub(/ per page$/, ''), class: "ruby_cms-label" %>
+                    <% if pref.description.present? %>
+                      <p class="ruby_cms-hint"><%= pref.description %></p>
+                    <% end %>
+                    <%= render_preference_field(pref) %>
+                  </div>
+                <% end %>
+              </div>
+
+              <div class="ruby_cms-button-group" style="margin-top: 2rem;">
+                <%= button_to t("ruby_cms.admin.settings.reset_defaults", default: "Reset to Defaults"),
+                    ruby_cms_admin_settings_reset_defaults_path,
+                    method: :post,
+                    form: { data: { turbo_confirm: t("ruby_cms.admin.settings.reset_confirm", default: "Reset all settings to default values?") } },
+                    class: "ruby_cms-btn ruby_cms-btn-secondary" %>
+              </div>
+            <% end %>
+          <% else %>
+            <p class="ruby_cms-empty-state"><%= t("ruby_cms.admin.settings.no_settings", default: "No settings in this category") %></p>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>

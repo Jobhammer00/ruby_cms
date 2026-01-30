@@ -8,7 +8,7 @@ module RubyCms
   module CssCompiler
     COMPONENTS = %w[
       tokens layout sidebar header cards dashboard buttons forms alerts
-      tables breadcrumbs flash_toast modals content_blocks
+      tables breadcrumbs flash_toast modals content_blocks visitor_errors settings
       bulk_action_table bulk_action_table_bar bulk_action_table_delete
       visual_editor visual_editor_header visual_editor_preview visual_editor_modal
       visual_editor_edit_mode

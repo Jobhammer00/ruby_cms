@@ -1,0 +1,30 @@
+<% visitor_error = local_assigns.fetch(:visitor_error) %>
+<%= tag.td do %>
+  <div class="ruby_cms-visitor-error-time">
+    <span class="ruby_cms-visitor-error-time-date"><%= visitor_error.created_at.strftime("%m/%d") %></span>
+    <span class="ruby_cms-visitor-error-time-clock"><%= visitor_error.created_at.strftime("%H:%M") %></span>
+  </div>
+<% end %>
+<%= tag.td do %>
+  <div class="ruby_cms-visitor-error-page">
+    <span class="ruby_cms-visitor-error-path"><%= visitor_error.request_path %></span>
+    <% if visitor_error.request_method != "GET" %>
+      <span class="ruby_cms-visitor-error-method"><%= visitor_error.request_method %></span>
+    <% end %>
+  </div>
+<% end %>
+<%= tag.td do %>
+  <div class="ruby_cms-visitor-error-details">
+    <div class="ruby_cms-visitor-error-class"><%= visitor_error.error_class %></div>
+    <div class="ruby_cms-visitor-error-message" title="<%= visitor_error.error_message %>"><%= visitor_error.error_message.truncate(50) %></div>
+  </div>
+<% end %>
+<%= tag.td visitor_error.browser_info, class: "ruby_cms-visitor-error-browser" %>
+<%= tag.td visitor_error.ip_address, class: "ruby_cms-visitor-error-ip" %>
+<%= tag.td do %>
+  <% if visitor_error.resolved? %>
+    <span class="ruby_cms-badge ruby_cms-badge-success"><%= t("ruby_cms.admin.visitor_errors.resolved") %></span>
+  <% else %>
+    <span class="ruby_cms-badge ruby_cms-badge-error"><%= t("ruby_cms.admin.visitor_errors.open") %></span>
+  <% end %>
+<% end %>

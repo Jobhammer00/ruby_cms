@@ -10,6 +10,8 @@ module RubyCms
       before_action :set_cms_locale
       before_action :require_cms_access
 
+      rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
+
       helper_method :current_user_cms, :require_permission!
 
       # Expose the engine's route helpers (ruby_cms_admin_*_path) in controllers.
@@ -75,6 +77,10 @@ module RubyCms
         else
           Rails.application.config.ruby_cms.current_user_resolver&.call(self)
         end
+      end
+
+      def render_not_found
+        render "ruby_cms/errors/not_found", status: :not_found, layout: "ruby_cms/admin"
       end
 
       def set_cms_locale

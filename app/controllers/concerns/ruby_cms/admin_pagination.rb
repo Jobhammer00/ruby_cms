@@ -1,16 +1,36 @@
 # frozen_string_literal: true
 
 module RubyCms
+  # Unified pagination concern for all admin index pages.
+  # Uses RubyCms::Preference for per_page when configured via paginates(per_page: proc).
+  # Supports ActiveRecord relations, Arrays, and params[:per_page] override with clamping.
+  #
+  # Usage:
+  #   class ContentBlocksController < BaseController
+  #     include RubyCms::AdminPagination
+  #     paginates per_page: -> { RubyCms::Preference.get(:content_blocks_per_page, default: 50) },
+  #               turbo_frame: "admin_table_content"
+  #
+  #     def index
+  #       @content_blocks = paginate_collection(collection)
+  #     end
+  #   end
+  #
   module AdminPagination
     extend ActiveSupport::Concern
+
+    DEFAULT_MIN_PER_PAGE = 5
+    DEFAULT_MAX_PER_PAGE = 200
 
     included do
       class_attribute :pagination_per_page, default: 50
       class_attribute :pagination_turbo_frame, default: nil
+      class_attribute :pagination_min_per_page, default: DEFAULT_MIN_PER_PAGE
+      class_attribute :pagination_max_per_page, default: DEFAULT_MAX_PER_PAGE
     end
 
     def set_pagination_vars(collection, per_page: nil, turbo_frame: nil)
-      per_page ||= self.class.pagination_per_page
+      per_page = calculate_per_page(per_page)
       turbo_frame ||= self.class.pagination_turbo_frame
 
       page = sanitize_page_param(params[:page])
@@ -29,29 +49,57 @@ module RubyCms
     end
 
     module ClassMethods
-      def paginates(per_page: 50, turbo_frame: nil)
+      def paginates(per_page: 50, turbo_frame: nil, min_per_page: nil, max_per_page: nil)
         self.pagination_per_page = per_page
         self.pagination_turbo_frame = turbo_frame
+        self.pagination_min_per_page = min_per_page if min_per_page.present?
+        self.pagination_max_per_page = max_per_page if max_per_page.present?
       end
     end
 
     private
 
+    def calculate_per_page(per_page=nil)
+      # Always use pagination preference (from paginates per_page: proc).
+      # No params[:per_page] override - Settings preferences are the source of truth.
+      per_page ||= self.class.pagination_per_page
+      per_page = per_page.call if per_page.respond_to?(:call)
+      per_page.clamp(
+        self.class.pagination_min_per_page,
+        self.class.pagination_max_per_page
+      )
+    end
+
     def sanitize_page_param(page_param)
-      page = page_param.to_i
+      page = (page_param || params[:page]).to_i
       [page, 1].max
     end
 
     def paginate_collection_internal(collection, page, per_page)
-      if defined?(Kaminari) && collection.respond_to?(:page)
+      if collection.kind_of?(Array)
+        paginate_array(collection, page, per_page)
+      elsif defined?(Kaminari) && collection.respond_to?(:page)
         paginated = collection.page(page).per(per_page)
         [paginated, paginated.total_count, paginated.total_pages, paginated.offset_value]
       else
-        total_count = collection.count
-        offset = (page - 1) * per_page
-        paginated = collection.limit(per_page).offset(offset)
-        [paginated, total_count, (total_count.to_f / per_page).ceil, offset]
+        paginate_relation(collection, page, per_page)
       end
+    end
+
+    def paginate_array(array, page, per_page)
+      total_count = array.size
+      offset = (page - 1) * per_page
+      total_pages = total_count.positive? ? (total_count.to_f / per_page).ceil : 1
+      paginated = array.slice(offset, per_page) || []
+      [paginated, total_count, total_pages, offset]
+    end
+
+    def paginate_relation(collection, page, per_page)
+      total_count = collection.count
+      offset = (page - 1) * per_page
+      total_pages = total_count.positive? ? (total_count.to_f / per_page).ceil : 1
+      paginated = collection.limit(per_page).offset(offset)
+      [paginated, total_count, total_pages, offset]
     end
 
     def build_pagination_hash(page, per_page, total_count, total_pages, offset)

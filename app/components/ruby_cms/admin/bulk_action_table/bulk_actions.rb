@@ -97,17 +97,14 @@ module RubyCms
           data_attrs = {
             action: "click->#{@controller_name}#showActionDialog",
             action_name: action_name,
-            action_url: config[:url]&.to_s
+            action_url: config[:url]&.to_s,
+            action_label: label
           }
 
-          if config[:action_type] == "redirect" || config[:action] == "redirect"
-            data_attrs[:action_type] =
-              "redirect"
-          end
-          if config[:confirm].present?
-            data_attrs[:action_confirm] = config[:confirm]
-            data_attrs[:action_label] = label
-          end
+          # Pass through action_type
+          data_attrs[:action_type] = config[:action_type] if config[:action_type].present?
+
+          data_attrs[:action_confirm] = config[:confirm] if config[:confirm].present?
 
           data_attrs
         end
