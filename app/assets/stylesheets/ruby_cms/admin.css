@@ -1,6 +1,12 @@
 
-/* ===== Component: tokens ===== */
+/* ===== Component: shared ===== */
+/* ============================================
+   SHARED STYLES - Reusable Components & Utilities
+   ============================================ */
+
+/* ===== CSS Variables ===== */
 :root {
+  /* Colors */
   --gray-50: oklch(0.985 0 0);
   --gray-500: oklch(0.552 0.016 285.938);
   --gray-600: oklch(0.442 0.017 285.786);
@@ -9,6 +15,7 @@
   --primary-600: oklch(0.546 0.245 262.881);
   --danger-600: #dc2626;
 
+  /* Pelican Design System */
   --pelican-bg-primary: #ffffff;
   --pelican-bg-secondary: #fafafa;
   --pelican-bg-tertiary: #f3f4f6;
@@ -27,6 +34,673 @@
   --pelican-accent-green: #16a34a;
   --pelican-accent-green-bg: #d1fae5;
   --pelican-accent-emerald: #059669;
+  --pelican-accent-emerald-bg: #d1fae5;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 0.75rem;
+  --spacing-lg: 1rem;
+  --spacing-xl: 1.25rem;
+  --spacing-2xl: 1.5rem;
+  --spacing-3xl: 2rem;
+
+  /* Border Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -1px rgb(0 0 0 / 0.03);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.2s ease;
+  --transition-slow: 0.3s ease;
+}
+
+/* ===== Container & Layout Utilities ===== */
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 var(--spacing-2xl);
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.flex-shrink-0 {
+  flex-shrink: 0;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.items-start {
+  align-items: flex-start;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.gap-xs { gap: var(--spacing-xs); }
+.gap-sm { gap: var(--spacing-sm); }
+.gap-md { gap: var(--spacing-md); }
+.gap-lg { gap: var(--spacing-lg); }
+.gap-xl { gap: var(--spacing-xl); }
+.gap-2xl { gap: var(--spacing-2xl); }
+
+/* ===== Grid Utilities ===== */
+.grid {
+  display: grid;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.col-span-full {
+  grid-column: 1 / -1;
+}
+
+/* ===== Card Component ===== */
+.card {
+  background: var(--pelican-bg-primary);
+  border: 1px solid var(--pelican-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.card-hover {
+  transition: all var(--transition-base);
+}
+
+.card-hover:hover {
+  border-color: var(--pelican-border-light);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-xl) var(--spacing-2xl);
+  border-bottom: 1px solid var(--pelican-border);
+}
+
+.card-body {
+  padding: var(--spacing-2xl);
+}
+
+.card-footer {
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  border-top: 1px solid var(--pelican-border);
+  background: var(--pelican-bg-secondary);
+}
+
+/* ===== Button Component ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}
+
+/* Button Sizes */
+.btn-sm {
+  height: 2rem;
+  padding: 0 0.75rem;
+  font-size: 0.8125rem;
+}
+
+.btn-md {
+  height: 2.5rem;
+  padding: 0 1rem;
+}
+
+.btn-lg {
+  height: 2.75rem;
+  padding: 0 1.5rem;
+}
+
+/* Button Variants */
+.btn-primary {
+  background-color: var(--pelican-accent-blue);
+  color: white;
+  border-color: var(--pelican-accent-blue);
+}
+
+.btn-primary:hover {
+  background-color: var(--pelican-accent-blue-dark);
+  border-color: var(--pelican-accent-blue-dark);
+}
+
+.btn-secondary {
+  background: var(--pelican-bg-primary);
+  color: var(--pelican-text-primary);
+  border-color: var(--pelican-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary:hover {
+  background: var(--pelican-bg-secondary);
+  border-color: var(--pelican-border-light);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--pelican-text-secondary);
+  border-color: transparent;
+}
+
+.btn-ghost:hover {
+  background-color: var(--pelican-bg-secondary);
+  color: var(--pelican-text-primary);
+}
+
+.btn-danger {
+  color: var(--pelican-accent-red);
+  background-color: white;
+  border-color: var(--pelican-border);
+}
+
+.btn-danger:hover {
+  background-color: #fef2f2;
+  border-color: #fecaca;
+}
+
+.btn-link {
+  background: transparent;
+  color: var(--pelican-accent-blue);
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-link:hover {
+  background-color: var(--pelican-accent-blue-bg);
+}
+
+/* Icon Button */
+.btn-icon {
+  padding: 0.375rem;
+  min-width: auto;
+}
+
+.btn-icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* ===== Form Components ===== */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.form-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--pelican-text-primary);
+  letter-spacing: 0.01em;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  display: block;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  color: var(--pelican-text-primary);
+  background-color: var(--pelican-bg-primary);
+  border: 1px solid var(--pelican-border-light);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--pelican-accent-blue);
+  box-shadow: 0 0 0 3px var(--pelican-accent-blue-bg), var(--shadow-sm);
+}
+
+.form-input:hover:not(:focus),
+.form-textarea:hover:not(:focus),
+.form-select:hover:not(:focus) {
+  border-color: var(--pelican-text-muted);
+}
+
+.form-input::placeholder,
+.form-textarea::placeholder {
+  color: var(--pelican-text-muted);
+}
+
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1.25em 1.25em;
+  padding-right: 2.75rem;
+  cursor: pointer;
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: var(--pelican-text-secondary);
+  line-height: 1.5;
+}
+
+/* Checkbox */
+.form-checkbox {
+  height: 1rem;
+  width: 1rem;
+  color: var(--pelican-accent-emerald);
+  border-color: var(--pelican-border-light);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.form-checkbox:focus {
+  outline: 2px solid transparent;
+  box-shadow: 0 0 0 2px var(--pelican-accent-emerald);
+}
+
+/* ===== Table Component ===== */
+.table {
+  width: 100%;
+  font-size: 0.875rem;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.table th,
+.table td {
+  vertical-align: middle;
+}
+
+.table-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background-color: var(--pelican-bg-tertiary);
+  border-bottom: 1px solid var(--pelican-border);
+}
+
+.table-header th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 500;
+  font-size: 0.875rem;
+  color: var(--pelican-text-secondary);
+}
+
+.table-row {
+  border-bottom: 1px solid var(--pelican-border);
+  transition: background-color var(--transition-fast);
+}
+
+.table-row:last-child {
+  border-bottom: 0;
+}
+
+.table-row:hover {
+  background-color: var(--pelican-bg-secondary);
+}
+
+.table-row-clickable {
+  cursor: pointer;
+}
+
+.table-row-clickable:hover {
+  background-color: var(--pelican-accent-blue-bg);
+}
+
+.table-row[data-state="selected"] {
+  background-color: var(--pelican-accent-blue-bg);
+}
+
+.table-row td {
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  color: var(--pelican-text-primary);
+}
+
+/* ===== Text Utilities ===== */
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.text-base { font-size: 1rem; }
+.text-lg { font-size: 1.125rem; }
+.text-xl { font-size: 1.25rem; }
+
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+.text-primary { color: var(--pelican-text-primary); }
+.text-secondary { color: var(--pelican-text-secondary); }
+.text-muted { color: var(--pelican-text-muted); }
+
+.text-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ===== Status Pills ===== */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-pill-success {
+  background-color: var(--pelican-accent-emerald-bg);
+  color: var(--pelican-accent-emerald);
+}
+
+.status-pill-danger {
+  background-color: var(--pelican-accent-red-bg);
+  color: var(--pelican-accent-red);
+}
+
+.status-pill-muted {
+  background-color: var(--pelican-bg-tertiary);
+  color: var(--pelican-text-secondary);
+}
+
+.status-pill-info {
+  background-color: var(--pelican-accent-blue-bg);
+  color: var(--pelican-accent-blue);
+}
+
+/* ===== Dialog/Modal Component ===== */
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 50;
+  overflow-y: auto;
+}
+
+.dialog-container {
+  display: flex;
+  min-height: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-lg);
+}
+
+.dialog-content {
+  background: var(--pelican-bg-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
+  max-width: 28rem;
+  width: 100%;
+  padding: var(--spacing-2xl);
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-lg);
+}
+
+.dialog-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--pelican-text-primary);
+  margin: 0;
+}
+
+.dialog-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  color: var(--pelican-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.dialog-close:hover {
+  background: var(--pelican-bg-secondary);
+  color: var(--pelican-text-primary);
+}
+
+.dialog-body {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}
+
+/* ===== Pagination ===== */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg) var(--spacing-2xl);
+  border-top: 1px solid var(--pelican-border);
+  background-color: var(--pelican-bg-primary);
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: var(--pelican-text-secondary);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.pagination-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 var(--spacing-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--pelican-text-primary);
+  background-color: var(--pelican-bg-primary);
+  border: 1px solid var(--pelican-border);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background-color var(--transition-fast);
+  cursor: pointer;
+}
+
+.pagination-button:hover:not(.pagination-button-disabled) {
+  background-color: var(--pelican-bg-secondary);
+}
+
+.pagination-button-current {
+  background-color: var(--pelican-accent-blue);
+  color: white;
+  border-color: var(--pelican-accent-blue);
+}
+
+.pagination-button-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2rem;
+  min-width: 2rem;
+  padding: 0 var(--spacing-sm);
+  font-size: 0.875rem;
+  color: var(--pelican-text-secondary);
+}
+
+/* ===== Spacing Utilities ===== */
+.p-0 { padding: 0; }
+.p-sm { padding: var(--spacing-sm); }
+.p-md { padding: var(--spacing-md); }
+.p-lg { padding: var(--spacing-lg); }
+.p-xl { padding: var(--spacing-xl); }
+.p-2xl { padding: var(--spacing-2xl); }
+
+.m-0 { margin: 0; }
+.m-sm { margin: var(--spacing-sm); }
+.m-md { margin: var(--spacing-md); }
+.m-lg { margin: var(--spacing-lg); }
+.m-xl { margin: var(--spacing-xl); }
+.m-2xl { margin: var(--spacing-2xl); }
+
+.mb-0 { margin-bottom: 0; }
+.mb-sm { margin-bottom: var(--spacing-sm); }
+.mb-md { margin-bottom: var(--spacing-md); }
+.mb-lg { margin-bottom: var(--spacing-lg); }
+.mb-xl { margin-bottom: var(--spacing-xl); }
+.mb-2xl { margin-bottom: var(--spacing-2xl); }
+
+.mt-0 { margin-top: 0; }
+.mt-sm { margin-top: var(--spacing-sm); }
+.mt-md { margin-top: var(--spacing-md); }
+.mt-lg { margin-top: var(--spacing-lg); }
+
+/* ===== Border Utilities ===== */
+.border { border: 1px solid var(--pelican-border); }
+.border-t { border-top: 1px solid var(--pelican-border); }
+.border-b { border-bottom: 1px solid var(--pelican-border); }
+.border-l { border-left: 1px solid var(--pelican-border); }
+.border-r { border-right: 1px solid var(--pelican-border); }
+
+.rounded-sm { border-radius: var(--radius-sm); }
+.rounded-md { border-radius: var(--radius-md); }
+.rounded-lg { border-radius: var(--radius-lg); }
+.rounded-full { border-radius: var(--radius-full); }
+
+/* ===== Background Utilities ===== */
+.bg-primary { background-color: var(--pelican-bg-primary); }
+.bg-secondary { background-color: var(--pelican-bg-secondary); }
+.bg-tertiary { background-color: var(--pelican-bg-tertiary); }
+
+/* ===== Visibility Utilities ===== */
+.hidden { display: none; }
+.visible { display: block; }
+
+/* ===== Animation Utilities ===== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--transition-base);
+}
+
+.animate-slide-in {
+  animation: slideIn var(--transition-slow) ease-out;
+}
+
+/* ===== Icon Utilities ===== */
+.icon-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+.icon-md {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.icon-lg {
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 
@@ -47,7 +721,7 @@
 
 .ruby_cms-admin-main-inner {
   flex: 1;
-  padding: 1.5rem;
+  padding: var(--spacing-2xl);
   overflow-y: auto;
   background-color: var(--pelican-bg-secondary);
 }
@@ -100,7 +774,7 @@
 }
 
 .ruby_cms-admin-sidebar-header {
-  padding: 1.25rem 1rem;
+  padding: var(--spacing-xl) var(--spacing-lg);
   border: none;
   flex-shrink: 0;
   background: var(--pelican-bg-secondary);
@@ -109,14 +783,14 @@
 .ruby_cms-admin-sidebar-header-content {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--spacing-md);
 }
 
 .ruby_cms-admin-sidebar-logo {
   width: 1.75rem;
   height: 1.75rem;
   flex-shrink: 0;
-  border-radius: 0.375rem;
+  border-radius: var(--radius-sm);
   background: var(--pelican-text-primary);
   display: flex;
   align-items: center;
@@ -142,25 +816,25 @@
 .ruby_cms-admin-sidebar-nav {
   flex: 1;
   overflow-y: auto;
-  padding: 0.75rem 0.5rem;
+  padding: var(--spacing-md) var(--spacing-sm);
 }
 
 .ruby_cms-admin-sidebar-nav a {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.625rem 0.75rem;
+  gap: var(--spacing-md);
+  padding: 0.625rem var(--spacing-md);
   color: var(--pelican-text-secondary);
   text-decoration: none;
-  border-radius: 0.375rem;
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
   font-weight: 500;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
   margin-bottom: 0.125rem;
 }
 
 .ruby_cms-admin-sidebar-nav a:hover {
-  background: #2b7fff;
+  background: var(--pelican-accent-blue);
   color: white;
 }
 
@@ -197,14 +871,14 @@
 }
 
 .ruby_cms-admin-sidebar-footer {
-  padding: 0.75rem;
+  padding: var(--spacing-md);
   border: none;
   flex-shrink: 0;
   background: var(--pelican-bg-secondary);
 }
 
 .ruby_cms-admin-locale-switcher {
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-sm);
 }
 
 .ruby_cms-admin-locale-select {
@@ -212,12 +886,12 @@
   height: 2.5rem;
   padding: 0 2.5rem 0 2.5rem;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 500;
   background-color: transparent;
   color: #006b6f;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
   cursor: pointer;
   appearance: none;
   background-image:
@@ -246,14 +920,14 @@
 .ruby_cms-admin-sidebar-footer-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.625rem 0.75rem;
+  gap: var(--spacing-md);
+  padding: 0.625rem var(--spacing-md);
   color: var(--pelican-text-secondary);
   text-decoration: none;
-  border-radius: 0.375rem;
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
   font-weight: 500;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
   background: transparent;
   border: none;
   width: 100%;
@@ -261,7 +935,7 @@
 }
 
 .ruby_cms-admin-sidebar-footer-item:hover {
-  background: #2b7fff;
+  background: var(--pelican-accent-blue);
   color: white;
 }
 
@@ -279,7 +953,7 @@
 
 /* ===== Component: header ===== */
 .ruby_cms-admin-header {
-  padding: 1.5rem;
+  padding: var(--spacing-2xl);
   border-bottom: 1px solid var(--pelican-border);
   background: var(--pelican-bg-primary);
 }
@@ -289,7 +963,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--spacing-lg);
 }
 
 .ruby_cms-admin-header__title {
@@ -308,7 +982,7 @@
 .ruby_cms-page-header__action-icons {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   flex-shrink: 0;
 }
 
@@ -318,11 +992,11 @@
 
 /* Page Header */
 .ruby_cms-page-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-2xl);
 }
 
 .ruby_cms-page-header__content {
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--spacing-md);
 }
 
 .ruby_cms-page-header__title-group {
@@ -333,7 +1007,7 @@
 .ruby_cms-page-title {
   font-size: 1.875rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--pelican-text-primary);
   margin: 0;
   letter-spacing: -0.025em;
   line-height: 1.2;
@@ -341,8 +1015,8 @@
 
 .ruby_cms-page-subtitle {
   font-size: 0.9375rem;
-  color: #6b7280;
-  margin: 0.5rem 0 0 0;
+  color: var(--pelican-text-secondary);
+  margin: var(--spacing-sm) 0 0 0;
   font-weight: 400;
 }
 
@@ -351,8 +1025,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin-top: 0.75rem;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-md);
 }
 
 .ruby_cms-page-header__action-icons {
@@ -365,11 +1039,11 @@
   padding: 0 2.5rem;
   font-size: 0.875rem;
   font-weight: 500;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   border: none;
   background-color: transparent;
   color: #006b6f;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
   cursor: pointer;
   appearance: none;
   background-image:
@@ -398,11 +1072,11 @@
   width: 2.25rem;
   height: 2.25rem;
   padding: 0;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
   text-decoration: none;
 }
 
@@ -457,8 +1131,8 @@
   color: var(--pelican-text-primary);
   background-color: var(--pelican-bg-primary);
   border: 1px solid var(--pelican-border-light);
-  border-radius: 0.5rem;
-  transition: background-color 0.15s;
+  border-radius: var(--radius-md);
+  transition: background-color var(--transition-fast);
 }
 
 .ruby_cms-page-header__search-input:focus {
@@ -480,24 +1154,21 @@
 
 
 /* ===== Component: cards ===== */
+/* ============================================
+   Cards - Specific card implementations
+   ============================================ */
+
 .ruby_cms-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  /* Uses: .card from shared.css */
+  margin-bottom: var(--spacing-2xl);
 }
 
 .ruby_cms-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.25rem 1.75rem;
-  border-bottom: 1px solid #e5e7eb;
+  /* Uses: .card-header from shared.css */
 }
 
 .ruby_cms-card--padded {
-  padding: 1.75rem;
+  padding: var(--spacing-2xl);
 }
 
 .ruby_cms-card--form {
@@ -507,25 +1178,30 @@
 .ruby_cms-card-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #111827;
-  margin: 0 0 0.5rem 0;
+  color: var(--pelican-text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
   letter-spacing: -0.01em;
 }
 
 
 /* ===== Component: dashboard ===== */
+/* ============================================
+   Dashboard - Specific dashboard components
+   ============================================ */
+
 /* Dashboard Header */
 .ruby_cms-dashboard-header {
+  /* Uses: .flex .justify-between .items-start from shared.css */
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-3xl);
 }
 
 .ruby_cms-dashboard-subtitle {
-  color: #6b7280;
+  color: var(--pelican-text-secondary);
   font-size: 0.9375rem;
-  margin-top: 0.5rem;
+  margin-top: var(--spacing-sm);
   font-weight: 400;
 }
 
@@ -535,18 +1211,20 @@
 }
 
 .ruby_cms-dashboard-section-title {
+  /* Uses: .text-lg .font-semibold .text-primary from shared.css */
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
-  margin-bottom: 1.25rem;
+  color: var(--pelican-text-primary);
+  margin-bottom: var(--spacing-xl);
   letter-spacing: -0.01em;
 }
 
 /* Quick Actions */
 .ruby_cms-dashboard-quick-actions {
+  /* Uses: .grid from shared.css */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0.75rem;
+  gap: var(--spacing-md);
 }
 
 @media (max-width: 640px) {
@@ -557,19 +1235,14 @@
 
 /* Stats Grid */
 .ruby_cms-dashboard-grid {
+  /* Uses: .grid from shared.css */
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: 1.25rem;
+  gap: var(--spacing-xl);
   margin-bottom: 2.5rem;
 }
 
 @media (min-width: 768px) {
-  .ruby_cms-dashboard-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
   .ruby_cms-dashboard-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -582,27 +1255,27 @@
 }
 
 .ruby_cms-dashboard-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
+  /* Uses: .card .card-hover from shared.css */
+  background: var(--pelican-bg-primary);
+  border: 1px solid var(--pelican-border);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
 }
 
 .ruby_cms-dashboard-card:hover {
-  border-color: #d1d5db;
-  box-shadow:
-    0 4px 6px -1px rgb(0 0 0 / 0.05),
-    0 2px 4px -1px rgb(0 0 0 / 0.03);
+  border-color: var(--pelican-border-light);
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
 .ruby_cms-dashboard-card-body {
-  padding: 1.75rem;
+  /* Uses: .card-body from shared.css */
+  padding: var(--spacing-2xl);
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
+  gap: var(--spacing-lg);
 }
 
 .ruby_cms-dashboard-card-icon {
@@ -616,18 +1289,19 @@
 }
 
 .ruby_cms-dashboard-card-icon svg {
+  /* Uses: .icon-lg from shared.css */
   width: 1.5rem;
   height: 1.5rem;
 }
 
 .ruby_cms-dashboard-card-icon--blue {
   color: #2563eb;
-  background: #eff6ff;
+  background: var(--pelican-accent-blue-bg);
 }
 
 .ruby_cms-dashboard-card-icon--green {
-  color: #059669;
-  background: #ecfdf5;
+  color: var(--pelican-accent-emerald);
+  background: var(--pelican-accent-emerald-bg);
 }
 
 .ruby_cms-dashboard-card-icon--purple {
@@ -636,81 +1310,89 @@
 }
 
 .ruby_cms-dashboard-card-icon--red {
-  color: #dc2626;
-  background: #fef2f2;
+  color: var(--pelican-accent-red);
+  background: var(--pelican-accent-red-bg);
 }
 
 .ruby_cms-dashboard-card-content {
+  /* Uses: .flex-1 from shared.css */
   flex: 1;
   min-width: 0;
-  padding-top: 0.25rem;
+  padding-top: var(--spacing-xs);
 }
 
 .ruby_cms-dashboard-card-label {
+  /* Uses: .text-xs .font-medium .text-secondary from shared.css */
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--pelican-text-secondary);
   letter-spacing: 0.01em;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-sm);
   text-transform: uppercase;
 }
 
 .ruby_cms-dashboard-card-value {
+  /* Uses: .flex .items-baseline from shared.css */
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
   gap: 0.625rem;
-  margin-top: 0.25rem;
+  margin-top: var(--spacing-xs);
 }
 
 .ruby_cms-dashboard-card-number {
+  /* Uses: .text-xl .font-bold from shared.css */
   font-size: 2rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--pelican-text-primary);
   line-height: 1.2;
   letter-spacing: -0.02em;
 }
 
 .ruby_cms-dashboard-card-subtext {
+  /* Uses: .text-xs .font-medium .text-muted from shared.css */
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #9ca3af;
+  color: var(--pelican-text-muted);
 }
 
 .ruby_cms-dashboard-card-subtext--success {
-  color: #059669;
-}
-
-.ruby_cms-dashboard-card-footer {
-  background: #f9fafb;
-  padding: 0.875rem 1.75rem;
-  border-top: 1px solid #e5e7eb;
-}
-
-.ruby_cms-dashboard-card-link {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #2563eb;
-  text-decoration: none;
-  transition: color 0.15s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.ruby_cms-dashboard-card-link:hover {
-  color: #1d4ed8;
+  color: var(--pelican-accent-emerald);
 }
 
 .ruby_cms-dashboard-card-subtext--danger {
-  color: #dc2626;
+  color: var(--pelican-accent-red);
+}
+
+.ruby_cms-dashboard-card-footer {
+  /* Uses: .card-footer from shared.css */
+  background: var(--pelican-bg-secondary);
+  padding: 0.875rem var(--spacing-2xl);
+  border-top: 1px solid var(--pelican-border);
+}
+
+.ruby_cms-dashboard-card-link {
+  /* Uses: .btn .btn-link from shared.css */
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--pelican-accent-blue);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.ruby_cms-dashboard-card-link:hover {
+  color: var(--pelican-accent-blue-dark);
 }
 
 /* Activity Section */
 .ruby_cms-dashboard-activity-grid {
+  /* Uses: .grid from shared.css */
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: 1.25rem;
+  gap: var(--spacing-xl);
 }
 
 @media (min-width: 1024px) {
@@ -720,39 +1402,43 @@
 }
 
 .ruby_cms-dashboard-activity-header {
+  /* Uses: .flex .justify-between .items-center from shared.css */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.25rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--pelican-border);
 }
 
 .ruby_cms-dashboard-activity-link {
+  /* Uses: .btn .btn-link from shared.css */
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #2563eb;
+  color: var(--pelican-accent-blue);
   text-decoration: none;
-  transition: color 0.15s ease;
+  transition: color var(--transition-fast);
 }
 
 .ruby_cms-dashboard-activity-link:hover {
-  color: #1d4ed8;
+  color: var(--pelican-accent-blue-dark);
 }
 
 .ruby_cms-dashboard-activity-list {
+  /* Uses: .flex .flex-col from shared.css */
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
 .ruby_cms-dashboard-activity-item {
+  /* Uses: .flex .justify-between .items-center from shared.css */
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.875rem 0;
-  border-bottom: 1px solid #f3f4f6;
-  transition: all 0.15s ease;
+  border-bottom: 1px solid var(--pelican-bg-tertiary);
+  transition: all var(--transition-fast);
 }
 
 .ruby_cms-dashboard-activity-item:last-child {
@@ -760,18 +1446,20 @@
 }
 
 .ruby_cms-dashboard-activity-item:hover {
-  padding-left: 0.5rem;
+  padding-left: var(--spacing-sm);
 }
 
 .ruby_cms-dashboard-activity-item-content {
+  /* Uses: .flex-1 from shared.css */
   flex: 1;
   min-width: 0;
 }
 
 .ruby_cms-dashboard-activity-item-title {
+  /* Uses: .text-sm .font-medium from shared.css */
   font-size: 0.875rem;
   font-weight: 500;
-  color: #111827;
+  color: var(--pelican-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -779,15 +1467,17 @@
 }
 
 .ruby_cms-dashboard-activity-item-meta {
+  /* Uses: .flex .items-center .gap-md from shared.css */
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--spacing-md);
   font-size: 0.75rem;
 }
 
 .ruby_cms-dashboard-activity-item-status {
-  padding: 0.125rem 0.5rem;
-  border-radius: 0.375rem;
+  /* Uses: .status-pill from shared.css */
+  padding: 0.125rem var(--spacing-sm);
+  border-radius: var(--radius-sm);
   font-weight: 600;
   font-size: 0.6875rem;
   text-transform: uppercase;
@@ -795,93 +1485,100 @@
 }
 
 .ruby_cms-dashboard-activity-item-status--success {
+  /* Uses: .status-pill-success from shared.css */
   color: #047857;
-  background-color: #d1fae5;
+  background-color: var(--pelican-accent-green-bg);
 }
 
 .ruby_cms-dashboard-activity-item-status--danger {
+  /* Uses: .status-pill-danger from shared.css */
   color: #b91c1c;
-  background-color: #fee2e2;
+  background-color: var(--pelican-accent-red-bg);
 }
 
 .ruby_cms-dashboard-activity-item-status--muted {
-  color: #6b7280;
-  background-color: #f3f4f6;
+  /* Uses: .status-pill-muted from shared.css */
+  color: var(--pelican-text-secondary);
+  background-color: var(--pelican-bg-tertiary);
 }
 
 .ruby_cms-dashboard-activity-item-time {
-  color: #9ca3af;
+  color: var(--pelican-text-muted);
 }
 
 .ruby_cms-dashboard-activity-item-action {
+  /* Uses: .btn .btn-link from shared.css */
   flex-shrink: 0;
-  margin-left: 1rem;
+  margin-left: var(--spacing-lg);
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #2563eb;
+  color: var(--pelican-accent-blue);
   text-decoration: none;
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.375rem;
-  transition: all 0.15s ease;
+  padding: 0.375rem var(--spacing-md);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
 }
 
 .ruby_cms-dashboard-activity-item-action:hover {
-  color: #1d4ed8;
-  background-color: #eff6ff;
+  color: var(--pelican-accent-blue-dark);
+  background-color: var(--pelican-accent-blue-bg);
 }
 
 .ruby_cms-dashboard-activity-empty {
-  padding: 3rem 1.5rem;
+  padding: 3rem var(--spacing-2xl);
   text-align: center;
-  color: #9ca3af;
+  color: var(--pelican-text-muted);
   font-size: 0.875rem;
 }
 
 
 /* ===== Component: buttons ===== */
-/* Base button */
+/* Button styles extending shared.css .btn classes */
+
+/* RubyCMS-specific button variants (extend shared .btn) */
 .ruby_cms-btn {
+  /* Inherits from shared.css .btn */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0.625rem 1.25rem;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 600;
   text-decoration: none;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.15s ease;
-  gap: 0.5rem;
+  transition: all var(--transition-fast);
+  gap: var(--spacing-sm);
 }
 
 /* Button variants */
 .ruby_cms-btn-primary {
-  background: #2563eb;
+  background: var(--pelican-accent-blue);
   color: white;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .ruby_cms-btn-primary:hover {
-  background: #1d4ed8;
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  background: var(--pelican-accent-blue-dark);
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
 .ruby_cms-btn-secondary {
-  background: #ffffff;
-  color: #374151;
-  border-color: #d1d5db;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  background: var(--pelican-bg-primary);
+  color: var(--pelican-text-primary);
+  border-color: var(--pelican-border-light);
+  box-shadow: var(--shadow-sm);
 }
 
 .ruby_cms-btn-secondary:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: var(--pelican-bg-secondary);
+  border-color: var(--pelican-text-muted);
 }
 
 .ruby_cms-btn-danger {
-  color: #dc2626;
+  color: var(--pelican-accent-red);
   background: transparent;
   border-color: #fecaca;
 }
@@ -893,8 +1590,8 @@
 
 /* Icon buttons */
 .ruby_cms-btn-icon-only {
-  padding: 0.5rem;
-  border-radius: 0.5rem;
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-md);
 }
 
 .ruby_cms-btn-icon {
@@ -911,12 +1608,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.375rem;
-  border-radius: 0.375rem;
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
   text-decoration: none;
 }
 
@@ -953,85 +1650,41 @@
 .ruby_cms-button-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: var(--spacing-md);
 }
 
 
 /* ===== Component: forms ===== */
+/* ============================================
+   Forms - Extends shared form components
+   ============================================ */
+
 .ruby_cms-form {
+  /* Uses: .form-group from shared.css */
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-lg);
 }
 
 .ruby_cms-form--inline {
   flex-direction: row;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 .ruby_cms-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  /* Uses: .form-group from shared.css */
 }
 
-.ruby_cms-field label,
 .ruby_cms-label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #111827;
-  letter-spacing: 0.01em;
+  /* Uses: .form-label from shared.css */
 }
 
-/* Base input styles - shared across all input types */
 .ruby_cms-input,
 .ruby_cms-textarea,
 .ruby_cms-select {
-  display: block;
-  width: 100%;
-  padding: 0.625rem 0.875rem;
-  font-size: 0.875rem;
-  color: #111827;
-  background-color: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-}
-
-.ruby_cms-input:focus,
-.ruby_cms-textarea:focus,
-.ruby_cms-select:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow:
-    0 0 0 3px rgb(37 99 235 / 0.1),
-    0 1px 2px 0 rgb(0 0 0 / 0.05);
-}
-
-.ruby_cms-input:hover:not(:focus),
-.ruby_cms-textarea:hover:not(:focus),
-.ruby_cms-select:hover:not(:focus) {
-  border-color: #9ca3af;
-}
-
-.ruby_cms-input::placeholder,
-.ruby_cms-textarea::placeholder {
-  color: #9ca3af;
-}
-
-.ruby_cms-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-  background-position: right 0.75rem center;
-  background-repeat: no-repeat;
-  background-size: 1.25em 1.25em;
-  padding-right: 2.75rem;
-  cursor: pointer;
+  /* Uses: .form-input, .form-textarea, .form-select from shared.css */
 }
 
 .ruby_cms-form--inline .ruby_cms-select {
@@ -1040,18 +1693,17 @@
 }
 
 .ruby_cms-hint {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin-top: 0.25rem;
-  line-height: 1.5;
+  /* Uses: .form-hint from shared.css */
 }
 
 
 /* ===== Component: alerts ===== */
+/* Alert and badge components using shared.css variables */
+
 .ruby_cms-alert {
-  padding: 1rem;
-  border-radius: 0.5rem;
-  margin-bottom: 1rem;
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--spacing-lg);
   border: 1px solid;
 }
 
@@ -1079,19 +1731,21 @@
 }
 
 .ruby_cms-alert--info {
-  background: #eff6ff;
+  background: var(--pelican-accent-blue-bg);
   border-color: #bfdbfe;
   color: #1e40af;
 }
 
+/* Links */
 .ruby_cms-link {
   color: var(--pelican-accent-blue);
   text-decoration: none;
   font-weight: 500;
+  transition: color var(--transition-fast);
 }
 
 .ruby_cms-link:hover {
-  color: var(--pelican-accent-blue-hover);
+  color: var(--pelican-accent-blue-dark);
 }
 
 .ruby_cms-link-danger {
@@ -1102,17 +1756,18 @@
   color: var(--pelican-accent-red-hover);
 }
 
+/* Badges (similar to shared.css .status-pill) */
 .ruby_cms-badge {
   display: inline-block;
   padding: 0.25rem 0.625rem;
-  border-radius: 0.375rem;
+  border-radius: var(--radius-sm);
   font-size: 0.75rem;
   font-weight: 500;
 }
 
 .ruby_cms-badge-success {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--pelican-accent-emerald-bg);
+  color: var(--pelican-accent-emerald);
 }
 
 .ruby_cms-badge-muted {
@@ -1121,111 +1776,17 @@
 }
 
 
-/* ===== Component: tables ===== */
-.ruby_cms-table-wrap {
-  overflow: hidden;
-  border: 1px solid var(--pelican-border);
-  border-radius: 0.5rem;
-}
-
-.ruby_cms-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--pelican-bg-primary);
-}
-
-.ruby_cms-table thead {
-  background: var(--pelican-bg-primary);
-  border-bottom: 1px solid var(--pelican-border);
-}
-
-.ruby_cms-table th {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--pelican-text-secondary);
-}
-
-.ruby_cms-table tbody tr {
-  border-bottom: 1px solid var(--pelican-border);
-  transition: background-color 0.15s;
-}
-
-.ruby_cms-table tbody tr:last-child {
-  border-bottom: none;
-}
-
-.ruby_cms-table tbody tr:hover {
-  background: var(--pelican-bg-secondary);
-}
-
-.ruby_cms-table td {
-  padding: 0.875rem 1rem;
-  font-size: 0.875rem;
-  color: var(--pelican-text-primary);
-  vertical-align: middle;
-}
-
-.ruby_cms-table td.actions {
-  text-align: right;
-  white-space: nowrap;
-}
-
-
-/* ===== Component: breadcrumbs ===== */
-.ruby_cms-breadcrumbs {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  color: var(--pelican-text-secondary);
-  margin-bottom: 1rem;
-}
-
-.ruby_cms-breadcrumbs a {
-  color: var(--pelican-accent-blue);
-  text-decoration: none;
-}
-
-.ruby_cms-breadcrumbs a:hover {
-  text-decoration: underline;
-}
-
-.ruby_cms-breadcrumbs-separator {
-  color: var(--pelican-text-muted);
-}
-
-
 /* ===== Component: flash_toast ===== */
+/* ============================================
+   Flash Messages & Toasts
+   ============================================ */
+
 .flash-message {
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideOut {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
+  animation: slideIn var(--transition-slow) ease-out;
 }
 
 .flash-notice {
-  background: #dcfce7;
+  background: var(--pelican-accent-green-bg);
   color: #166534;
   border-color: #86efac;
 }
@@ -1238,15 +1799,15 @@
 
 .ruby_cms-toast {
   position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  padding: 1rem 1.25rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  bottom: var(--spacing-2xl);
+  right: var(--spacing-2xl);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   z-index: 10000;
   opacity: 0;
   transform: translateY(20px);
-  transition: all 0.3s ease-out;
+  transition: all var(--transition-slow);
   font-size: 0.875rem;
   font-weight: 500;
   max-width: 24rem;
@@ -1271,11 +1832,16 @@
 
 
 /* ===== Component: modals ===== */
+/* ============================================
+   Modals - Extends shared dialog components
+   ============================================ */
+
 .ruby_cms-modal {
   backdrop-filter: blur(4px);
 }
 
 .ruby_cms-modal-overlay {
+  /* Uses: .dialog-overlay from shared.css */
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
@@ -1283,19 +1849,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: var(--spacing-lg);
 }
 
 .ruby_cms-modal {
+  /* Uses: .dialog-content from shared.css */
   background: var(--pelican-bg-primary);
-  border-radius: 0.75rem;
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
   width: 100%;
   max-width: 42rem;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  animation: modalSlideIn 0.2s ease-out;
+  animation: modalSlideIn var(--transition-base) ease-out;
 }
 
 @keyframes modalSlideIn {
@@ -1310,14 +1877,16 @@
 }
 
 .ruby_cms-modal-header {
+  /* Uses: .dialog-header from shared.css */
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem;
+  padding: var(--spacing-2xl);
   border-bottom: 1px solid var(--pelican-border);
 }
 
 .ruby_cms-modal-title {
+  /* Uses: .dialog-title from shared.css */
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--pelican-text-primary);
@@ -1327,25 +1896,26 @@
 .ruby_cms-modal-subtitle {
   font-size: 0.875rem;
   color: var(--pelican-text-secondary);
-  margin-top: 0.25rem;
+  margin-top: var(--spacing-xs);
 }
 
 .ruby_cms-modal-key {
   font-family: ui-monospace, monospace;
   color: var(--pelican-accent-blue);
   background: var(--pelican-accent-blue-bg);
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
 }
 
 .ruby_cms-modal-close {
+  /* Uses: .dialog-close from shared.css */
   color: var(--pelican-text-muted);
-  padding: 0.5rem;
-  border-radius: 0.375rem;
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
 }
 
 .ruby_cms-modal-close:hover {
@@ -1354,41 +1924,45 @@
 }
 
 .ruby_cms-modal-close-icon {
+  /* Uses: .icon-lg from shared.css */
   width: 1.5rem;
   height: 1.5rem;
 }
 
 .ruby_cms-modal-body {
+  /* Uses: .dialog-body from shared.css */
   flex: 1;
-  padding: 1.5rem;
+  padding: var(--spacing-2xl);
   overflow-y: auto;
 }
 
 .ruby_cms-modal-form-group {
-  margin-bottom: 1.5rem;
+  /* Uses: .form-group from shared.css */
+  margin-bottom: var(--spacing-2xl);
 }
 
 .ruby_cms-modal-label {
+  /* Uses: .form-label from shared.css */
   display: block;
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--pelican-text-primary);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-sm);
 }
 
-/* Modal inputs extend base form styles */
 .ruby_cms-modal-input,
 .ruby_cms-modal-select,
 .ruby_cms-modal-textarea {
+  /* Uses: .form-input, .form-select, .form-textarea from shared.css */
   display: block;
   width: 100%;
   padding: 0.75rem 1rem;
   border: 1px solid var(--pelican-border-light);
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
   color: var(--pelican-text-primary);
   background-color: var(--pelican-bg-primary);
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
 }
 
 .ruby_cms-modal-textarea {
@@ -1405,109 +1979,85 @@
 }
 
 .ruby_cms-modal-footer {
+  /* Uses: .dialog-footer from shared.css */
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.75rem;
-  padding: 1.5rem;
+  gap: var(--spacing-md);
+  padding: var(--spacing-2xl);
   border-top: 1px solid var(--pelican-border);
   background: var(--pelican-bg-secondary);
 }
 
-/* Modal button variants - extends base button styles */
 .ruby_cms-btn-cancel {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--pelican-text-primary);
-  background: var(--pelican-bg-primary);
-  border: 1px solid var(--pelican-border-light);
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.ruby_cms-btn-cancel:hover {
-  background: var(--pelican-bg-secondary);
+  /* Uses: .btn .btn-secondary from shared.css */
 }
 
 .ruby_cms-btn-save-modal {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: white;
-  background: var(--pelican-accent-blue-hover);
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.ruby_cms-btn-save-modal:hover {
-  background: var(--pelican-accent-blue-dark);
+  /* Uses: .btn .btn-primary from shared.css */
 }
 
 
 /* ===== Component: content_blocks ===== */
 /* ============================================
-   Pelican Card Wrapper
+   Content Blocks Components
    ============================================ */
 
+/* Pelican Card Wrapper */
 .ruby_cms-pelican-card {
+  /* Uses: .card from shared.css */
   background-color: var(--pelican-bg-primary);
   border: 1px solid var(--pelican-border);
-  border-radius: 0.5rem;
-  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xl) var(--spacing-2xl);
   width: 70%;
   margin: 0 auto;
 }
 
-/* ============================================
-     Form Header (meta + actions)
-     ============================================ */
-
+/* Form Header (meta + actions) */
 .ruby_cms-pelican-form__header {
+  /* Uses: .flex .justify-between .items-start from shared.css */
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
+  gap: var(--spacing-2xl);
+  margin-bottom: var(--spacing-2xl);
+  padding-bottom: var(--spacing-lg);
   border-bottom: 1px solid var(--pelican-border);
 }
 
 .ruby_cms-pelican-form__meta {
+  /* Uses: .grid .grid-cols-2 from shared.css */
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: var(--spacing-lg);
 }
 
 .ruby_cms-pelican-form__actions {
+  /* Uses: .flex .items-center .gap-sm from shared.css */
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 /* Buttons */
-
 .ruby_cms-pelican-button {
+  /* Uses: .btn from shared.css */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.375rem;
+  padding: 0.375rem var(--spacing-md);
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none;
   border: 1px solid transparent;
   cursor: pointer;
-  transition:
-    background-color 0.15s,
-    color 0.15s,
-    border-color 0.15s;
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
 }
 
 .ruby_cms-pelican-button--primary {
+  /* Uses: .btn .btn-primary from shared.css */
   background-color: var(--pelican-accent-blue);
   color: white;
   border-color: var(--pelican-accent-blue);
@@ -1519,6 +2069,7 @@
 }
 
 .ruby_cms-pelican-button--ghost {
+  /* Uses: .btn .btn-ghost from shared.css */
   background: transparent;
   color: var(--pelican-text-secondary);
   border-color: var(--pelican-border);
@@ -1529,49 +2080,43 @@
   color: var(--pelican-text-primary);
 }
 
-/* ============================================
-     Published row
-     ============================================ */
-
+/* Published row */
 .ruby_cms-content-blocks-published-row {
+  /* Uses: .flex .items-center .gap-sm from shared.css */
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
   font-size: 0.875rem;
   color: var(--pelican-text-secondary);
 }
 
-/* ============================================
-     Locale Switcher (Pelican pills)
-     ============================================ */
-
+/* Locale Switcher (Pelican pills) */
 .ruby_cms-content-blocks-locale-switcher {
   border: 1px solid var(--pelican-border);
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
 .ruby_cms-content-blocks-locale-switcher__tabs {
+  /* Uses: .flex .gap-xs from shared.css */
   display: flex;
-  gap: 0.25rem;
-  padding: 0.5rem;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
   background-color: var(--pelican-bg-secondary);
   border-bottom: 1px solid var(--pelican-border);
 }
 
 .ruby_cms-content-blocks-locale-switcher__tab {
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.375rem;
+  padding: 0.375rem var(--spacing-md);
+  border-radius: var(--radius-sm);
   font-size: 0.8125rem;
   font-weight: 500;
   border: none;
   background: transparent;
   color: var(--pelican-text-secondary);
   cursor: pointer;
-  transition:
-    background-color 0.15s,
-    color 0.15s;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .ruby_cms-content-blocks-locale-switcher__tab:hover {
@@ -1585,12 +2130,9 @@
   box-shadow: 0 0 0 1px var(--pelican-border);
 }
 
-/* ============================================
-     Locale Panels
-     ============================================ */
-
+/* Locale Panels */
 .ruby_cms-content-blocks-locale-panel {
-  padding: 1.25rem;
+  padding: var(--spacing-xl);
 }
 
 .ruby_cms-content-blocks-locale-panel.is-hidden {
@@ -1598,115 +2140,121 @@
 }
 
 .ruby_cms-content-blocks-locale-panel__grid {
+  /* Uses: .grid .grid-cols-2 from shared.css */
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem 1.25rem;
+  gap: var(--spacing-lg) var(--spacing-xl);
 }
 
 .ruby_cms-content-blocks-locale-panel__grid .ruby_cms-field--full {
+  /* Uses: .col-span-full from shared.css */
   grid-column: 1 / -1;
 }
 
-/* ============================================
-     Single locale layout
-     ============================================ */
-
+/* Single locale layout */
 .ruby_cms-content-blocks-single-grid {
+  /* Uses: .grid .grid-cols-2 from shared.css */
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem 1.25rem;
+  gap: var(--spacing-lg) var(--spacing-xl);
 }
 
 .ruby_cms-content-blocks-single-grid .ruby_cms-field--full {
+  /* Uses: .col-span-full from shared.css */
   grid-column: 1 / -1;
 }
 
-/* ============================================
-   Content Blocks — Show page
-   ============================================ */
-
+/* Content Blocks - Show page */
 .ruby_cms-content-blocks-show {
+  /* Uses: .flex .flex-col from shared.css */
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--spacing-2xl);
 }
 
 /* Meta row */
-
 .ruby_cms-content-blocks-show__meta {
+  /* Uses: .grid from shared.css */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.25rem;
-  padding-bottom: 1.25rem;
+  gap: var(--spacing-xl);
+  padding-bottom: var(--spacing-xl);
   border-bottom: 1px solid var(--pelican-border);
 }
 
 .ruby_cms-content-blocks-show__label {
+  /* Uses: .text-xs .font-medium .text-secondary from shared.css */
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--pelican-text-secondary);
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--spacing-xs);
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
 
 .ruby_cms-content-blocks-show__value {
+  /* Uses: .text-sm .text-primary from shared.css */
   font-size: 0.875rem;
   color: var(--pelican-text-primary);
   line-height: 1.4;
 }
 
 .ruby_cms-content-blocks-show__mono {
+  /* Uses: .text-mono from shared.css */
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 /* Status pills */
-
 .ruby_cms-status-pill {
+  /* Uses: .status-pill from shared.css */
   display: inline-flex;
   align-items: center;
-  padding: 0.125rem 0.5rem;
-  border-radius: 9999px;
+  padding: 0.125rem var(--spacing-sm);
+  border-radius: var(--radius-full);
   font-size: 0.75rem;
   font-weight: 500;
 }
 
 .ruby_cms-status-pill--success {
+  /* Uses: .status-pill-success from shared.css */
   background-color: var(--pelican-accent-emerald-bg);
   color: var(--pelican-accent-emerald);
 }
 
 .ruby_cms-status-pill--muted {
+  /* Uses: .status-pill-muted from shared.css */
   background-color: var(--pelican-bg-tertiary);
   color: var(--pelican-text-secondary);
 }
 
 /* Locale cards */
-
 .ruby_cms-content-blocks-show__locales {
+  /* Uses: .grid from shared.css */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
-  gap: 1.25rem;
+  gap: var(--spacing-xl);
 }
 
 .ruby_cms-content-blocks-show__locale-card {
+  /* Uses: .card from shared.css */
   border: 1px solid var(--pelican-border);
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   background-color: var(--pelican-bg-secondary);
   overflow: hidden;
 }
 
 .ruby_cms-content-blocks-show__locale-header {
-  padding: 0.5rem 0.75rem;
+  padding: var(--spacing-sm) var(--spacing-md);
   border-bottom: 1px solid var(--pelican-border);
   background-color: var(--pelican-bg-tertiary);
 }
 
 .ruby_cms-content-blocks-show__locale-pill {
+  /* Uses: .status-pill from shared.css */
   display: inline-flex;
   align-items: center;
-  padding: 0.125rem 0.5rem;
-  border-radius: 9999px;
+  padding: 0.125rem var(--spacing-sm);
+  border-radius: var(--radius-full);
   font-size: 0.75rem;
   font-weight: 500;
   background-color: var(--pelican-bg-primary);
@@ -1715,15 +2263,16 @@
 }
 
 /* Locale content */
-
 .ruby_cms-content-blocks-show__fields {
-  padding: 0.75rem 1rem 1rem;
+  /* Uses: .grid .grid-cols-2 from shared.css */
+  padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem 1.25rem;
+  gap: var(--spacing-md) var(--spacing-xl);
 }
 
 .ruby_cms-content-blocks-show__field-full {
+  /* Uses: .col-span-full from shared.css */
   grid-column: 1 / -1;
 }
 
@@ -1733,11 +2282,11 @@
 }
 
 /* Single locale fallback */
-
 .ruby_cms-content-blocks-show__single {
+  /* Uses: .grid .grid-cols-2 from shared.css */
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.25rem;
+  gap: var(--spacing-xl);
 }
 
 
@@ -2121,23 +2670,27 @@
 
 
 /* ===== Component: settings ===== */
-/* Settings Header */
+/* ============================================
+   Settings - Settings page components
+   ============================================ */
+
 .ruby_cms-settings-header {
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-3xl);
 }
 
-/* Settings page */
 .ruby_cms-settings-form {
+  /* Uses: .flex .flex-col from shared.css */
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: var(--spacing-3xl);
 }
 
 .ruby_cms-settings-grid {
+  /* Uses: .grid from shared.css */
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 2rem 1.75rem;
-  padding: 2rem 0;
+  gap: var(--spacing-3xl) var(--spacing-2xl);
+  padding: var(--spacing-3xl) 0;
 }
 
 @media (max-width: 768px) {
@@ -2147,76 +2700,90 @@
 }
 
 .ruby_cms-setting-item {
+  /* Uses: .form-group from shared.css */
   display: flex;
   flex-direction: column;
   gap: 0.625rem;
 }
 
 .ruby_cms-setting-item .ruby_cms-label {
+  /* Uses: .form-label from shared.css */
   margin-bottom: 0;
   font-weight: 600;
   font-size: 0.8125rem;
-  color: #111827;
+  color: var(--pelican-text-primary);
   letter-spacing: 0.01em;
 }
 
 .ruby_cms-setting-item .ruby_cms-hint {
+  /* Uses: .form-hint from shared.css */
   margin-top: -0.375rem;
   margin-bottom: 0.375rem;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--pelican-text-secondary);
   line-height: 1.5;
 }
 
 .ruby_cms-empty-state {
-  padding: 4rem 2rem;
+  padding: 4rem var(--spacing-3xl);
   text-align: center;
-  color: #9ca3af;
+  color: var(--pelican-text-muted);
   font-size: 0.9375rem;
 }
 
 /* Tabs */
 .ruby_cms-tabs {
-  margin-top: 2rem;
+  margin-top: var(--spacing-3xl);
 }
 
 .ruby_cms-tabs__nav {
+  /* Uses: .flex .gap-sm from shared.css */
   display: flex;
-  gap: 0.25rem;
-  border-bottom: 1px solid #e5e7eb;
+  gap: var(--spacing-sm);
+  border-bottom: 2px solid var(--pelican-border);
   padding: 0;
-  margin-bottom: 1rem;
+  margin-bottom: var(--spacing-3xl);
 }
 
 .ruby_cms-tabs__tab {
-  padding: 0.75rem 1rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: #6b7280;
+  padding: 0.875rem var(--spacing-2xl);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--pelican-text-secondary);
   text-decoration: none;
-  border-bottom: 2px solid transparent;
-  transition: all 0.15s ease;
+  border-bottom: 3px solid transparent;
+  transition: all var(--transition-base);
   position: relative;
-  top: 1px;
-  border-radius: 0.375rem 0.375rem 0 0;
+  top: 2px;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
+  gap: var(--spacing-sm);
+  background-color: var(--pelican-bg-secondary);
+}
+
+.ruby_cms-tabs__icon {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+.ruby_cms-tabs__label {
+  line-height: 1;
 }
 
 .ruby_cms-tabs__tab:hover {
-  color: #111827;
-  background-color: #f9fafb;
+  color: var(--pelican-accent-blue);
+  background-color: var(--pelican-accent-blue-bg);
 }
 
 .ruby_cms-tabs__tab--active {
-  color: #2563eb;
-  border-bottom-color: #2563eb;
-  background-color: transparent;
+  color: var(--pelican-accent-blue);
+  border-bottom-color: var(--pelican-accent-blue);
+  background-color: var(--pelican-accent-blue-bg);
 }
 
 .ruby_cms-tabs__tab--active:hover {
-  background-color: #eff6ff;
+  background-color: #dbeafe;
 }
 
 .ruby_cms-tabs__content {
@@ -2228,8 +2795,8 @@
 .ruby_cms-toggle {
   position: relative;
   display: inline-block;
-  width: 48px;
-  height: 26px;
+  width: 52px;
+  height: 28px;
 }
 
 .ruby_cms-toggle-checkbox {
@@ -2246,90 +2813,91 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #d1d5db;
-  transition:
-    background-color 0.2s ease,
-    box-shadow 0.2s ease;
-  border-radius: 26px;
-  box-shadow: inset 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  background-color: var(--pelican-accent-red);
+  transition: background-color 0.25s ease, box-shadow 0.25s ease;
+  border-radius: 28px;
+  box-shadow: inset 0 1px 3px 0 rgb(0 0 0 / 0.1);
 }
 
 .ruby_cms-toggle-label:before {
   position: absolute;
   content: "";
-  height: 20px;
-  width: 20px;
+  height: 22px;
+  width: 22px;
   left: 3px;
   bottom: 3px;
   background-color: #ffffff;
-  transition: transform 0.2s ease;
-  border-radius: 50%;
-  box-shadow:
-    0 1px 3px 0 rgb(0 0 0 / 0.1),
-    0 1px 2px 0 rgb(0 0 0 / 0.06);
+  transition: transform 0.25s ease;
+  border-radius: var(--radius-full);
+  box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.15), 0 1px 2px 0 rgb(0 0 0 / 0.1);
 }
 
 .ruby_cms-toggle-checkbox:checked + .ruby_cms-toggle-label {
-  background-color: #2563eb;
+  background-color: var(--pelican-accent-blue);
 }
 
 .ruby_cms-toggle-checkbox:checked + .ruby_cms-toggle-label:before {
-  transform: translateX(22px);
+  transform: translateX(24px);
 }
 
 .ruby_cms-toggle-checkbox:focus + .ruby_cms-toggle-label {
-  box-shadow:
-    inset 0 1px 2px 0 rgb(0 0 0 / 0.05),
-    0 0 0 3px rgb(37 99 235 / 0.1);
+  box-shadow: inset 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 0 0 3px rgb(37 99 235 / 0.15);
 }
 
 .ruby_cms-toggle-label:hover {
-  background-color: #9ca3af;
+  background-color: #dc2626;
 }
 
 .ruby_cms-toggle-checkbox:checked + .ruby_cms-toggle-label:hover {
-  background-color: #1d4ed8;
+  background-color: var(--pelican-accent-blue-dark);
 }
 
 
 /* ===== Component: bulk_action_table ===== */
+/* ============================================
+   Bulk Action Table - Main Component
+   ============================================ */
+
 .bulk-action-table {
+  /* Uses: .card from shared.css */
   display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
   background-color: var(--pelican-bg-primary);
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   border: 1px solid var(--pelican-border);
   margin: 0 -1.5rem -1.5rem -1.5rem;
 }
 
 .bulk-action-table__header-bar {
-  padding: 1rem 1.5rem;
+  padding: var(--spacing-lg) var(--spacing-2xl);
   border-bottom: 1px solid var(--pelican-border);
 }
 
 .bulk-action-table__header-content {
+  /* Uses: .flex .items-center .justify-between from shared.css */
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  gap: 1rem;
+  gap: var(--spacing-lg);
 }
 
 .bulk-action-table__header-content .ruby_cms-page-header__action-icons {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   flex-shrink: 0;
 }
 
 .bulk-action-table__header-content .ruby_cms-page-header__search-form {
-  margin: 0.25rem 0 0.25rem auto;
+  margin: var(--spacing-xs) 0 var(--spacing-xs) auto;
   flex-shrink: 0;
 }
 
 .bulk-action-table__wrapper {
+  /* Uses: .flex .flex-col .flex-1 from shared.css */
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -2344,7 +2912,7 @@
   bottom: -1.5rem;
   background-color: var(--pelican-bg-primary);
   z-index: 10;
-  border-radius: 0 0 0.5rem 0.5rem;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
 }
 
 .bulk-action-table__scroll-container {
@@ -2353,10 +2921,11 @@
   width: 100%;
   overflow: auto;
   overscroll-behavior: none;
-  padding-bottom: 1.5rem;
+  padding-bottom: var(--spacing-2xl);
 }
 
 .bulk-action-table__table {
+  /* Uses: .table from shared.css */
   width: 100%;
   font-size: 0.875rem;
   border-collapse: collapse;
@@ -2369,10 +2938,11 @@
 }
 
 .bulk-action-table__header {
+  /* Uses: .table-header from shared.css */
   position: sticky;
   top: 0;
   z-index: 20;
-  background-color: #f9fafb;
+  background-color: var(--pelican-bg-tertiary);
   border-bottom: 1px solid var(--pelican-border);
 }
 
@@ -2393,8 +2963,9 @@
 }
 
 .bulk-action-table__row {
+  /* Uses: .table-row from shared.css */
   border-bottom: 1px solid var(--pelican-border);
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
 }
 
 .bulk-action-table__row:last-child {
@@ -2406,6 +2977,7 @@
 }
 
 .bulk-action-table__row--clickable {
+  /* Uses: .table-row-clickable from shared.css */
   cursor: pointer;
 }
 
@@ -2425,39 +2997,43 @@
 }
 
 .bulk-action-table__row td.text-right {
+  /* Uses: .text-right from shared.css */
   text-align: right;
 }
 
 .bulk-action-table__row td.text-center {
+  /* Uses: .text-center from shared.css */
   text-align: center;
 }
 
 .bulk-action-table__row td.text-muted {
+  /* Uses: .text-muted from shared.css */
   color: var(--pelican-text-secondary);
 }
 
 /* Checkboxes */
 .bulk-action-table__checkbox-head,
 .bulk-action-table__checkbox-cell {
-  padding: 0.5rem;
+  padding: var(--spacing-sm);
   vertical-align: middle;
 }
 
 .bulk-action-table__checkbox-head-wrapper,
 .bulk-action-table__checkbox-cell-wrapper {
   display: inline-block;
-  padding: 0.5rem;
-  margin: -0.5rem;
+  padding: var(--spacing-sm);
+  margin: calc(var(--spacing-sm) * -1);
   cursor: pointer;
 }
 
 .bulk-action-table__checkbox-head-input,
 .bulk-action-table__checkbox-cell-input {
+  /* Uses: .form-checkbox from shared.css */
   height: 1rem;
   width: 1rem;
   color: var(--pelican-accent-emerald);
   border-color: var(--pelican-border-light);
-  border-radius: 0.375rem;
+  border-radius: var(--radius-sm);
   cursor: pointer;
 }
 
@@ -2469,24 +3045,25 @@
 
 /* Actions */
 .bulk-action-table__actions {
+  /* Uses: .flex .items-center .justify-end .gap-sm from shared.css */
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
-/* Permissions link styling */
 .bulk-action-table__link {
+  /* Uses: .btn .btn-link from shared.css */
   display: inline-flex;
   align-items: center;
   padding: 0.375rem 0.75rem;
-  border-radius: 0.375rem;
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--pelican-accent-blue);
   text-decoration: none;
   background-color: transparent;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
   cursor: pointer;
 }
 
@@ -2495,12 +3072,13 @@
 }
 
 .bulk-action-table__action-button {
+  /* Uses: .btn .btn-icon from shared.css */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0.375rem;
-  border-radius: 0.375rem;
-  transition: background-color 0.15s;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--transition-fast);
   text-decoration: none;
   border: none;
   background: transparent;
@@ -2520,20 +3098,21 @@
 }
 
 .bulk-action-table__action-button--delete:hover {
-  background: #fee2e2;
+  background: var(--pelican-accent-red-bg);
 }
 
 .bulk-action-table__action-icon {
+  /* Uses: .icon-sm from shared.css */
   width: 1rem;
   height: 1rem;
 }
 
-/* Bulk actions bar */
+/* Bulk actions bar - now using shared button styles */
 .bulk-actions-bar {
   flex-shrink: 0;
   display: none;
   background-color: var(--pelican-bg-primary);
-  padding: 1rem 1.5rem;
+  padding: var(--spacing-lg) var(--spacing-2xl);
   border-top: 1px solid var(--pelican-border);
 }
 
@@ -2542,18 +3121,21 @@
 }
 
 .bulk-actions-bar__content {
+  /* Uses: .flex .items-center .justify-between from shared.css */
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .bulk-actions-bar__selection-info {
+  /* Uses: .flex .items-center .gap-md from shared.css */
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--spacing-md);
 }
 
 .bulk-actions-bar__selected-count {
+  /* Uses: .text-sm .font-medium from shared.css */
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--pelican-text-primary);
@@ -2570,7 +3152,7 @@
   border: none;
   cursor: pointer;
   padding: 0;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
 }
 
 .bulk-actions-bar__select-all-button:hover,
@@ -2580,33 +3162,35 @@
 }
 
 .bulk-actions-bar__buttons {
+  /* Uses: .flex .items-center .gap-sm from shared.css */
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 .bulk-actions-bar__button,
 .bulk-action-button {
+  /* Uses: .btn .btn-lg .btn-secondary from shared.css */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 2.75rem;
-  padding: 0 1.5rem;
-  border-radius: 0.75rem;
+  padding: 0 var(--spacing-2xl);
+  border-radius: var(--radius-lg);
   font-size: 0.875rem;
   font-weight: 500;
   border: 1px solid var(--pelican-border);
   background-color: white;
   color: var(--pelican-text-primary);
   cursor: pointer;
-  transition: all 0.15s;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
 }
 
 .bulk-actions-bar__button:hover,
 .bulk-action-button:hover {
-  background-color: #f9fafb;
-  border-color: #d1d5db;
+  background-color: var(--pelican-bg-tertiary);
+  border-color: var(--pelican-border-light);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -2618,6 +3202,7 @@
 
 .bulk-actions-bar__button--delete,
 .bulk-action-button--delete {
+  /* Uses: .btn .btn-danger from shared.css */
   color: var(--pelican-accent-red);
   background-color: white;
   border-color: var(--pelican-border);
@@ -2629,42 +3214,46 @@
   border-color: #fecaca;
 }
 
-/* Pagination */
+/* Pagination - uses shared pagination component */
 .bulk-action-table__pagination {
+  /* Uses: .pagination from shared.css */
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.5rem;
+  padding: var(--spacing-lg) var(--spacing-2xl);
   background-color: var(--pelican-bg-primary);
   border-top: 1px solid var(--pelican-border);
 }
 
 .bulk-action-table__pagination-info {
+  /* Uses: .pagination-info from shared.css */
   font-size: 0.875rem;
   color: var(--pelican-text-secondary);
 }
 
 .bulk-action-table__pagination-controls {
+  /* Uses: .pagination-controls from shared.css */
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--spacing-xs);
 }
 
 .bulk-action-table__pagination-button {
+  /* Uses: .pagination-button from shared.css */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 2rem;
   height: 2rem;
-  padding: 0 0.5rem;
+  padding: 0 var(--spacing-sm);
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--pelican-text-primary);
   background-color: var(--pelican-bg-primary);
   border: 1px solid var(--pelican-border);
-  border-radius: 0.375rem;
+  border-radius: var(--radius-sm);
   text-decoration: none;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
   cursor: pointer;
 }
 
@@ -2675,30 +3264,34 @@
 }
 
 .bulk-action-table__pagination-button--current {
+  /* Uses: .pagination-button-current from shared.css */
   background-color: var(--pelican-accent-blue);
   color: white;
   border-color: var(--pelican-accent-blue);
 }
 
 .bulk-action-table__pagination-button--disabled {
+  /* Uses: .pagination-button-disabled from shared.css */
   opacity: 0.5;
   cursor: not-allowed;
   pointer-events: none;
 }
 
 .bulk-action-table__pagination-ellipsis {
+  /* Uses: .pagination-ellipsis from shared.css */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 2rem;
   min-width: 2rem;
-  padding: 0 0.5rem;
+  padding: 0 var(--spacing-sm);
   font-size: 0.875rem;
   color: var(--pelican-text-secondary);
 }
 
-/* Delete dialog */
+/* Delete dialog - uses shared dialog component */
 .bulk-action-dialog {
+  /* Uses: .dialog-overlay from shared.css */
   position: fixed;
   inset: 0;
   z-index: 50;
@@ -2717,13 +3310,14 @@
 }
 
 .bulk-action-dialog__container {
+  /* Uses: .dialog-container from shared.css */
   position: relative;
   z-index: 1;
   display: flex;
   min-height: 100%;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: var(--spacing-lg);
   pointer-events: none;
 }
 
@@ -2732,19 +3326,20 @@
 }
 
 .bulk-action-dialog__content {
+  /* Uses: .dialog-content from shared.css */
   background: var(--pelican-bg-primary);
-  border-radius: 0.5rem;
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
   max-width: 28rem;
   width: 100%;
-  padding: 1.5rem;
+  padding: var(--spacing-2xl);
 }
 
 .bulk-action-dialog__header-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 1rem;
+  margin-bottom: var(--spacing-lg);
 }
 
 .bulk-action-dialog__header {
@@ -2752,6 +3347,7 @@
 }
 
 .bulk-action-dialog__title {
+  /* Uses: .dialog-title from shared.css */
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--pelican-text-primary);
@@ -2759,17 +3355,18 @@
 }
 
 .bulk-action-dialog__close {
+  /* Uses: .dialog-close from shared.css */
   display: flex;
   align-items: center;
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  border-radius: 0.375rem;
+  border-radius: var(--radius-sm);
   background: transparent;
   border: none;
   color: var(--pelican-text-secondary);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--transition-fast);
   flex-shrink: 0;
 }
 
@@ -2779,13 +3376,14 @@
 }
 
 .bulk-action-dialog__close-icon {
+  /* Uses: .icon-sm from shared.css */
   width: 1rem;
   height: 1rem;
 }
 
 .bulk-action-dialog__message {
   color: var(--pelican-text-secondary);
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-2xl);
 }
 
 .bulk-action-dialog__message p {
@@ -2794,25 +3392,27 @@
 }
 
 .bulk-action-dialog__footer {
+  /* Uses: .dialog-footer from shared.css */
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 .bulk-action-dialog__button {
+  /* Uses: .btn .btn-md from shared.css */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 2.5rem;
-  padding: 0 1rem;
-  border-radius: 0.375rem;
+  padding: 0 var(--spacing-lg);
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
   font-weight: 500;
   border: 1px solid var(--pelican-border-light);
   background: var(--pelican-bg-primary);
   color: var(--pelican-text-primary);
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
 }
 
 .bulk-action-dialog__button:hover {
@@ -2820,6 +3420,7 @@
 }
 
 .bulk-action-dialog__button--confirm {
+  /* Uses: .btn .btn-primary (danger variant) from shared.css */
   background: var(--pelican-accent-red);
   color: white;
   border-color: var(--pelican-accent-red);
@@ -2831,14 +3432,17 @@
 
 
 /* ===== Component: bulk_action_table_bar ===== */
-/* Bulk Action Table - Bulk actions bar and pagination */
+/* ============================================
+   Bulk Action Table - Actions Bar & Pagination
+   ============================================ */
 
+/* Bulk Actions Bar */
 .bulk-actions-bar {
   flex-shrink: 0;
   display: none;
   border-top: 1px solid var(--pelican-border);
   background-color: var(--pelican-bg-primary);
-  padding: 1rem 1.5rem;
+  padding: var(--spacing-lg) var(--spacing-2xl);
 }
 
 .bulk-actions-bar--visible {
@@ -2846,18 +3450,21 @@
 }
 
 .bulk-actions-bar__content {
+  /* Uses: .flex .items-center .justify-between from shared.css */
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .bulk-actions-bar__selection-info {
+  /* Uses: .flex .items-center .gap-md from shared.css */
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--spacing-md);
 }
 
 .bulk-actions-bar__selected-count {
+  /* Uses: .text-sm .font-medium .text-primary from shared.css */
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--pelican-text-primary);
@@ -2865,6 +3472,7 @@
 
 .bulk-actions-bar__select-all-button,
 .bulk-actions-bar__clear-button {
+  /* Uses: .btn .btn-link from shared.css */
   font-size: 0.875rem;
   color: var(--pelican-text-secondary);
   font-weight: 500;
@@ -2874,7 +3482,7 @@
   border: none;
   cursor: pointer;
   padding: 0;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
 }
 
 .bulk-actions-bar__select-all-button:hover,
@@ -2884,26 +3492,28 @@
 }
 
 .bulk-actions-bar__buttons {
+  /* Uses: .flex .items-center .gap-sm from shared.css */
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 .bulk-actions-bar__button,
 .bulk-action-button {
+  /* Uses: .btn .btn-md from shared.css */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 2.5rem;
-  padding: 0 1rem;
-  border-radius: 0.5rem;
+  padding: 0 var(--spacing-lg);
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
   font-weight: 500;
   border: none;
   background-color: transparent;
   color: var(--pelican-text-primary);
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
 }
 
 .bulk-actions-bar__button:hover,
@@ -2919,87 +3529,52 @@
 
 .bulk-actions-bar__button--delete,
 .bulk-action-button--delete {
+  /* Uses: .btn .btn-danger from shared.css */
   color: var(--pelican-accent-red);
 }
 
 .bulk-actions-bar__button--delete:hover,
 .bulk-action-button--delete:hover {
-  background-color: #fee2e2;
+  background-color: var(--pelican-accent-red-bg);
 }
 
-/* Pagination */
+/* Pagination - uses shared pagination styles */
 .bulk-action-table__pagination {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  border-top: 1px solid var(--pelican-border);
-  background-color: var(--pelican-bg-primary);
+  /* Uses: .pagination from shared.css */
 }
 
 .bulk-action-table__pagination-info {
-  font-size: 0.875rem;
-  color: var(--pelican-text-secondary);
+  /* Uses: .pagination-info from shared.css */
 }
 
 .bulk-action-table__pagination-controls {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+  /* Uses: .pagination-controls from shared.css */
 }
 
 .bulk-action-table__pagination-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2rem;
-  height: 2rem;
-  padding: 0 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--pelican-text-primary);
-  background-color: var(--pelican-bg-primary);
-  border: 1px solid var(--pelican-border);
-  border-radius: 0.375rem;
-  text-decoration: none;
-  transition: background-color 0.15s;
-  cursor: pointer;
-}
-
-.bulk-action-table__pagination-button:hover:not(
-    .bulk-action-table__pagination-button--disabled
-  ) {
-  background-color: var(--pelican-bg-secondary);
+  /* Uses: .pagination-button from shared.css */
 }
 
 .bulk-action-table__pagination-button--current {
-  background-color: var(--pelican-accent-blue);
-  color: white;
-  border-color: var(--pelican-accent-blue);
+  /* Uses: .pagination-button-current from shared.css */
 }
 
 .bulk-action-table__pagination-button--disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
+  /* Uses: .pagination-button-disabled from shared.css */
 }
 
 .bulk-action-table__pagination-ellipsis {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 2rem;
-  min-width: 2rem;
-  padding: 0 0.5rem;
-  font-size: 0.875rem;
-  color: var(--pelican-text-secondary);
+  /* Uses: .pagination-ellipsis from shared.css */
 }
 
 
 /* ===== Component: bulk_action_table_delete ===== */
-/* Bulk Action Table - Delete confirmation dialog */
+/* ============================================
+   Bulk Action Table - Delete Confirmation Dialog
+   ============================================ */
 
 .bulk-action-dialog {
+  /* Uses: .dialog-overlay from shared.css */
   position: fixed;
   inset: 0;
   z-index: 50;
@@ -3017,32 +3592,36 @@
 }
 
 .bulk-action-dialog__container {
+  /* Uses: .dialog-container from shared.css */
   display: flex;
   min-height: 100%;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: var(--spacing-lg);
 }
 
 .bulk-action-dialog__content {
+  /* Uses: .dialog-content from shared.css */
   background: var(--pelican-bg-primary);
-  border-radius: 0.5rem;
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
   max-width: 28rem;
   width: 100%;
-  padding: 1.5rem;
+  padding: var(--spacing-2xl);
 }
 
 .bulk-action-dialog__title {
+  /* Uses: .dialog-title from shared.css */
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--pelican-text-primary);
-  margin: 0 0 1rem 0;
+  margin: 0 0 var(--spacing-lg) 0;
 }
 
 .bulk-action-dialog__message {
+  /* Uses: .text-secondary from shared.css */
   color: var(--pelican-text-secondary);
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-2xl);
 }
 
 .bulk-action-dialog__message p {
@@ -3051,25 +3630,27 @@
 }
 
 .bulk-action-dialog__footer {
+  /* Uses: .dialog-footer from shared.css */
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 .bulk-action-dialog__button {
+  /* Uses: .btn .btn-md from shared.css */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 2.5rem;
-  padding: 0 1rem;
-  border-radius: 0.375rem;
+  padding: 0 var(--spacing-lg);
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
   font-weight: 500;
   border: 1px solid var(--pelican-border-light);
   background: var(--pelican-bg-primary);
   color: var(--pelican-text-primary);
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
 }
 
 .bulk-action-dialog__button:hover {
@@ -3077,6 +3658,7 @@
 }
 
 .bulk-action-dialog__button--confirm {
+  /* Uses: .btn .btn-primary with danger variant from shared.css */
   background: var(--pelican-accent-red);
   color: white;
   border-color: var(--pelican-accent-red);
@@ -4611,6 +5193,11 @@
 
 
 /* ===== Component: utilities ===== */
+/* Utility classes
+ * Note: Most common utilities are now in shared.css (.flex, .gap-*, .text-*, etc.)
+ * These are RubyCMS-specific utilities or legacy prefixed versions.
+ */
+
 /* Display */
 .u-hidden {
   display: none;
@@ -4622,7 +5209,7 @@
   display: inline-flex;
 }
 
-/* Flex utilities */
+/* Flex utilities (also available in shared.css without u- prefix) */
 .u-flex-col {
   flex-direction: column;
 }
@@ -4654,24 +5241,24 @@
   flex-shrink: 0;
 }
 
-/* Gap utilities */
+/* Gap utilities (also available in shared.css as .gap-xs, .gap-sm, etc.) */
 .u-gap-xs {
-  gap: 0.25rem;
+  gap: var(--spacing-xs);
 }
 .u-gap-sm {
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 .u-gap-md {
-  gap: 0.75rem;
+  gap: var(--spacing-md);
 }
 .u-gap-lg {
-  gap: 1rem;
+  gap: var(--spacing-lg);
 }
 .u-gap-xl {
-  gap: 1.5rem;
+  gap: var(--spacing-xl);
 }
 
-/* Text alignment */
+/* Text alignment (also available in shared.css as .text-left, etc.) */
 .u-text-left {
   text-align: left;
 }
@@ -4715,7 +5302,7 @@
 
 /* Common transitions */
 .u-transition {
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
 }
 
 /* Common patterns */
@@ -4739,7 +5326,7 @@
   border-width: 0;
 }
 
-/* Legacy support */
+/* Legacy support (ruby_cms- prefixed versions) */
 .ruby_cms-hidden {
   display: none;
 }

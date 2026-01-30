@@ -1,31 +1,13 @@
+/* ============================================
+   Flash Messages & Toasts
+   ============================================ */
+
 .flash-message {
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideOut {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
+  animation: slideIn var(--transition-slow) ease-out;
 }
 
 .flash-notice {
-  background: #dcfce7;
+  background: var(--pelican-accent-green-bg);
   color: #166534;
   border-color: #86efac;
 }
@@ -38,15 +20,15 @@
 
 .ruby_cms-toast {
   position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  padding: 1rem 1.25rem;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  bottom: var(--spacing-2xl);
+  right: var(--spacing-2xl);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   z-index: 10000;
   opacity: 0;
   transform: translateY(20px);
-  transition: all 0.3s ease-out;
+  transition: all var(--transition-slow);
   font-size: 0.875rem;
   font-weight: 500;
   max-width: 24rem;

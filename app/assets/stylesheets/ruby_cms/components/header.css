@@ -1,5 +1,5 @@
 .ruby_cms-admin-header {
-  padding: 1.5rem;
+  padding: var(--spacing-2xl);
   border-bottom: 1px solid var(--pelican-border);
   background: var(--pelican-bg-primary);
 }
@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: var(--spacing-lg);
 }
 
 .ruby_cms-admin-header__title {
@@ -28,7 +28,7 @@
 .ruby_cms-page-header__action-icons {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
   flex-shrink: 0;
 }
 
@@ -38,11 +38,11 @@
 
 /* Page Header */
 .ruby_cms-page-header {
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-2xl);
 }
 
 .ruby_cms-page-header__content {
-  margin-bottom: 0.75rem;
+  margin-bottom: var(--spacing-md);
 }
 
 .ruby_cms-page-header__title-group {
@@ -53,7 +53,7 @@
 .ruby_cms-page-title {
   font-size: 1.875rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--pelican-text-primary);
   margin: 0;
   letter-spacing: -0.025em;
   line-height: 1.2;
@@ -61,8 +61,8 @@
 
 .ruby_cms-page-subtitle {
   font-size: 0.9375rem;
-  color: #6b7280;
-  margin: 0.5rem 0 0 0;
+  color: var(--pelican-text-secondary);
+  margin: var(--spacing-sm) 0 0 0;
   font-weight: 400;
 }
 
@@ -71,8 +71,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  margin-top: 0.75rem;
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-md);
 }
 
 .ruby_cms-page-header__action-icons {
@@ -85,11 +85,11 @@
   padding: 0 2.5rem;
   font-size: 0.875rem;
   font-weight: 500;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   border: none;
   background-color: transparent;
   color: #006b6f;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
   cursor: pointer;
   appearance: none;
   background-image:
@@ -118,11 +118,11 @@
   width: 2.25rem;
   height: 2.25rem;
   padding: 0;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
   text-decoration: none;
 }
 
@@ -177,8 +177,8 @@
   color: var(--pelican-text-primary);
   background-color: var(--pelican-bg-primary);
   border: 1px solid var(--pelican-border-light);
-  border-radius: 0.5rem;
-  transition: background-color 0.15s;
+  border-radius: var(--radius-md);
+  transition: background-color var(--transition-fast);
 }
 
 .ruby_cms-page-header__search-input:focus {

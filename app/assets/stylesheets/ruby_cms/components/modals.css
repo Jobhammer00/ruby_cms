@@ -1,8 +1,13 @@
+/* ============================================
+   Modals - Extends shared dialog components
+   ============================================ */
+
 .ruby_cms-modal {
   backdrop-filter: blur(4px);
 }
 
 .ruby_cms-modal-overlay {
+  /* Uses: .dialog-overlay from shared.css */
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.4);
@@ -10,19 +15,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: var(--spacing-lg);
 }
 
 .ruby_cms-modal {
+  /* Uses: .dialog-content from shared.css */
   background: var(--pelican-bg-primary);
-  border-radius: 0.75rem;
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
   width: 100%;
   max-width: 42rem;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  animation: modalSlideIn 0.2s ease-out;
+  animation: modalSlideIn var(--transition-base) ease-out;
 }
 
 @keyframes modalSlideIn {
@@ -37,14 +43,16 @@
 }
 
 .ruby_cms-modal-header {
+  /* Uses: .dialog-header from shared.css */
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem;
+  padding: var(--spacing-2xl);
   border-bottom: 1px solid var(--pelican-border);
 }
 
 .ruby_cms-modal-title {
+  /* Uses: .dialog-title from shared.css */
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--pelican-text-primary);
@@ -54,25 +62,26 @@
 .ruby_cms-modal-subtitle {
   font-size: 0.875rem;
   color: var(--pelican-text-secondary);
-  margin-top: 0.25rem;
+  margin-top: var(--spacing-xs);
 }
 
 .ruby_cms-modal-key {
   font-family: ui-monospace, monospace;
   color: var(--pelican-accent-blue);
   background: var(--pelican-accent-blue-bg);
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
 }
 
 .ruby_cms-modal-close {
+  /* Uses: .dialog-close from shared.css */
   color: var(--pelican-text-muted);
-  padding: 0.5rem;
-  border-radius: 0.375rem;
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
   border: none;
   background: transparent;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
 }
 
 .ruby_cms-modal-close:hover {
@@ -81,41 +90,45 @@
 }
 
 .ruby_cms-modal-close-icon {
+  /* Uses: .icon-lg from shared.css */
   width: 1.5rem;
   height: 1.5rem;
 }
 
 .ruby_cms-modal-body {
+  /* Uses: .dialog-body from shared.css */
   flex: 1;
-  padding: 1.5rem;
+  padding: var(--spacing-2xl);
   overflow-y: auto;
 }
 
 .ruby_cms-modal-form-group {
-  margin-bottom: 1.5rem;
+  /* Uses: .form-group from shared.css */
+  margin-bottom: var(--spacing-2xl);
 }
 
 .ruby_cms-modal-label {
+  /* Uses: .form-label from shared.css */
   display: block;
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--pelican-text-primary);
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-sm);
 }
 
-/* Modal inputs extend base form styles */
 .ruby_cms-modal-input,
 .ruby_cms-modal-select,
 .ruby_cms-modal-textarea {
+  /* Uses: .form-input, .form-select, .form-textarea from shared.css */
   display: block;
   width: 100%;
   padding: 0.75rem 1rem;
   border: 1px solid var(--pelican-border-light);
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   font-size: 0.875rem;
   color: var(--pelican-text-primary);
   background-color: var(--pelican-bg-primary);
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
 }
 
 .ruby_cms-modal-textarea {
@@ -132,44 +145,20 @@
 }
 
 .ruby_cms-modal-footer {
+  /* Uses: .dialog-footer from shared.css */
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.75rem;
-  padding: 1.5rem;
+  gap: var(--spacing-md);
+  padding: var(--spacing-2xl);
   border-top: 1px solid var(--pelican-border);
   background: var(--pelican-bg-secondary);
 }
 
-/* Modal button variants - extends base button styles */
 .ruby_cms-btn-cancel {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--pelican-text-primary);
-  background: var(--pelican-bg-primary);
-  border: 1px solid var(--pelican-border-light);
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: background-color 0.15s;
-}
-
-.ruby_cms-btn-cancel:hover {
-  background: var(--pelican-bg-secondary);
+  /* Uses: .btn .btn-secondary from shared.css */
 }
 
 .ruby_cms-btn-save-modal {
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: white;
-  background: var(--pelican-accent-blue-hover);
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.ruby_cms-btn-save-modal:hover {
-  background: var(--pelican-accent-blue-dark);
+  /* Uses: .btn .btn-primary from shared.css */
 }

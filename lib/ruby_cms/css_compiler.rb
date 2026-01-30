@@ -6,9 +6,11 @@ module RubyCms
   # Compiles admin.css from component files (no Rails required).
   # Used by Engine.compile_admin_css and rake tasks.
   module CssCompiler
+    # Core shared styles MUST be loaded first, then specific components
     COMPONENTS = %w[
-      tokens layout sidebar header cards dashboard buttons forms alerts
-      tables breadcrumbs flash_toast modals content_blocks visitor_errors settings
+      shared
+      layout sidebar header cards dashboard buttons forms alerts
+      flash_toast modals content_blocks visitor_errors settings
       bulk_action_table bulk_action_table_bar bulk_action_table_delete
       visual_editor visual_editor_header visual_editor_preview visual_editor_modal
       visual_editor_edit_mode

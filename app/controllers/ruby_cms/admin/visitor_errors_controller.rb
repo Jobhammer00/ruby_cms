@@ -21,8 +21,7 @@ module RubyCms
         render_index
       end
 
-      def show
-      end
+      def show; end
 
       def resolve
         @visitor_error.update!(resolved: true)

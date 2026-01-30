@@ -1,6 +1,9 @@
-/* Bulk Action Table - Delete confirmation dialog */
+/* ============================================
+   Bulk Action Table - Delete Confirmation Dialog
+   ============================================ */
 
 .bulk-action-dialog {
+  /* Uses: .dialog-overlay from shared.css */
   position: fixed;
   inset: 0;
   z-index: 50;
@@ -18,32 +21,36 @@
 }
 
 .bulk-action-dialog__container {
+  /* Uses: .dialog-container from shared.css */
   display: flex;
   min-height: 100%;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: var(--spacing-lg);
 }
 
 .bulk-action-dialog__content {
+  /* Uses: .dialog-content from shared.css */
   background: var(--pelican-bg-primary);
-  border-radius: 0.5rem;
-  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xl);
   max-width: 28rem;
   width: 100%;
-  padding: 1.5rem;
+  padding: var(--spacing-2xl);
 }
 
 .bulk-action-dialog__title {
+  /* Uses: .dialog-title from shared.css */
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--pelican-text-primary);
-  margin: 0 0 1rem 0;
+  margin: 0 0 var(--spacing-lg) 0;
 }
 
 .bulk-action-dialog__message {
+  /* Uses: .text-secondary from shared.css */
   color: var(--pelican-text-secondary);
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--spacing-2xl);
 }
 
 .bulk-action-dialog__message p {
@@ -52,25 +59,27 @@
 }
 
 .bulk-action-dialog__footer {
+  /* Uses: .dialog-footer from shared.css */
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 .bulk-action-dialog__button {
+  /* Uses: .btn .btn-md from shared.css */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   height: 2.5rem;
-  padding: 0 1rem;
-  border-radius: 0.375rem;
+  padding: 0 var(--spacing-lg);
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
   font-weight: 500;
   border: 1px solid var(--pelican-border-light);
   background: var(--pelican-bg-primary);
   color: var(--pelican-text-primary);
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color var(--transition-fast);
 }
 
 .bulk-action-dialog__button:hover {
@@ -78,6 +87,7 @@
 }
 
 .bulk-action-dialog__button--confirm {
+  /* Uses: .btn .btn-primary with danger variant from shared.css */
   background: var(--pelican-accent-red);
   color: white;
   border-color: var(--pelican-accent-red);

@@ -1,15 +1,20 @@
+/* ============================================
+   Dashboard - Specific dashboard components
+   ============================================ */
+
 /* Dashboard Header */
 .ruby_cms-dashboard-header {
+  /* Uses: .flex .justify-between .items-start from shared.css */
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 2rem;
+  margin-bottom: var(--spacing-3xl);
 }
 
 .ruby_cms-dashboard-subtitle {
-  color: #6b7280;
+  color: var(--pelican-text-secondary);
   font-size: 0.9375rem;
-  margin-top: 0.5rem;
+  margin-top: var(--spacing-sm);
   font-weight: 400;
 }
 
@@ -19,18 +24,20 @@
 }
 
 .ruby_cms-dashboard-section-title {
+  /* Uses: .text-lg .font-semibold .text-primary from shared.css */
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
-  margin-bottom: 1.25rem;
+  color: var(--pelican-text-primary);
+  margin-bottom: var(--spacing-xl);
   letter-spacing: -0.01em;
 }
 
 /* Quick Actions */
 .ruby_cms-dashboard-quick-actions {
+  /* Uses: .grid from shared.css */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 0.75rem;
+  gap: var(--spacing-md);
 }
 
 @media (max-width: 640px) {
@@ -41,19 +48,14 @@
 
 /* Stats Grid */
 .ruby_cms-dashboard-grid {
+  /* Uses: .grid from shared.css */
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: 1.25rem;
+  gap: var(--spacing-xl);
   margin-bottom: 2.5rem;
 }
 
 @media (min-width: 768px) {
-  .ruby_cms-dashboard-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
   .ruby_cms-dashboard-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -66,27 +68,27 @@
 }
 
 .ruby_cms-dashboard-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
+  /* Uses: .card .card-hover from shared.css */
+  background: var(--pelican-bg-primary);
+  border: 1px solid var(--pelican-border);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
 }
 
 .ruby_cms-dashboard-card:hover {
-  border-color: #d1d5db;
-  box-shadow:
-    0 4px 6px -1px rgb(0 0 0 / 0.05),
-    0 2px 4px -1px rgb(0 0 0 / 0.03);
+  border-color: var(--pelican-border-light);
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 
 .ruby_cms-dashboard-card-body {
-  padding: 1.75rem;
+  /* Uses: .card-body from shared.css */
+  padding: var(--spacing-2xl);
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
+  gap: var(--spacing-lg);
 }
 
 .ruby_cms-dashboard-card-icon {
@@ -100,18 +102,19 @@
 }
 
 .ruby_cms-dashboard-card-icon svg {
+  /* Uses: .icon-lg from shared.css */
   width: 1.5rem;
   height: 1.5rem;
 }
 
 .ruby_cms-dashboard-card-icon--blue {
   color: #2563eb;
-  background: #eff6ff;
+  background: var(--pelican-accent-blue-bg);
 }
 
 .ruby_cms-dashboard-card-icon--green {
-  color: #059669;
-  background: #ecfdf5;
+  color: var(--pelican-accent-emerald);
+  background: var(--pelican-accent-emerald-bg);
 }
 
 .ruby_cms-dashboard-card-icon--purple {
@@ -120,81 +123,89 @@
 }
 
 .ruby_cms-dashboard-card-icon--red {
-  color: #dc2626;
-  background: #fef2f2;
+  color: var(--pelican-accent-red);
+  background: var(--pelican-accent-red-bg);
 }
 
 .ruby_cms-dashboard-card-content {
+  /* Uses: .flex-1 from shared.css */
   flex: 1;
   min-width: 0;
-  padding-top: 0.25rem;
+  padding-top: var(--spacing-xs);
 }
 
 .ruby_cms-dashboard-card-label {
+  /* Uses: .text-xs .font-medium .text-secondary from shared.css */
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--pelican-text-secondary);
   letter-spacing: 0.01em;
-  margin-bottom: 0.5rem;
+  margin-bottom: var(--spacing-sm);
   text-transform: uppercase;
 }
 
 .ruby_cms-dashboard-card-value {
+  /* Uses: .flex .items-baseline from shared.css */
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
   gap: 0.625rem;
-  margin-top: 0.25rem;
+  margin-top: var(--spacing-xs);
 }
 
 .ruby_cms-dashboard-card-number {
+  /* Uses: .text-xl .font-bold from shared.css */
   font-size: 2rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--pelican-text-primary);
   line-height: 1.2;
   letter-spacing: -0.02em;
 }
 
 .ruby_cms-dashboard-card-subtext {
+  /* Uses: .text-xs .font-medium .text-muted from shared.css */
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #9ca3af;
+  color: var(--pelican-text-muted);
 }
 
 .ruby_cms-dashboard-card-subtext--success {
-  color: #059669;
-}
-
-.ruby_cms-dashboard-card-footer {
-  background: #f9fafb;
-  padding: 0.875rem 1.75rem;
-  border-top: 1px solid #e5e7eb;
-}
-
-.ruby_cms-dashboard-card-link {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #2563eb;
-  text-decoration: none;
-  transition: color 0.15s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.ruby_cms-dashboard-card-link:hover {
-  color: #1d4ed8;
+  color: var(--pelican-accent-emerald);
 }
 
 .ruby_cms-dashboard-card-subtext--danger {
-  color: #dc2626;
+  color: var(--pelican-accent-red);
+}
+
+.ruby_cms-dashboard-card-footer {
+  /* Uses: .card-footer from shared.css */
+  background: var(--pelican-bg-secondary);
+  padding: 0.875rem var(--spacing-2xl);
+  border-top: 1px solid var(--pelican-border);
+}
+
+.ruby_cms-dashboard-card-link {
+  /* Uses: .btn .btn-link from shared.css */
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--pelican-accent-blue);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.ruby_cms-dashboard-card-link:hover {
+  color: var(--pelican-accent-blue-dark);
 }
 
 /* Activity Section */
 .ruby_cms-dashboard-activity-grid {
+  /* Uses: .grid from shared.css */
   display: grid;
   grid-template-columns: repeat(1, 1fr);
-  gap: 1.25rem;
+  gap: var(--spacing-xl);
 }
 
 @media (min-width: 1024px) {
@@ -204,39 +215,43 @@
 }
 
 .ruby_cms-dashboard-activity-header {
+  /* Uses: .flex .justify-between .items-center from shared.css */
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.25rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--pelican-border);
 }
 
 .ruby_cms-dashboard-activity-link {
+  /* Uses: .btn .btn-link from shared.css */
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #2563eb;
+  color: var(--pelican-accent-blue);
   text-decoration: none;
-  transition: color 0.15s ease;
+  transition: color var(--transition-fast);
 }
 
 .ruby_cms-dashboard-activity-link:hover {
-  color: #1d4ed8;
+  color: var(--pelican-accent-blue-dark);
 }
 
 .ruby_cms-dashboard-activity-list {
+  /* Uses: .flex .flex-col from shared.css */
   display: flex;
   flex-direction: column;
   gap: 0;
 }
 
 .ruby_cms-dashboard-activity-item {
+  /* Uses: .flex .justify-between .items-center from shared.css */
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0.875rem 0;
-  border-bottom: 1px solid #f3f4f6;
-  transition: all 0.15s ease;
+  border-bottom: 1px solid var(--pelican-bg-tertiary);
+  transition: all var(--transition-fast);
 }
 
 .ruby_cms-dashboard-activity-item:last-child {
@@ -244,18 +259,20 @@
 }
 
 .ruby_cms-dashboard-activity-item:hover {
-  padding-left: 0.5rem;
+  padding-left: var(--spacing-sm);
 }
 
 .ruby_cms-dashboard-activity-item-content {
+  /* Uses: .flex-1 from shared.css */
   flex: 1;
   min-width: 0;
 }
 
 .ruby_cms-dashboard-activity-item-title {
+  /* Uses: .text-sm .font-medium from shared.css */
   font-size: 0.875rem;
   font-weight: 500;
-  color: #111827;
+  color: var(--pelican-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -263,15 +280,17 @@
 }
 
 .ruby_cms-dashboard-activity-item-meta {
+  /* Uses: .flex .items-center .gap-md from shared.css */
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: var(--spacing-md);
   font-size: 0.75rem;
 }
 
 .ruby_cms-dashboard-activity-item-status {
-  padding: 0.125rem 0.5rem;
-  border-radius: 0.375rem;
+  /* Uses: .status-pill from shared.css */
+  padding: 0.125rem var(--spacing-sm);
+  border-radius: var(--radius-sm);
   font-weight: 600;
   font-size: 0.6875rem;
   text-transform: uppercase;
@@ -279,44 +298,48 @@
 }
 
 .ruby_cms-dashboard-activity-item-status--success {
+  /* Uses: .status-pill-success from shared.css */
   color: #047857;
-  background-color: #d1fae5;
+  background-color: var(--pelican-accent-green-bg);
 }
 
 .ruby_cms-dashboard-activity-item-status--danger {
+  /* Uses: .status-pill-danger from shared.css */
   color: #b91c1c;
-  background-color: #fee2e2;
+  background-color: var(--pelican-accent-red-bg);
 }
 
 .ruby_cms-dashboard-activity-item-status--muted {
-  color: #6b7280;
-  background-color: #f3f4f6;
+  /* Uses: .status-pill-muted from shared.css */
+  color: var(--pelican-text-secondary);
+  background-color: var(--pelican-bg-tertiary);
 }
 
 .ruby_cms-dashboard-activity-item-time {
-  color: #9ca3af;
+  color: var(--pelican-text-muted);
 }
 
 .ruby_cms-dashboard-activity-item-action {
+  /* Uses: .btn .btn-link from shared.css */
   flex-shrink: 0;
-  margin-left: 1rem;
+  margin-left: var(--spacing-lg);
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #2563eb;
+  color: var(--pelican-accent-blue);
   text-decoration: none;
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.375rem;
-  transition: all 0.15s ease;
+  padding: 0.375rem var(--spacing-md);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
 }
 
 .ruby_cms-dashboard-activity-item-action:hover {
-  color: #1d4ed8;
-  background-color: #eff6ff;
+  color: var(--pelican-accent-blue-dark);
+  background-color: var(--pelican-accent-blue-bg);
 }
 
 .ruby_cms-dashboard-activity-empty {
-  padding: 3rem 1.5rem;
+  padding: 3rem var(--spacing-2xl);
   text-align: center;
-  color: #9ca3af;
+  color: var(--pelican-text-muted);
   font-size: 0.875rem;
 }

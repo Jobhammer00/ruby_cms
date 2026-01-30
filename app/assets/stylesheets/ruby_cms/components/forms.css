@@ -1,77 +1,33 @@
+/* ============================================
+   Forms - Extends shared form components
+   ============================================ */
+
 .ruby_cms-form {
+  /* Uses: .form-group from shared.css */
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-lg);
 }
 
 .ruby_cms-form--inline {
   flex-direction: row;
   flex-wrap: wrap;
   align-items: flex-end;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 .ruby_cms-field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  /* Uses: .form-group from shared.css */
 }
 
-.ruby_cms-field label,
 .ruby_cms-label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #111827;
-  letter-spacing: 0.01em;
+  /* Uses: .form-label from shared.css */
 }
 
-/* Base input styles - shared across all input types */
 .ruby_cms-input,
 .ruby_cms-textarea,
 .ruby_cms-select {
-  display: block;
-  width: 100%;
-  padding: 0.625rem 0.875rem;
-  font-size: 0.875rem;
-  color: #111827;
-  background-color: #ffffff;
-  border: 1px solid #d1d5db;
-  border-radius: 0.5rem;
-  transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-}
-
-.ruby_cms-input:focus,
-.ruby_cms-textarea:focus,
-.ruby_cms-select:focus {
-  outline: none;
-  border-color: #2563eb;
-  box-shadow:
-    0 0 0 3px rgb(37 99 235 / 0.1),
-    0 1px 2px 0 rgb(0 0 0 / 0.05);
-}
-
-.ruby_cms-input:hover:not(:focus),
-.ruby_cms-textarea:hover:not(:focus),
-.ruby_cms-select:hover:not(:focus) {
-  border-color: #9ca3af;
-}
-
-.ruby_cms-input::placeholder,
-.ruby_cms-textarea::placeholder {
-  color: #9ca3af;
-}
-
-.ruby_cms-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-  background-position: right 0.75rem center;
-  background-repeat: no-repeat;
-  background-size: 1.25em 1.25em;
-  padding-right: 2.75rem;
-  cursor: pointer;
+  /* Uses: .form-input, .form-textarea, .form-select from shared.css */
 }
 
 .ruby_cms-form--inline .ruby_cms-select {
@@ -80,8 +36,5 @@
 }
 
 .ruby_cms-hint {
-  font-size: 0.75rem;
-  color: #6b7280;
-  margin-top: 0.25rem;
-  line-height: 1.5;
+  /* Uses: .form-hint from shared.css */
 }

@@ -1,21 +1,18 @@
+/* ============================================
+   Cards - Specific card implementations
+   ============================================ */
+
 .ruby_cms-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  /* Uses: .card from shared.css */
+  margin-bottom: var(--spacing-2xl);
 }
 
 .ruby_cms-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.25rem 1.75rem;
-  border-bottom: 1px solid #e5e7eb;
+  /* Uses: .card-header from shared.css */
 }
 
 .ruby_cms-card--padded {
-  padding: 1.75rem;
+  padding: var(--spacing-2xl);
 }
 
 .ruby_cms-card--form {
@@ -25,7 +22,7 @@
 .ruby_cms-card-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #111827;
-  margin: 0 0 0.5rem 0;
+  color: var(--pelican-text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
   letter-spacing: -0.01em;
 }

@@ -32,8 +32,6 @@ module RubyCms
         redirect_to ruby_cms_admin_settings_path,
                     notice: t("ruby_cms.admin.settings.defaults_reset")
       end
-
-      private
     end
   end
 end

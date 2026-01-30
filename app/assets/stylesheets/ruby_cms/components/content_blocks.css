@@ -1,62 +1,62 @@
 /* ============================================
-   Pelican Card Wrapper
+   Content Blocks Components
    ============================================ */
 
+/* Pelican Card Wrapper */
 .ruby_cms-pelican-card {
+  /* Uses: .card from shared.css */
   background-color: var(--pelican-bg-primary);
   border: 1px solid var(--pelican-border);
-  border-radius: 0.5rem;
-  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-md);
+  padding: var(--spacing-xl) var(--spacing-2xl);
   width: 70%;
   margin: 0 auto;
 }
 
-/* ============================================
-     Form Header (meta + actions)
-     ============================================ */
-
+/* Form Header (meta + actions) */
 .ruby_cms-pelican-form__header {
+  /* Uses: .flex .justify-between .items-start from shared.css */
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-  padding-bottom: 1rem;
+  gap: var(--spacing-2xl);
+  margin-bottom: var(--spacing-2xl);
+  padding-bottom: var(--spacing-lg);
   border-bottom: 1px solid var(--pelican-border);
 }
 
 .ruby_cms-pelican-form__meta {
+  /* Uses: .grid .grid-cols-2 from shared.css */
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem;
+  gap: var(--spacing-lg);
 }
 
 .ruby_cms-pelican-form__actions {
+  /* Uses: .flex .items-center .gap-sm from shared.css */
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--spacing-sm);
 }
 
 /* Buttons */
-
 .ruby_cms-pelican-button {
+  /* Uses: .btn from shared.css */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.375rem;
+  padding: 0.375rem var(--spacing-md);
+  border-radius: var(--radius-sm);
   font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none;
   border: 1px solid transparent;
   cursor: pointer;
-  transition:
-    background-color 0.15s,
-    color 0.15s,
-    border-color 0.15s;
+  transition: background-color var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast);
 }
 
 .ruby_cms-pelican-button--primary {
+  /* Uses: .btn .btn-primary from shared.css */
   background-color: var(--pelican-accent-blue);
   color: white;
   border-color: var(--pelican-accent-blue);
@@ -68,6 +68,7 @@
 }
 
 .ruby_cms-pelican-button--ghost {
+  /* Uses: .btn .btn-ghost from shared.css */
   background: transparent;
   color: var(--pelican-text-secondary);
   border-color: var(--pelican-border);
@@ -78,49 +79,43 @@
   color: var(--pelican-text-primary);
 }
 
-/* ============================================
-     Published row
-     ============================================ */
-
+/* Published row */
 .ruby_cms-content-blocks-published-row {
+  /* Uses: .flex .items-center .gap-sm from shared.css */
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
   font-size: 0.875rem;
   color: var(--pelican-text-secondary);
 }
 
-/* ============================================
-     Locale Switcher (Pelican pills)
-     ============================================ */
-
+/* Locale Switcher (Pelican pills) */
 .ruby_cms-content-blocks-locale-switcher {
   border: 1px solid var(--pelican-border);
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
 .ruby_cms-content-blocks-locale-switcher__tabs {
+  /* Uses: .flex .gap-xs from shared.css */
   display: flex;
-  gap: 0.25rem;
-  padding: 0.5rem;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm);
   background-color: var(--pelican-bg-secondary);
   border-bottom: 1px solid var(--pelican-border);
 }
 
 .ruby_cms-content-blocks-locale-switcher__tab {
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.375rem;
+  padding: 0.375rem var(--spacing-md);
+  border-radius: var(--radius-sm);
   font-size: 0.8125rem;
   font-weight: 500;
   border: none;
   background: transparent;
   color: var(--pelican-text-secondary);
   cursor: pointer;
-  transition:
-    background-color 0.15s,
-    color 0.15s;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .ruby_cms-content-blocks-locale-switcher__tab:hover {
@@ -134,12 +129,9 @@
   box-shadow: 0 0 0 1px var(--pelican-border);
 }
 
-/* ============================================
-     Locale Panels
-     ============================================ */
-
+/* Locale Panels */
 .ruby_cms-content-blocks-locale-panel {
-  padding: 1.25rem;
+  padding: var(--spacing-xl);
 }
 
 .ruby_cms-content-blocks-locale-panel.is-hidden {
@@ -147,115 +139,121 @@
 }
 
 .ruby_cms-content-blocks-locale-panel__grid {
+  /* Uses: .grid .grid-cols-2 from shared.css */
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem 1.25rem;
+  gap: var(--spacing-lg) var(--spacing-xl);
 }
 
 .ruby_cms-content-blocks-locale-panel__grid .ruby_cms-field--full {
+  /* Uses: .col-span-full from shared.css */
   grid-column: 1 / -1;
 }
 
-/* ============================================
-     Single locale layout
-     ============================================ */
-
+/* Single locale layout */
 .ruby_cms-content-blocks-single-grid {
+  /* Uses: .grid .grid-cols-2 from shared.css */
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1rem 1.25rem;
+  gap: var(--spacing-lg) var(--spacing-xl);
 }
 
 .ruby_cms-content-blocks-single-grid .ruby_cms-field--full {
+  /* Uses: .col-span-full from shared.css */
   grid-column: 1 / -1;
 }
 
-/* ============================================
-   Content Blocks — Show page
-   ============================================ */
-
+/* Content Blocks - Show page */
 .ruby_cms-content-blocks-show {
+  /* Uses: .flex .flex-col from shared.css */
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: var(--spacing-2xl);
 }
 
 /* Meta row */
-
 .ruby_cms-content-blocks-show__meta {
+  /* Uses: .grid from shared.css */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.25rem;
-  padding-bottom: 1.25rem;
+  gap: var(--spacing-xl);
+  padding-bottom: var(--spacing-xl);
   border-bottom: 1px solid var(--pelican-border);
 }
 
 .ruby_cms-content-blocks-show__label {
+  /* Uses: .text-xs .font-medium .text-secondary from shared.css */
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--pelican-text-secondary);
-  margin-bottom: 0.25rem;
+  margin-bottom: var(--spacing-xs);
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
 
 .ruby_cms-content-blocks-show__value {
+  /* Uses: .text-sm .text-primary from shared.css */
   font-size: 0.875rem;
   color: var(--pelican-text-primary);
   line-height: 1.4;
 }
 
 .ruby_cms-content-blocks-show__mono {
+  /* Uses: .text-mono from shared.css */
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 /* Status pills */
-
 .ruby_cms-status-pill {
+  /* Uses: .status-pill from shared.css */
   display: inline-flex;
   align-items: center;
-  padding: 0.125rem 0.5rem;
-  border-radius: 9999px;
+  padding: 0.125rem var(--spacing-sm);
+  border-radius: var(--radius-full);
   font-size: 0.75rem;
   font-weight: 500;
 }
 
 .ruby_cms-status-pill--success {
+  /* Uses: .status-pill-success from shared.css */
   background-color: var(--pelican-accent-emerald-bg);
   color: var(--pelican-accent-emerald);
 }
 
 .ruby_cms-status-pill--muted {
+  /* Uses: .status-pill-muted from shared.css */
   background-color: var(--pelican-bg-tertiary);
   color: var(--pelican-text-secondary);
 }
 
 /* Locale cards */
-
 .ruby_cms-content-blocks-show__locales {
+  /* Uses: .grid from shared.css */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
-  gap: 1.25rem;
+  gap: var(--spacing-xl);
 }
 
 .ruby_cms-content-blocks-show__locale-card {
+  /* Uses: .card from shared.css */
   border: 1px solid var(--pelican-border);
-  border-radius: 0.5rem;
+  border-radius: var(--radius-md);
   background-color: var(--pelican-bg-secondary);
   overflow: hidden;
 }
 
 .ruby_cms-content-blocks-show__locale-header {
-  padding: 0.5rem 0.75rem;
+  padding: var(--spacing-sm) var(--spacing-md);
   border-bottom: 1px solid var(--pelican-border);
   background-color: var(--pelican-bg-tertiary);
 }
 
 .ruby_cms-content-blocks-show__locale-pill {
+  /* Uses: .status-pill from shared.css */
   display: inline-flex;
   align-items: center;
-  padding: 0.125rem 0.5rem;
-  border-radius: 9999px;
+  padding: 0.125rem var(--spacing-sm);
+  border-radius: var(--radius-full);
   font-size: 0.75rem;
   font-weight: 500;
   background-color: var(--pelican-bg-primary);
@@ -264,15 +262,16 @@
 }
 
 /* Locale content */
-
 .ruby_cms-content-blocks-show__fields {
-  padding: 0.75rem 1rem 1rem;
+  /* Uses: .grid .grid-cols-2 from shared.css */
+  padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg);
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem 1.25rem;
+  gap: var(--spacing-md) var(--spacing-xl);
 }
 
 .ruby_cms-content-blocks-show__field-full {
+  /* Uses: .col-span-full from shared.css */
   grid-column: 1 / -1;
 }
 
@@ -282,9 +281,9 @@
 }
 
 /* Single locale fallback */
-
 .ruby_cms-content-blocks-show__single {
+  /* Uses: .grid .grid-cols-2 from shared.css */
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.25rem;
+  gap: var(--spacing-xl);
 }
