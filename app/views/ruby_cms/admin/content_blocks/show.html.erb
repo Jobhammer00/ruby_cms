@@ -63,7 +63,7 @@
     <% if @content_block.updated_by.present? %>
       <div>
         <div class="ruby_cms-content-blocks-show__label">Updated By</div>
-        <div class="ruby_cms-content-blocks-show__value"><%= @content_block.updated_by.email %></div>
+        <div class="ruby_cms-content-blocks-show__value"><%= ruby_cms_user_display(@content_block.updated_by) %></div>
       </div>
     <% end %>
   </div>

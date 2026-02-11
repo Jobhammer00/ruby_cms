@@ -85,8 +85,8 @@
   /* Uses: .table-header from shared.css */
   position: sticky;
   top: 0;
-  z-index: 20;
-  background-color: var(--pelican-bg-tertiary);
+  z-index: 10;
+  background-color: var(--pelican-bg-primary);
   border-bottom: 1px solid var(--pelican-border);
 }
 
