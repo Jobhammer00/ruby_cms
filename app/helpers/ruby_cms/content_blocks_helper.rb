@@ -2,10 +2,16 @@
 
 module RubyCms
   module ContentBlocksHelper
-    # Renders a content block by key.
+    # Renders a content block by key. Rendering uses the block's content_type from the DB (text, rich_text, image, link, list).
+    # Usage:
+    #   content_block("hero_title")
+    #   content_block("hero_title", "Welcome")          # key + default when block missing
+    #   content_block("hero_title", default: "Welcome") # same via keyword
     # Wraps in a span with data-content-key, data-block-id, and .content-block for editor hooks.
-    def content_block(key, locale: nil, default: nil, fallback: nil, # rubocop:disable Metrics/ParameterLists,Metrics/MethodLength
+    def content_block(key, default_or_nil = nil, locale: nil, fallback: nil, default: nil, # rubocop:disable Metrics/ParameterLists,Metrics/MethodLength
                       translation_namespace: nil, **options)
+      # Support content_block("key", "Default") and content_block("key", default: "Default")
+      default = default_or_nil.is_a?(Hash) ? default : (default_or_nil || default)
       cache_opts = options.delete(:cache)
       wrap = options.delete(:wrap)
       wrap = true if wrap.nil?
@@ -81,6 +87,8 @@ module RubyCms
 
       if wrap
         content = content_for_block(block, default, fallback, key, translation_namespace, locale)
+        options = options.dup
+        options[:tag] = :div if block&.content_type.to_s == "rich_text"
         render_block_wrapper(content, key, options)
       else
         content = content_for_block_text(block, default, fallback, key, translation_namespace,
@@ -121,6 +129,7 @@ module RubyCms
       end
     end
 
+    # Uses block.content_type from the DB (text, rich_text, image, link, list).
     def render_content_by_type(block)
       case block.content_type
       when "rich_text" then render_rich_text_content(block)
@@ -140,11 +149,21 @@ module RubyCms
       end
     end
 
+    # Body-only HTML so content stays inside wrapper (no layout div.trix-content / comments).
     def render_rich_text_content(block)
       return block.content.to_s unless action_text_available?(block)
       return block.content.to_s if block.content.present? && !rich_content_body_present?(block)
 
-      sanitize(block.rich_content.to_s)
+      html = rich_content_body_html_for_view(block)
+      sanitize(html.presence || block.content.to_s)
+    end
+
+    def rich_content_body_html_for_view(block)
+      return "" unless block.rich_content.respond_to?(:body) && block.rich_content.body.present?
+
+      b = block.rich_content.body
+      out = b.respond_to?(:to_html) ? b.to_html : b.to_s
+      out.to_s.strip.presence || ""
     end
 
     def render_rich_text_as_text(block)

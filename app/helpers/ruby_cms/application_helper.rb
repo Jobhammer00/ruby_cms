@@ -2,16 +2,13 @@
 
 module RubyCms
   module ApplicationHelper
-    # Expose the engine's route helpers (ruby_cms_admin_*_path) in views.
-    include RubyCms::Engine.routes.url_helpers
+    include RubyCms::Engine.routes.url_helpers if defined?(RubyCms::Engine)
 
     def ruby_cms_locale_display_name(locale)
       key = "ruby_cms.admin.locales.#{locale}"
       t(key, default: locale.to_s)
     end
 
-    # Display a user for admin views. Tries common attributes (email, email_address,
-    # username, name) since host apps may use different User models.
     def ruby_cms_user_display(user)
       return "—" if user.blank?
 
@@ -22,11 +19,10 @@ module RubyCms
     end
 
     def ruby_cms_nav_entries
-      RubyCms.visible_nav_registry.select do |e|
-        next false if e[:if].present? && (!e[:if].respond_to?(:call) || !e[:if].call(self))
-
-        true
-      end
+      RubyCms.visible_nav_registry(
+        view_context: self,
+        user: (current_user_cms if respond_to?(:current_user_cms))
+      )
     end
   end
 end

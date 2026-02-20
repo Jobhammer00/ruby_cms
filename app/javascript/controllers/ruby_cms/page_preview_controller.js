@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
   static values = {
+    page: String,
     editMode: Boolean,
   };
 
@@ -10,17 +11,16 @@ export default class extends Controller {
       this.enableEditMode();
     }
 
-    // Listen for messages from parent window
-    window.addEventListener("message", this.handleMessage.bind(this));
+    this.boundHandleMessage = this.handleMessage.bind(this);
+    window.addEventListener("message", this.boundHandleMessage);
   }
 
   disconnect() {
-    window.removeEventListener("message", this.handleMessage.bind(this));
+    window.removeEventListener("message", this.boundHandleMessage);
     this.disableEditMode();
   }
 
   enableEditMode() {
-    // Delegate clicks to content blocks
     this.element.addEventListener("click", this.handleBlockClick.bind(this));
   }
 
@@ -29,20 +29,16 @@ export default class extends Controller {
   }
 
   handleBlockClick(event) {
-    // Find the closest content block element
-    const blockElement = event.target.closest(".ruby_cms-content-block");
-
+    const blockElement =
+      event.target.closest(".ruby_cms-content-block") ||
+      event.target.closest(".content-block");
     if (!blockElement) return;
 
-    // Prevent default link behavior if clicked element is inside a content block
     event.preventDefault();
     event.stopPropagation();
 
-    // Get block information
     const blockId =
       blockElement.dataset.blockId || blockElement.dataset.contentKey;
-    const blockIndex = 0;
-
     if (!blockId) {
       console.warn(
         "Content block found but no blockId or contentKey data attribute",
@@ -50,64 +46,75 @@ export default class extends Controller {
       return;
     }
 
-    // Send message to parent window
-    window.parent.postMessage(
-      {
-        type: "CONTENT_BLOCK_CLICKED",
-        blockId: blockId,
-        blockIndex: blockIndex,
-        page: this.getCurrentPage(),
-      },
-      "*",
+    const allWithSameId = this.element.querySelectorAll(
+      `[data-block-id="${blockId}"], [data-content-key="${blockId}"]`,
     );
+    const blockIndex = Array.from(allWithSameId).indexOf(blockElement);
+
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage(
+        {
+          type: "CONTENT_BLOCK_CLICKED",
+          blockId,
+          blockIndex,
+          page: this.getCurrentPage(),
+        },
+        "*",
+      );
+    }
   }
 
   handleMessage(event) {
-    // Listen for messages from parent (visual editor)
-    const { type, blockId } = event.data;
+    const { type, blockId, blockIndex = 0 } = event.data;
 
     if (type === "HIGHLIGHT_BLOCK") {
-      this.highlightBlock(blockId);
+      this.highlightBlock(blockId, blockIndex);
     } else if (type === "CLEAR_HIGHLIGHT") {
       this.clearHighlight();
+    } else if (type === "content-updated") {
+      this.handleContentUpdate(event.data);
     } else if (type === "UPDATE_BLOCK_CONTENT") {
       this.updateBlockContent(event.data);
     }
   }
 
-  highlightBlock(blockId) {
-    // Clear any existing highlights
+  highlightBlock(blockId, blockIndex = 0) {
     this.clearHighlight();
 
-    // Find and highlight the block
-    const blockElement = this.element.querySelector(
-      `.ruby_cms-content-block[data-block-id="${blockId}"], ` +
-        `.ruby_cms-content-block[data-content-key="${blockId}"]`,
-    );
-
-    if (blockElement) {
-      blockElement.classList.add("editing");
-      blockElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    const selector = `[data-block-id="${blockId}"], [data-content-key="${blockId}"]`;
+    const matching = this.element.querySelectorAll(selector);
+    const target = matching[blockIndex] || matching[0];
+    if (target) {
+      target.classList.add("editing");
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }
 
   clearHighlight() {
-    const highlightedBlocks = this.element.querySelectorAll(
-      ".ruby_cms-content-block.editing",
+    this.element
+      .querySelectorAll(".content-block.editing, .ruby_cms-content-block.editing")
+      .forEach((el) => el.classList.remove("editing"));
+  }
+
+  handleContentUpdate(data) {
+    const blockIndex = data.blockIndex ?? 0;
+    const key = data.key;
+    const elements = this.element.querySelectorAll(
+      `[data-content-key="${key}"], [data-block-id="${key}"]`,
     );
-    highlightedBlocks.forEach((block) => {
-      block.classList.remove("editing");
-    });
+    const element = elements[blockIndex] || elements[0];
+    if (element) {
+      const contentEl =
+        element.querySelector("[data-content-target]") || element;
+      contentEl.innerHTML = data.content ?? "";
+    }
   }
 
   updateBlockContent({ blockId, content, contentType }) {
     const blockElement = this.element.querySelector(
-      `.ruby_cms-content-block[data-block-id="${blockId}"], ` +
-        `.ruby_cms-content-block[data-content-key="${blockId}"]`,
+      `[data-block-id="${blockId}"], [data-content-key="${blockId}"]`,
     );
-
     if (blockElement) {
-      // Update the content
       if (contentType === "rich_text") {
         blockElement.innerHTML = content;
       } else {
@@ -117,7 +124,7 @@ export default class extends Controller {
   }
 
   getCurrentPage() {
-    // Try to get current page from URL params or return default
+    if (this.hasPageValue) return this.pageValue;
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get("page") || "home";
   }

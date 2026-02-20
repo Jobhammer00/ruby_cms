@@ -4,7 +4,7 @@ require "uri"
 
 module RubyCms
   class VisitorError < ::ApplicationRecord
-    self.table_name = "ruby_cms_visitor_errors"
+    self.table_name = "visitor_errors"
 
     scope :recent, -> { order(created_at: :desc) }
     scope :unresolved, -> { where(resolved: false) }

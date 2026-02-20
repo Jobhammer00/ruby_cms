@@ -15,13 +15,11 @@ module RubyCms
           0
         end
 
-        # Visitor errors metrics
         @visitor_errors_count = RubyCms::VisitorError.count
         @unresolved_errors_count = RubyCms::VisitorError.unresolved.count
-        @recent_errors = RubyCms::VisitorError.order(created_at: :desc).limit(5)
+        @recent_errors = RubyCms::VisitorError.order(created_at: :desc).limit(recent_errors_limit)
 
-        # Recent activity
-        @recent_content_blocks = ::ContentBlock.order(updated_at: :desc).limit(5)
+        @recent_content_blocks = ::ContentBlock.order(updated_at: :desc).limit(recent_content_blocks_limit)
       end
 
       private
@@ -30,6 +28,14 @@ module RubyCms
         Object.const_get(
           Rails.application.config.ruby_cms.user_class_name.presence || "User"
         )
+      end
+
+      def recent_errors_limit
+        RubyCms::Settings.get(:dashboard_recent_errors_limit, default: 5).to_i
+      end
+
+      def recent_content_blocks_limit
+        RubyCms::Settings.get(:dashboard_recent_content_blocks_limit, default: 5).to_i
       end
     end
   end

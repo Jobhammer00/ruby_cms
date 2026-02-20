@@ -2,7 +2,7 @@
 
 module RubyCms
   class Permission < ::ApplicationRecord
-    self.table_name = "ruby_cms_permissions"
+    self.table_name = "permissions"
 
     has_many :user_permissions, dependent: :destroy, class_name: "RubyCms::UserPermission"
     has_many :users, through: :user_permissions
@@ -14,12 +14,13 @@ module RubyCms
       manage_permissions
       manage_content_blocks
       manage_visitor_errors
+      manage_analytics
     ].freeze
 
     class << self
       def ensure_defaults!
         DEFAULT_KEYS.each do |k|
-          find_or_create_by!(key: k) {|p| p.name = k.humanize }
+          find_or_create_by!(key: k) { |p| p.name = k.humanize }
         end
       end
     end

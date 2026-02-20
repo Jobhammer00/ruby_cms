@@ -1,7 +1,7 @@
 .ruby_cms-admin-header {
   padding: var(--spacing-2xl);
   border-bottom: 1px solid var(--pelican-border);
-  background: var(--pelican-bg-primary);
+  background: var(--pelican-bg-secondary);
 }
 
 .ruby_cms-admin-header__content,

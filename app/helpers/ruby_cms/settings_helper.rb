@@ -2,39 +2,135 @@
 
 module RubyCms
   module SettingsHelper
-    # Helper to render appropriate input for each preference type
-    def render_preference_field(pref)
-      case pref.value_type
-      when "integer"
-        number_field_tag "preferences[#{pref.key}]", pref.typed_value,
-                         class: "ruby_cms-input",
-                         min: (pref.key.end_with?("_per_page") ? 5 : nil),
-                         max: (pref.key.end_with?("_per_page") ? 200 : nil),
-                         data: {
-                           controller: "ruby-cms--auto-save-preference",
-                           action: "change->ruby-cms--auto-save-preference#save",
-                           ruby_cms__auto_save_preference_preference_key_value: pref.key
-                         }
-      when "boolean"
-        content_tag(:div, class: "ruby_cms-toggle") do
-          check_box_tag("preferences[#{pref.key}]", "true", pref.typed_value,
-                        class: "ruby_cms-toggle-checkbox",
-                        data: {
-                          controller: "ruby-cms--auto-save-preference",
-                          action: "change->ruby-cms--auto-save-preference#save",
-                          ruby_cms__auto_save_preference_preference_key_value: pref.key
-                        }) +
-            content_tag(:label, "", for: "preferences_#{pref.key}", class: "ruby_cms-toggle-label")
-        end
+    TAB_CONFIG = {
+      "general" => { icon: "🏠", fallback_label: "General" },
+      "navigation" => { icon: "🧭", fallback_label: "Navigation" },
+      "pagination" => { icon: "📄", fallback_label: "Pagination" },
+      "analytics" => { icon: "📈", fallback_label: "Analytics" },
+      "dashboard" => { icon: "🗂️", fallback_label: "Dashboard" },
+      "content" => { icon: "🧱", fallback_label: "Content" }
+    }.freeze
+
+    def settings_tab_config(category)
+      TAB_CONFIG[category.to_s] || { icon: "⚙️", fallback_label: category.to_s.humanize }
+    end
+
+    def settings_tab_label(category)
+      cfg = settings_tab_config(category)
+      t("ruby_cms.admin.settings.categories.#{category}.label", default: cfg[:fallback_label])
+    end
+
+    def settings_tab_description(category)
+      t("ruby_cms.admin.settings.categories.#{category}.description", default: "")
+    end
+
+    def setting_label(entry)
+      key = entry.key.to_s
+
+      # Keep familiar labels for nav and pagination keys.
+      key = key.sub(/\Anav_show_/, "")
+      key = key.sub(/_per_page\z/, "")
+
+      key.tr("_", " ").humanize
+    end
+
+    def render_setting_field(entry:, value:, tab:)
+      case entry.type.to_sym
+      when :integer
+        render_integer_setting_field(entry: entry, value: value, tab: tab)
+      when :boolean
+        render_boolean_setting_field(entry: entry, value: value, tab: tab)
+      when :json
+        render_json_setting_field(entry: entry, value: value, tab: tab)
       else
-        text_field_tag "preferences[#{pref.key}]", pref.typed_value,
-                       class: "ruby_cms-input",
-                       data: {
-                         controller: "ruby-cms--auto-save-preference",
-                         action: "change->ruby-cms--auto-save-preference#save",
-                         ruby_cms__auto_save_preference_preference_key_value: pref.key
-                       }
+        render_string_setting_field(entry: entry, value: value, tab: tab)
       end
+    end
+
+    private
+
+    def render_integer_setting_field(entry:, value:, tab:)
+      min, max = integer_bounds_for(entry)
+
+      number_field_tag(
+        "preferences[#{entry.key}]",
+        value,
+        id: setting_input_id(entry),
+        class: "ruby_cms-input",
+        min: min,
+        max: max,
+        data: autosave_data(entry.key, tab)
+      )
+    end
+
+    def render_boolean_setting_field(entry:, value:, tab:)
+      content_tag(:div, class: "ruby_cms-toggle") do
+        hidden_field_tag("preferences[#{entry.key}]", "false") +
+          check_box_tag(
+            "preferences[#{entry.key}]",
+            "true",
+            ActiveModel::Type::Boolean.new.cast(value),
+            id: setting_input_id(entry),
+            class: "ruby_cms-toggle-checkbox",
+            data: autosave_data(entry.key, tab)
+          ) +
+          content_tag(:label, "", for: setting_input_id(entry), class: "ruby_cms-toggle-label")
+      end
+    end
+
+    def render_json_setting_field(entry:, value:, tab:)
+      formatted = if value.is_a?(Hash) || value.is_a?(Array)
+                    JSON.pretty_generate(value)
+                  else
+                    value.to_s
+                  end
+
+      text_area_tag(
+        "preferences[#{entry.key}]",
+        formatted,
+        id: setting_input_id(entry),
+        class: "ruby_cms-input ruby_cms-input--textarea",
+        rows: 4,
+        data: autosave_data(entry.key, tab)
+      )
+    end
+
+    def render_string_setting_field(entry:, value:, tab:)
+      text_field_tag(
+        "preferences[#{entry.key}]",
+        value,
+        id: setting_input_id(entry),
+        class: "ruby_cms-input",
+        data: autosave_data(entry.key, tab)
+      )
+    end
+
+    def autosave_data(key, tab)
+      {
+        controller: "ruby-cms--auto-save-preference",
+        action: "change->ruby-cms--auto-save-preference#save",
+        ruby_cms__auto_save_preference_preference_key_value: key.to_s,
+        ruby_cms__auto_save_preference_settings_url_value: ruby_cms_admin_settings_path,
+        ruby_cms__auto_save_preference_tab_value: tab.to_s
+      }
+    end
+
+    def setting_input_id(entry)
+      "pref_#{entry.key}"
+    end
+
+    def integer_bounds_for(entry)
+      key = entry.key.to_s
+
+      if key.end_with?("_per_page")
+        min = RubyCms::Settings.get(:pagination_min_per_page, default: 5).to_i
+        max = RubyCms::Settings.get(:pagination_max_per_page, default: 200).to_i
+        return [min, [max, min].max]
+      end
+
+      [nil, nil]
+    rescue StandardError
+      [nil, nil]
     end
   end
 end

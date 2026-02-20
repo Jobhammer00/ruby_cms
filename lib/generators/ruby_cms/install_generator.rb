@@ -168,6 +168,24 @@ module RubyCms
             :yellow
       end
 
+      def add_page_tracking_to_home_controller
+        home_path = Rails.root.join("app/controllers/home_controller.rb")
+        return unless home_path.exist?
+      
+        content = File.read(home_path)
+        return if content.include?("RubyCms::PageTracking")
+      
+        inject_into_file home_path, after: /class HomeController.*\n/ do
+          "  include RubyCms::PageTracking\n"
+        end
+      
+        say "✓ Page tracking: Added RubyCms::PageTracking to HomeController", :green
+      rescue StandardError => e
+        say "⚠ Page tracking: Could not add to HomeController: #{e.message}. " \
+            "Add manually: include RubyCms::PageTracking",
+            :yellow
+      end
+
       def copy_fallback_css
         src_dir = RubyCms::Engine.root.join("app/assets/stylesheets/ruby_cms")
         dest_dir = Rails.root.join("app/assets/stylesheets/ruby_cms")
@@ -210,7 +228,11 @@ module RubyCms
       end
 
       def install_ahoy
-        return if ahoy_already_installed?
+        if ahoy_already_installed?
+          say "ℹ Task ahoy: Existing Ahoy setup detected (tables or migrations). Skipping ahoy:install.", :cyan
+          configure_ahoy_server_side_only
+          return
+        end
 
         say "ℹ Task ahoy: Installing Ahoy for visit/event tracking.", :cyan
         run "bin/rails generate ahoy:install"
@@ -238,10 +260,27 @@ module RubyCms
 
       no_tasks do
         def ahoy_already_installed?
+          return true if ahoy_tables_exist?
+
           migrate_dir = Rails.root.join("db/migrate")
           return false unless migrate_dir.directory?
 
-          Dir.glob(migrate_dir.join("*.rb").to_s).any? {|f| File.read(f).include?("ahoy_visits") }
+          Dir.glob(migrate_dir.join("*.rb").to_s).any? do |f|
+            content = File.read(f)
+            content.include?("ahoy_visits") || content.include?("ahoy_events")
+          end
+        end
+
+        def ahoy_tables_exist?
+          return false unless defined?(ActiveRecord::Base)
+
+          # Calling connection lazily establishes a connection when possible,
+          # so we can detect existing Ahoy tables even before AR reports connected?.
+          c = ActiveRecord::Base.connection
+          c.data_source_exists?("ahoy_visits") || c.data_source_exists?("ahoy_events")
+        rescue ActiveRecord::ConnectionNotEstablished, ActiveRecord::NoDatabaseError,
+               ActiveRecord::StatementInvalid
+          false
         end
 
         def add_ahoy_security_fields_migration
@@ -254,11 +293,13 @@ module RubyCms
           content = <<~RUBY
             class AddRubyCmsFieldsToAhoyEvents < ActiveRecord::Migration[#{ActiveRecord::VERSION::MAJOR}.#{ActiveRecord::VERSION::MINOR}]
               def change
-                add_column :ahoy_events, :page_name, :string
-                add_column :ahoy_events, :ip_address, :string
-                add_column :ahoy_events, :request_path, :string
-                add_column :ahoy_events, :user_agent, :text
-                add_column :ahoy_events, :description, :text
+                return unless table_exists?(:ahoy_events)
+
+                add_column :ahoy_events, :page_name, :string unless column_exists?(:ahoy_events, :page_name)
+                add_column :ahoy_events, :ip_address, :string unless column_exists?(:ahoy_events, :ip_address)
+                add_column :ahoy_events, :request_path, :string unless column_exists?(:ahoy_events, :request_path)
+                add_column :ahoy_events, :user_agent, :text unless column_exists?(:ahoy_events, :user_agent)
+                add_column :ahoy_events, :description, :text unless column_exists?(:ahoy_events, :description)
 
                 add_index :ahoy_events, :page_name, if_not_exists: true
                 add_index :ahoy_events, :ip_address, if_not_exists: true
@@ -273,9 +314,13 @@ module RubyCms
 
         def configure_ahoy_server_side_only
           ahoy_path = Rails.root.join("config/initializers/ahoy.rb")
-          return unless ahoy_path.exist?
-
-          content = File.read(ahoy_path)
+          content = if ahoy_path.exist?
+                      File.read(ahoy_path)
+                    else
+                      <<~RUBY
+                        # Configure Ahoy
+                      RUBY
+                    end
 
           # Ensure Ahoy is loaded before any references (fixes NameError when
           # ahoy_matey loads after initializers)
@@ -283,7 +328,19 @@ module RubyCms
             content = %(require "ahoy_matey"\n\n) + content
           end
 
-          return if content.include?("Ahoy.api = false")
+          # Ensure a default Ahoy store class exists.
+          unless content.match?(/class\s+Ahoy::Store\s*<\s*Ahoy::DatabaseStore/)
+            content += <<~RUBY
+
+              class Ahoy::Store < Ahoy::DatabaseStore
+              end
+            RUBY
+          end
+
+          if content.include?("Ahoy.api = false")
+            File.write(ahoy_path, content)
+            return
+          end
 
           append = "\n\n# RubyCMS: server-side tracking only (no JavaScript)\nAhoy.api = false\nAhoy.geocode = false\n"
           File.write(ahoy_path, content + append)
@@ -780,7 +837,9 @@ module RubyCms
 
       def run_migrate
         say "ℹ Task db:migrate: Running db:migrate.", :cyan
-        run "bin/rails db:migrate"
+        success = run("bin/rails db:migrate")
+        raise "db:migrate failed" unless success
+
         say "✓ Task db:migrate: Completed", :green
       rescue StandardError => e
         say "⚠ Task db:migrate: Failed: #{e.message}. Run rails db:create db:migrate if needed.",
@@ -824,7 +883,7 @@ module RubyCms
         end
 
         def seed_permissions_command
-          "bin/rails ruby_cms:seed_permissions"
+          "bin/rails ruby_cms:seed_permissions ruby_cms:import_initializer_settings"
         end
 
         def stream_seed_permissions_stderr(stderr)

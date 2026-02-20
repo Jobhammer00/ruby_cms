@@ -13,6 +13,8 @@ en:
               file_too_large: "must be under 5 MB"
 
   ruby_cms:
+    nav:
+      settings: "Settings"
     admin:
       base:
         authentication_required: "Authentication required."
@@ -30,12 +32,29 @@ en:
         pagination_description: "Number of items to display per page in each table"
         navigation: "Navigation"
         navigation_description: "Control which pages appear in the navigation menu"
+        nav_order_label: "Menu order"
+        nav_order_hint: "Drag items to reorder the sidebar menu."
         general: "General"
         updated: "Setting '%{key}' updated successfully."
         defaults_reset: "All settings have been reset to default values."
         reset_defaults: "Reset to Defaults"
         reset_confirm: "Reset all settings to default values?"
         no_settings: "No settings in this category"
+      analytics:
+        title: "Analytics"
+        subtitle: "Traffic and engagement overview"
+        apply_filters: "Apply"
+        back_to_analytics: "Back to analytics"
+        page_details_title: "Page details"
+        visitor_details_title: "Visitor details"
+        total_page_views: "Total page views"
+        unique_visitors: "Unique visitors"
+        total_sessions: "Total sessions"
+        popular_pages: "Popular pages"
+        top_visitors: "Top visitors"
+        suspicious_activity: "Suspicious activity"
+        none_detected: "None detected in selected range."
+        no_data: "No data yet."
       visitor_errors:
         title: "Visitor errors"
         item_name: "error"
@@ -53,7 +72,6 @@ en:
         request_method: "Request method"
         request_path: "Request path"
         ip_address: "IP address"
-        browser: "Browser"
         occurred_at: "Occurred at"
         error_message: "Error message"
         codepath: "Code path"
@@ -66,7 +84,6 @@ en:
         mark_as_resolved: "Mark as resolved"
         mark_resolved_confirm: "Mark this error as resolved?"
         back_to_errors: "Back to errors"
-        resolved: "Error marked as resolved."
         bulk_deleted: "%{count} error(s) deleted."
         bulk_resolved: "%{count} error(s) marked as resolved."
       content_blocks:

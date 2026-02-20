@@ -13,6 +13,7 @@ module RubyCms
 
       def page_preview
         @page_key = params[:page] || "home"
+        @page = @page_key
         @edit_mode = edit_mode_enabled?
         @content_blocks = load_content_blocks_for_locale
         template = template_for_page(@page_key)
@@ -20,7 +21,8 @@ module RubyCms
         return render_invalid_page unless template
 
         load_preview_data(@page_key)
-        render template: template, layout: "ruby_cms/minimal"
+        # Full site layout so preview shows header, nav, footer; edit mode still works via page-preview controller
+        render template: template, layout: "application"
       end
 
       def quick_update
@@ -142,11 +144,13 @@ module RubyCms
         block.content_type == "rich_text" ? block.rich_content.to_plain_text : block.content
       end
 
+      # Return body HTML only (no layout/comments) so preview and Trix get clean HTML.
       def rich_content_html(block)
         return nil unless block.content_type == "rich_text"
         return nil unless block.respond_to?(:rich_content)
+        return nil unless block.rich_content.respond_to?(:body) && block.rich_content.body.present?
 
-        block.rich_content.to_s
+        block.rich_content.body.respond_to?(:to_html) ? block.rich_content.body.to_html : block.rich_content.body.to_s
       end
 
       def formatted_updated_at(block)

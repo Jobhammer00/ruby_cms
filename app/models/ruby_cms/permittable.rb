@@ -12,7 +12,10 @@ module RubyCms
       k = permission_key.to_s
       return false unless RubyCms::Permission.exists?(key: k)
 
-      cms_permission_keys_cached.include?(k) || record&.can_edit?(self)
+      # Treat manage_admin as a super-permission for admin features.
+      cms_permission_keys_cached.include?(k) ||
+        cms_permission_keys_cached.include?("manage_admin") ||
+        record&.can_edit?(self)
     end
 
     def bootstrap?
@@ -30,7 +33,7 @@ module RubyCms
     def cms_permission_keys_cached
       @cms_permission_keys_cached ||=
         RubyCms::UserPermission.where(user: self)
-                               .joins(:permission).pluck("ruby_cms_permissions.key")
+                               .joins(:permission).pluck("permissions.key")
     end
   end
 end

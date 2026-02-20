@@ -3,6 +3,7 @@
 RubyCms::Engine.routes.draw do # rubocop:disable Metrics/BlockLength
   scope path: "admin", module: "ruby_cms/admin", as: "ruby_cms_admin" do # rubocop:disable Metrics/BlockLength
     root to: "dashboard#index"
+
     resources :content_blocks do
       collection do
         delete "bulk_delete", to: "content_blocks#bulk_delete"
@@ -16,6 +17,7 @@ RubyCms::Engine.routes.draw do # rubocop:disable Metrics/BlockLength
         delete "bulk_delete", to: "permissions#bulk_delete"
       end
     end
+
     resources :visitor_errors, only: %i[index show] do
       member do
         patch :resolve
@@ -26,8 +28,17 @@ RubyCms::Engine.routes.draw do # rubocop:disable Metrics/BlockLength
       end
     end
 
+    resources :analytics, only: %i[index] do
+      collection do
+        get :page_details
+        get :visitor_details
+      end
+    end
+
     get "settings", to: "settings#index", as: :settings
     patch "settings", to: "settings#update", as: nil
+    post "settings", to: "settings#update", as: nil
+    post "settings/nav_order", to: "settings#update_nav_order", as: :settings_nav_order
     post "settings/reset_defaults", to: "settings#reset_defaults", as: :settings_reset_defaults
 
     resources :users, only: %i[index create destroy] do

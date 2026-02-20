@@ -14,7 +14,7 @@
 
 .ruby_cms-admin-main-inner {
   flex: 1;
-  padding: var(--spacing-2xl);
+  padding: 1.5rem;
   overflow-y: auto;
   background-color: var(--pelican-bg-secondary);
 }

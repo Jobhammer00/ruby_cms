@@ -17,7 +17,7 @@
 
   /* Pelican Design System */
   --pelican-bg-primary: #ffffff;
-  --pelican-bg-secondary: #fafafa;
+  --pelican-bg-secondary: #FAF9F5;
   --pelican-bg-tertiary: #f3f4f6;
   --pelican-border: #e5e7eb;
   --pelican-border-light: #d1d5db;
@@ -61,6 +61,11 @@
   --transition-fast: 0.15s ease;
   --transition-base: 0.2s ease;
   --transition-slow: 0.3s ease;
+}
+
+/* Admin layout body background (nav/header/chrome color) */
+.ruby_cms-admin-body {
+  background-color: #FAF9F5;
 }
 
 /* ===== Container & Layout Utilities ===== */

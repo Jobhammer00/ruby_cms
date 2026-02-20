@@ -1,0 +1,31 @@
+<div class="ruby_cms-analytics__panel">
+  <h3 class="ruby_cms-analytics__panel-title">
+    <span class="ruby_cms-analytics__panel-icon ruby_cms-analytics__panel-icon--emerald">!</span>
+    <%= t("ruby_cms.admin.analytics.recent_activity", default: "Recent activity") %>
+  </h3>
+  <div class="ruby_cms-analytics__list">
+    <% if @recent_page_views.present? && @recent_page_views.any? %>
+      <% @recent_page_views.first(5).each do |event| %>
+        <% page_name = event.respond_to?(:page_name) ? event.page_name : nil %>
+        <% if page_name.present? %>
+          <%= link_to page_details_ruby_cms_admin_analytics_path(page_name: page_name, start_date: @start_date, end_date: @end_date, period: @period),
+                      class: "ruby_cms-analytics__item ruby_cms-analytics__item--link" do %>
+            <div>
+              <div class="ruby_cms-analytics__item-title"><%= page_name.to_s.humanize %></div>
+              <div class="ruby_cms-analytics__item-meta"><%= time_ago_in_words(event.time) %> ago</div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="ruby_cms-analytics__item">
+            <div>
+              <div class="ruby_cms-analytics__item-title"><%= t("ruby_cms.admin.analytics.page", default: "Page") %></div>
+              <div class="ruby_cms-analytics__item-meta"><%= time_ago_in_words(event.time) %> ago</div>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    <% else %>
+      <p class="ruby_cms-analytics__empty"><%= t("ruby_cms.admin.analytics.no_activity", default: "No activity recorded") %></p>
+    <% end %>
+  </div>
+</div>

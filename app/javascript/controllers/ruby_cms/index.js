@@ -11,6 +11,7 @@ import ToggleController from "ruby_cms/toggle_controller";
 import LocaleTabsController from "ruby_cms/locale_tabs_controller";
 import ClickableRowController from "ruby_cms/clickable_row_controller";
 import AutoSavePreferenceController from "ruby_cms/auto_save_preference_controller";
+import NavOrderSortableController from "ruby_cms/nav_order_sortable_controller";
 
 export {
   VisualEditorController,
@@ -23,6 +24,7 @@ export {
   LocaleTabsController,
   ClickableRowController,
   AutoSavePreferenceController,
+  NavOrderSortableController,
 };
 
 // Helper function to register all RubyCms controllers with a Stimulus application
@@ -45,6 +47,10 @@ export function registerRubyCmsControllers(application) {
   application.register(
     "ruby-cms--auto-save-preference",
     AutoSavePreferenceController,
+  );
+  application.register(
+    "ruby-cms--nav-order-sortable",
+    NavOrderSortableController,
   );
 }
 

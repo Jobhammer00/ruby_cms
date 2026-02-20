@@ -1,21 +1,12 @@
 # frozen_string_literal: true
 
 # Public ContentBlock model exposed to the host app.
-#
-# RubyCMS intentionally provides a "regular" top-level ContentBlock so host apps
-# can use `ContentBlock` immediately after install, without referencing the
-# RubyCms namespace.
-#
-# Data is stored in the existing RubyCMS table for compatibility.
 class ContentBlock < ApplicationRecord
-  # DHH-style concerns for horizontal behavior sharing
   include Publishable
   include Searchable
 
-  self.table_name = "ruby_cms_content_blocks"
+  self.table_name = "content_blocks"
 
-  # Optional integrations (host app may not have run action_text:install /
-  # active_storage:install yet)
   def self.action_text_available?
     return false unless defined?(::ActionText::RichText)
     return false unless ActiveRecord::Base.connected?
@@ -51,7 +42,6 @@ class ContentBlock < ApplicationRecord
   validate :image_content_type, if: -> { respond_to?(:image) && image.attached? }
   validate :image_size, if: -> { respond_to?(:image) && image.attached? }
 
-  # DHH-style standard scope naming conventions
   scope :chronologically, -> { order(created_at: :asc) }
   scope :reverse_chronologically, -> { order(created_at: :desc) }
   scope :alphabetically, -> { order(:key) }
@@ -59,8 +49,7 @@ class ContentBlock < ApplicationRecord
   scope :for_current_locale, -> { where(locale: I18n.locale.to_s) }
   scope :preloaded, -> { includes(:updated_by) }
 
-  # DHH-style parameterized scopes for filtering
-  scope :indexed_by, lambda {|index|
+  scope :indexed_by, lambda { |index|
     case index.to_s
     when "published" then published
     when "unpublished" then unpublished
@@ -68,7 +57,7 @@ class ContentBlock < ApplicationRecord
     end
   }
 
-  scope :sorted_by, lambda {|sort|
+  scope :sorted_by, lambda { |sort|
     case sort.to_s
     when "latest" then reverse_chronologically
     when "oldest" then chronologically
@@ -76,36 +65,22 @@ class ContentBlock < ApplicationRecord
     end
   }
 
-  # Scope for content blocks accessible by a user
-  # Can be extended in the future for per-record permissions
-  # @param user [User] The user to check access for
-  # @return [ActiveRecord::Relation] Content blocks the user can access
   def self.accessible_by(_user)
-    # For now, all content blocks are accessible if user has manage_content_blocks permission
-    # Future: Add per-record permission checks here
     all
   end
 
-  # Legacy scope alias for backwards compatibility
   def self.by_key
     alphabetically
   end
 
-  # DHH-style authorization in model
-  # @param user [User] The user to check
-  # @return [Boolean] True if user can edit this content block
   def can_edit?(user)
     user&.can?(:manage_content_blocks, record: self)
   end
 
-  # @param user [User] The user to check
-  # @return [Boolean] True if user can delete this content block
   def can_delete?(user)
     user&.can?(:manage_content_blocks, record: self)
   end
 
-  # Record the user who updated this content block.
-  # @param user [User] The user who made the update
   def record_update_by(user)
     self.updated_by = user if user
   end
@@ -119,11 +94,6 @@ class ContentBlock < ApplicationRecord
     end
   end
 
-  # Find content block by key and locale, with fallback to default locale
-  # @param key [String] The content block key
-  # @param locale [String, Symbol] The locale to find
-  # @param default_locale [String, Symbol] Fallback locale if not found
-  # @return [ContentBlock, nil] The content block or nil
   def self.find_by_key_and_locale(key, locale: nil, default_locale: nil)
     locale ||= I18n.locale.to_s
     default_locale ||= begin
@@ -132,11 +102,8 @@ class ContentBlock < ApplicationRecord
       "en"
     end
 
-    # Try requested locale first
     block = find_by(key: key.to_s, locale: locale.to_s)
     return block if block
-
-    # Fallback to default locale
     return nil if locale.to_s == default_locale.to_s
 
     find_by(key: key.to_s, locale: default_locale.to_s)
@@ -145,42 +112,39 @@ class ContentBlock < ApplicationRecord
   private
 
   def key_not_reserved
-    prefixes = begin
-      Rails.application.config.ruby_cms.reserved_key_prefixes
-    rescue StandardError
-      nil
-    end || %w[admin_]
+    prefixes = Array(RubyCms::Settings.get(:reserved_key_prefixes, default: ["admin_"])).map(&:to_s)
     return unless key.to_s.start_with?(*prefixes)
 
     errors.add(:key, :reserved)
+  rescue StandardError
+    errors.add(:key, :reserved) if key.to_s.start_with?("admin_")
   end
 
   def image_content_type
     return unless respond_to?(:image) && image.attached?
 
-    allowed = begin
-      Rails.application.config.ruby_cms.image_content_types
-    rescue StandardError
-      nil
-    end || %w[
-      image/png image/jpeg image/gif
-      image/webp
-    ]
+    allowed = Array(
+      RubyCms::Settings.get(
+        :image_content_types,
+        default: ["image/png", "image/jpeg", "image/gif", "image/webp"]
+      )
+    ).map(&:to_s)
+
     return if image.content_type.in?(allowed)
 
+    errors.add(:image, :content_type_invalid)
+  rescue StandardError
     errors.add(:image, :content_type_invalid)
   end
 
   def image_size
     return unless respond_to?(:image) && image.attached?
 
-    limit = begin
-      Rails.application.config.ruby_cms.image_max_size
-    rescue StandardError
-      5.megabytes
-    end
+    limit = RubyCms::Settings.get(:image_max_size, default: 5 * 1024 * 1024).to_i
     return if image.byte_size <= limit
 
+    errors.add(:image, :file_too_large)
+  rescue StandardError
     errors.add(:image, :file_too_large)
   end
 end

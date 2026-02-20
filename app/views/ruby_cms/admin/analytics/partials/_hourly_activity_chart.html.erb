@@ -1,0 +1,38 @@
+<div class="ruby_cms-analytics__chart ruby_cms-analytics__chart--hourly">
+  <div class="ruby_cms-analytics__chart-header">
+    <div>
+      <h3 class="ruby_cms-analytics__chart-title"><%= t("ruby_cms.admin.analytics.hourly_activity", default: "Hourly activity") %></h3>
+      <p class="ruby_cms-analytics__chart-subtitle"><%= t("ruby_cms.admin.analytics.views_by_hour", default: "Views by hour") %></p>
+    </div>
+  </div>
+  <div class="ruby_cms-analytics__chart-body">
+    <% if @hourly_activity.present? && @hourly_activity.any? %>
+      <%
+        hourly_arr = @hourly_activity.is_a?(Hash) ? @hourly_activity.to_a : @hourly_activity
+        grouped = hourly_arr.each_slice(3).map do |group|
+          hours = group.map(&:first)
+          total = group.sum { |_, c| c.to_i }
+          [hours, total]
+        end
+        max_value = grouped.map { |_, c| c }.max || 1
+      %>
+      <div class="ruby_cms-analytics__chart-y-axis">
+        <% [100, 75, 50, 25, 0].each do |pct| %>
+          <div class="ruby_cms-analytics__chart-y-label"><%= number_with_delimiter((max_value * pct / 100.0).round) %></div>
+        <% end %>
+      </div>
+      <div class="ruby_cms-analytics__chart-bars">
+        <% grouped.each do |hours, count| %>
+          <div class="ruby_cms-analytics__chart-bar-group">
+            <div class="ruby_cms-analytics__chart-bar ruby_cms-analytics__chart-bar--emerald"
+                 style="height: <%= [ (count.to_f / max_value * 200).round, 4 ].max %>px;"
+                 title="<%= hours.size > 1 ? "#{hours.first}:00-#{hours.last}:00" : "#{hours.first}:00" %> — <%= number_with_delimiter(count) %> views"></div>
+            <div class="ruby_cms-analytics__chart-x-label"><%= hours.size > 1 ? "#{hours.first}-#{hours.last}h" : "#{hours.first}h" %></div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="ruby_cms-analytics__empty"><%= t("ruby_cms.admin.analytics.no_hourly_data", default: "No hourly activity data") %></p>
+    <% end %>
+  </div>
+</div>

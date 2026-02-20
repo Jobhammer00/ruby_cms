@@ -1,0 +1,77 @@
+<%
+  high_volume = @page_stats[:total_views].to_i > 100
+  suspicious_ua = @page_views.any? { |e| e.visit&.user_agent.to_s.include?("bot") || e.visit&.user_agent.to_s.include?("crawler") }
+  show_security = high_volume || suspicious_ua
+%>
+<%= render RubyCms::Admin::AdminPage.new do %>
+  <div class="ruby_cms-analytics">
+    <div class="ruby_cms-analytics__top">
+      <div>
+        <h2 class="ruby_cms-analytics__top-title"><%= t("ruby_cms.admin.analytics.page_details_title", default: "Page details") %>: <%= @page_name %></h2>
+        <p class="ruby_cms-dashboard-subtitle"><%= @start_date %> → <%= @end_date %></p>
+      </div>
+      <div class="ruby_cms-analytics__top-actions">
+        <%= render "ruby_cms/admin/analytics/partials/security_alert" if show_security %>
+        <%= render "ruby_cms/admin/analytics/partials/back_button", path: ruby_cms_admin_analytics_path(start_date: @start_date, end_date: @end_date, period: @period) %>
+      </div>
+    </div>
+
+    <div class="ruby_cms-analytics__shell" style="margin-top: 1rem;">
+      <div class="ruby_cms-analytics__top">
+        <div class="ruby_cms-analytics__summary">
+          <div class="ruby_cms-analytics__summary-item">
+            <small>Total views</small>
+            <strong><%= number_with_delimiter(@page_stats[:total_views]) %></strong>
+          </div>
+          <div class="ruby_cms-analytics__summary-item">
+            <small>Unique visitors</small>
+            <strong><%= number_with_delimiter(@page_stats[:unique_visitors]) %></strong>
+          </div>
+          <div class="ruby_cms-analytics__summary-item">
+            <small>Avg/day</small>
+            <strong><%= number_with_precision(@page_stats[:avg_views_per_day], precision: 1) %></strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="ruby_cms-analytics__table-wrap">
+        <table class="ruby_cms-analytics__table">
+          <thead>
+            <tr>
+              <th>IP Address</th>
+              <th>Browser</th>
+              <th>Referrer</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if @page_views.any? %>
+              <% @page_views.each do |event| %>
+                <% visit = event.visit %>
+                <tr>
+                  <td class="ruby_cms-analytics__mono">
+                    <% ip = visit&.ip %>
+                    <% if ip.present? && ip != "Unknown" %>
+                      <%= link_to ip,
+                                  visitor_details_ruby_cms_admin_analytics_path(ip_address: ip, start_date: @start_date, end_date: @end_date, period: @period),
+                                  class: "ruby_cms-dashboard-activity-item-action" %>
+                    <% else %>
+                      <span><%= ip || "Unknown" %></span>
+                    <% end %>
+                  </td>
+                  <td><%= visit&.browser || "Unknown" %></td>
+                  <td><%= visit&.referrer.presence || "Direct" %></td>
+                  <td><%= time_ago_in_words(event.time) %> ago</td>
+                </tr>
+              <% end %>
+            <% else %>
+              <tr>
+                <td colspan="4" class="ruby_cms-analytics__empty">No page views recorded for this page</td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% end %>

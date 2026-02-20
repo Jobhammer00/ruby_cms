@@ -1,15 +1,20 @@
 # frozen_string_literal: true
 
+require_relative "settings_registry"
+require_relative "settings"
+
 module RubyCms
   class Engine < ::Rails::Engine
     # Do not isolate namespace so we can use /admin and explicit table names.
-    # All engine models use explicit table_name with ruby_cms_ prefix.
+    # Engine models use unprefixed table names: content_blocks, preferences, permissions, user_permissions, visitor_errors.
 
     config.ruby_cms = ActiveSupport::OrderedOptions.new
 
     # Base controller for all /admin controllers. Must provide current_user and
     # run require_authentication (or equivalent). Default: ApplicationController.
     config.ruby_cms.admin_base_controller = "ApplicationController"
+    # Layout used for /admin pages. Default: "admin/admin" (app's layouts/admin/admin.html.erb).
+    config.ruby_cms.admin_layout = "admin/admin"
     config.ruby_cms.user_class_name = "User"
 
     # When true, allow user.admin? as bypass when no Permission records exist (bootstrap).
@@ -44,7 +49,8 @@ module RubyCms
     config.ruby_cms.content_blocks_translation_namespace = nil
     # Image attachment: allowed content types and max size.
     config.ruby_cms.image_content_types = %w[image/png image/jpeg image/gif image/webp]
-    config.ruby_cms.image_max_size = 5.megabytes
+    # Keep this numeric so engine boot does not depend on core-ext load order.
+    config.ruby_cms.image_max_size = 5 * 1024 * 1024
 
     # Ensure Ahoy is loaded before host's config/initializers/ahoy.rb runs
     initializer "ruby_cms.require_ahoy", before: :load_config_initializers do
@@ -91,24 +97,34 @@ module RubyCms
       end
     end
 
+    initializer "ruby_cms.settings_import", after: :load_config_initializers do
+      RubyCms::Settings.import_initializer_values!
+    end
+
     def self.register_main_nav_items
       RubyCms.nav_register(
         key: :dashboard,
         label: "Dashboard",
         path: lambda(&:ruby_cms_admin_root_path),
-        icon: dashboard_icon_path
-      )
-      RubyCms.nav_register(
-        key: :content_blocks,
-        label: "Content blocks",
-        path: lambda(&:ruby_cms_admin_content_blocks_path),
-        icon: content_blocks_icon_path
+        icon: dashboard_icon_path,
+        section: RubyCms::NAV_SECTION_MAIN,
+        order: 1
       )
       RubyCms.nav_register(
         key: :visual_editor,
         label: "Visual editor",
         path: lambda(&:ruby_cms_admin_visual_editor_path),
-        icon: visual_editor_icon_path
+        icon: visual_editor_icon_path,
+        section: RubyCms::NAV_SECTION_MAIN,
+        order: 2
+      )
+      RubyCms.nav_register(
+        key: :content_blocks,
+        label: "Content blocks",
+        path: lambda(&:ruby_cms_admin_content_blocks_path),
+        icon: content_blocks_icon_path,
+        section: RubyCms::NAV_SECTION_MAIN,
+        order: 3
       )
     end
 
@@ -136,32 +152,45 @@ module RubyCms
 
     def self.register_settings_nav_items
       RubyCms.nav_register(
-        key: :settings,
-        label: "Settings",
-        path: lambda(&:ruby_cms_admin_settings_path),
-        section: "Settings",
-        icon: settings_icon_path
-      )
-      RubyCms.nav_register(
-        key: :visitor_errors,
-        label: "Visitor errors",
-        path: lambda(&:ruby_cms_admin_visitor_errors_path),
-        section: "Settings",
-        icon: visitor_errors_icon_path
+        key: :analytics,
+        label: "Analytics",
+        path: lambda(&:ruby_cms_admin_analytics_path),
+        section: RubyCms::NAV_SECTION_BOTTOM,
+        icon: analytics_icon_path,
+        permission: :manage_analytics,
+        order: 1
       )
       RubyCms.nav_register(
         key: :permissions,
         label: "Permissions",
         path: lambda(&:ruby_cms_admin_permissions_path),
-        section: "Settings",
-        icon: permissions_icon_path
+        section: RubyCms::NAV_SECTION_BOTTOM,
+        icon: permissions_icon_path,
+        order: 2
+      )
+      RubyCms.nav_register(
+        key: :visitor_errors,
+        label: "Visitor errors",
+        path: lambda(&:ruby_cms_admin_visitor_errors_path),
+        section: RubyCms::NAV_SECTION_BOTTOM,
+        icon: visitor_errors_icon_path,
+        order: 3
       )
       RubyCms.nav_register(
         key: :users,
         label: "Users",
         path: lambda(&:ruby_cms_admin_users_path),
-        section: "Settings",
-        icon: users_icon_path
+        section: RubyCms::NAV_SECTION_BOTTOM,
+        icon: users_icon_path,
+        order: 4
+      )
+      RubyCms.nav_register(
+        key: :settings,
+        label: "Settings",
+        path: lambda(&:ruby_cms_admin_settings_path),
+        section: RubyCms::NAV_SECTION_BOTTOM,
+        icon: settings_icon_path,
+        order: 5
       )
     end
 
@@ -202,6 +231,13 @@ module RubyCms
         '00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>'
     end
 
+    def self.analytics_icon_path
+      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
+        'd="M3 3v18h18"></path>' \
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
+        'd="M7 13l3-3 3 2 4-5"></path>'
+    end
+
     def self.compile_admin_css(dest_path)
       gem_root = begin
         root
@@ -215,12 +251,21 @@ module RubyCms
 
     rake_tasks do # rubocop:disable Metrics/BlockLength
       namespace :ruby_cms do # rubocop:disable Metrics/BlockLength
-        desc "Create default permissions and optionally grant manage_admin " \
-             "to admin users"
+        desc "Create default permissions/settings and optionally grant manage_admin to admin users"
         task seed_permissions: :environment do
           RubyCms::Permission.ensure_defaults!
-          RubyCms::Preference.ensure_defaults!
+          RubyCms::Settings.ensure_defaults!
+          RubyCms::Settings.import_initializer_values!
           RubyCms::Engine.grant_admin_permissions_to_admin_users
+        end
+        desc "Import RubyCMS initializer values into DB settings once"
+        task import_initializer_settings: :environment do
+          result = RubyCms::Settings.import_initializer_values!
+          if result[:skipped]
+            puts "Initializer import skipped: #{result[:reason]}" # rubocop:disable Rails/Output
+          else
+            puts "Imported #{result[:imported_count]} initializer setting(s)." # rubocop:disable Rails/Output
+          end
         end
 
         desc "Interactively create or select the first admin user " \
@@ -316,9 +361,21 @@ module RubyCms
     def self.grant_admin_permissions_to_admin_users
       return unless defined?(::User) && User.column_names.include?("admin")
 
-      perm = RubyCms::Permission.find_by!(key: "manage_admin")
+      permission_keys = %w[
+        manage_admin
+        manage_permissions
+        manage_content_blocks
+        manage_visitor_errors
+        manage_analytics
+      ]
+      permissions = RubyCms::Permission.where(key: permission_keys).index_by(&:key)
       User.where(admin: true).find_each do |u|
-        RubyCms::UserPermission.find_or_create_by!(user: u, permission: perm)
+        permission_keys.each do |key|
+          perm = permissions[key]
+          next if perm.nil?
+
+          RubyCms::UserPermission.find_or_create_by!(user: u, permission: perm)
+        end
       end
     end
 
@@ -362,7 +419,7 @@ module RubyCms
 
     def self.grant_manage_admin_permission(user, email)
       RubyCms::Permission.ensure_defaults!
-      %w[manage_admin manage_permissions manage_content_blocks manage_visitor_errors].each do |key|
+      %w[manage_admin manage_permissions manage_content_blocks manage_visitor_errors manage_analytics].each do |key|
         perm = RubyCms::Permission.find_by!(key:)
         RubyCms::UserPermission.find_or_create_by!(user: user, permission: perm)
       end

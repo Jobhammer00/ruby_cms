@@ -1,0 +1,105 @@
+<%
+  high_volume = @visitor_stats[:total_views].to_i > 100
+  first_visit = @visitor_stats[:first_visit]
+  last_visit = @visitor_stats[:last_visit]
+  rapid = @visitor_views.count > 50 && first_visit && last_visit && (last_visit - first_visit).to_i < 1
+  suspicious_ua = @visitor_views.any? { |e| e.visit&.user_agent.to_s.include?("bot") || e.visit&.user_agent.to_s.include?("crawler") }
+  show_security = high_volume || rapid || suspicious_ua
+%>
+<%= render RubyCms::Admin::AdminPage.new do %>
+  <div class="ruby_cms-analytics">
+    <div class="ruby_cms-analytics__top">
+      <div>
+        <h2 class="ruby_cms-analytics__top-title"><%= t("ruby_cms.admin.analytics.visitor_details_title", default: "Visitor details") %>: <span class="ruby_cms-analytics__mono"><%= @ip_address %></span></h2>
+        <p class="ruby_cms-dashboard-subtitle"><%= @start_date %> → <%= @end_date %></p>
+      </div>
+      <div class="ruby_cms-analytics__top-actions">
+        <%= render "ruby_cms/admin/analytics/partials/security_alert" if show_security %>
+        <%= render "ruby_cms/admin/analytics/partials/back_button", path: ruby_cms_admin_analytics_path(start_date: @start_date, end_date: @end_date, period: @period) %>
+      </div>
+    </div>
+
+    <div class="ruby_cms-analytics__shell" style="margin-top: 1rem;">
+      <div class="ruby_cms-analytics__top">
+        <div class="ruby_cms-analytics__summary">
+          <div class="ruby_cms-analytics__summary-item">
+            <small>Total views</small>
+            <strong><%= number_with_delimiter(@visitor_stats[:total_views]) %></strong>
+          </div>
+          <div class="ruby_cms-analytics__summary-item">
+            <small>Pages visited</small>
+            <strong><%= number_with_delimiter(@visitor_stats[:unique_pages]) %></strong>
+          </div>
+          <div class="ruby_cms-analytics__summary-item">
+            <small>First visit</small>
+            <strong><%= @visitor_stats[:first_visit].present? ? l(@visitor_stats[:first_visit], format: :short) : "—" %></strong>
+          </div>
+          <div class="ruby_cms-analytics__summary-item">
+            <small>Last visit</small>
+            <strong><%= @visitor_stats[:last_visit].present? ? l(@visitor_stats[:last_visit], format: :short) : "—" %></strong>
+          </div>
+        </div>
+      </div>
+
+      <% first_visit_record = Ahoy::Visit.where(ip: @ip_address, started_at: @start_date.beginning_of_day..@end_date.end_of_day).order(started_at: :asc).first %>
+      <% has_meta = first_visit_record && (first_visit_record.os.present? || first_visit_record.device_type.present? || first_visit_record.browser.present? || (first_visit_record.respond_to?(:landing_page) && first_visit_record.landing_page.present?)) %>
+      <% if has_meta %>
+        <div class="ruby_cms-analytics__top ruby_cms-analytics__meta-row">
+          <div class="ruby_cms-analytics__summary">
+            <% if first_visit_record.os.present? %>
+              <div class="ruby_cms-analytics__summary-item"><small>OS</small> <strong><%= first_visit_record.os %></strong></div>
+            <% end %>
+            <% if first_visit_record.device_type.present? %>
+              <div class="ruby_cms-analytics__summary-item"><small>Device</small> <strong><%= first_visit_record.device_type %></strong></div>
+            <% end %>
+            <% if first_visit_record.browser.present? %>
+              <div class="ruby_cms-analytics__summary-item"><small>Browser</small> <strong><%= first_visit_record.browser %></strong></div>
+            <% end %>
+            <% if first_visit_record.respond_to?(:landing_page) && first_visit_record.landing_page.present? %>
+              <div class="ruby_cms-analytics__summary-item ruby_cms-analytics__summary-item--truncate" title="<%= first_visit_record.landing_page %>"><small>Landing</small> <strong><%= truncate(first_visit_record.landing_page, length: 60) %></strong></div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <div class="ruby_cms-analytics__table-wrap">
+        <table class="ruby_cms-analytics__table">
+          <thead>
+            <tr>
+              <th>Page</th>
+              <th>Browser</th>
+              <th>Referrer</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if @visitor_views.any? %>
+              <% @visitor_views.each do |event| %>
+                <% visit = event.visit %>
+                <tr>
+                  <td>
+                    <% page_name = event.respond_to?(:page_name) ? event.page_name : nil %>
+                    <% if page_name.present? %>
+                      <%= link_to page_name,
+                                  page_details_ruby_cms_admin_analytics_path(page_name:, start_date: @start_date, end_date: @end_date, period: @period),
+                                  class: "ruby_cms-dashboard-activity-item-action" %>
+                    <% else %>
+                      Unknown
+                    <% end %>
+                  </td>
+                  <td><%= visit&.browser || "Unknown" %></td>
+                  <td><%= visit&.referrer.presence || "Direct" %></td>
+                  <td><%= time_ago_in_words(event.time) %> ago</td>
+                </tr>
+              <% end %>
+            <% else %>
+              <tr>
+                <td colspan="4" class="ruby_cms-analytics__empty">No activity recorded for this visitor</td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% end %>

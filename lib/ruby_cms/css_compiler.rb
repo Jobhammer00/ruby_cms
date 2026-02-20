@@ -13,7 +13,7 @@ module RubyCms
       flash_toast modals content_blocks visitor_errors settings
       bulk_action_table bulk_action_table_bar bulk_action_table_delete
       visual_editor visual_editor_header visual_editor_preview visual_editor_modal
-      visual_editor_edit_mode
+      visual_editor_edit_mode analytics
       mobile scrollbar utilities
     ].freeze
 

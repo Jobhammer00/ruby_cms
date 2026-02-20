@@ -179,3 +179,58 @@
 .ruby_cms-toggle-checkbox:checked + .ruby_cms-toggle-label:hover {
   background-color: var(--pelican-accent-blue-dark);
 }
+
+/* Nav order sortable list */
+.ruby_cms-nav-order-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--pelican-border, #e5e7eb);
+  border-radius: var(--radius-md, 0.5rem);
+  background: var(--pelican-bg-secondary, #f9fafb);
+}
+
+.ruby_cms-nav-order-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid var(--pelican-border, #e5e7eb);
+  background: var(--pelican-bg, #fff);
+  cursor: grab;
+  font-size: 0.875rem;
+}
+
+.ruby_cms-nav-order-item:last-child {
+  border-bottom: none;
+}
+
+.ruby_cms-nav-order-item:hover {
+  background: #f3f4f6;
+}
+
+.ruby_cms-nav-order-item:active {
+  cursor: grabbing;
+}
+
+.ruby_cms-nav-order-item--dragging {
+  opacity: 0.7;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.ruby_cms-nav-order-item--drag-over {
+  border-top: 2px solid var(--pelican-accent-blue, #2563eb);
+}
+
+.ruby_cms-nav-order-grip {
+  color: var(--pelican-text-muted, #9ca3af);
+  font-size: 1rem;
+  letter-spacing: -0.2em;
+  user-select: none;
+}
+
+.ruby_cms-nav-order-label {
+  flex: 1;
+  font-weight: 500;
+  color: var(--pelican-text-primary, #111827);
+}

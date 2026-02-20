@@ -79,7 +79,9 @@ module RubyCms
       end
 
       def json_index_blocks(collection)
-        { content_blocks: serialize_content_blocks(collection.limit(100)) }
+        scope = collection.limit(100)
+        scope = scope.includes(:rich_content) if scope.respond_to?(:includes) && ::ContentBlock.respond_to?(:reflect_on_association) && ::ContentBlock.reflect_on_association(:rich_content)
+        { content_blocks: serialize_content_blocks(scope) }
       end
 
       def bulk_action(action)
@@ -266,7 +268,7 @@ module RubyCms
           content: block.content.to_s,
           content_type: block.content_type,
           published: block.published?,
-          rich_content_html: block.respond_to?(:rich_content) ? block.rich_content.to_s : ""
+          rich_content_html: rich_content_body_html(block)
         }
       end
 
@@ -298,12 +300,50 @@ module RubyCms
             locale: block.locale,
             title: block.title,
             content: block.content.to_s,
-            content_type: block.content_type,
+            content_type: block.content_type.to_s,
             published: block.published?,
-            rich_content: block.respond_to?(:rich_content) ? block.rich_content.to_s : "",
+            rich_content: rich_content_for_serialization(block).to_s,
             updated_at: block.updated_at.strftime("%B %d, %Y at %I:%M %p")
           }
         end
+      end
+
+      # For rich_text blocks: return HTML only. Trix requires HTML in the modal (e.g. <p>...</p>), not plain text.
+      def rich_content_for_serialization(block)
+        return "" unless block.respond_to?(:rich_content)
+        return "" unless block.content_type.to_s == "rich_text"
+
+        html = rich_content_body_html(block)
+        html = html.to_s.strip
+        return ensure_rich_content_html(html) if html.present?
+
+        # Fallback: content column (seeded or synced plain text)
+        return "<p>#{ERB::Util.html_escape(block.content)}</p>" if block.content.present?
+
+        # Fallback: plain text from Action Text when body HTML is blank
+        if block.rich_content.respond_to?(:to_plain_text)
+          text = block.rich_content.to_plain_text.to_s.strip
+          return "<p>#{ERB::Util.html_escape(text)}</p>" if text.present?
+        end
+
+        ""
+      end
+
+      # Trix expects HTML. If we have plain text (no tags), wrap in <p>.
+      def ensure_rich_content_html(str)
+        return "" if str.blank?
+        return str if str.strip.start_with?("<")
+        "<p>#{ERB::Util.html_escape(str)}</p>"
+      end
+
+      # Body-only HTML for API/preview (no Action Text layout wrapper or comments).
+      def rich_content_body_html(block)
+        return "" unless block.respond_to?(:rich_content)
+        return "" unless block.rich_content.respond_to?(:body) && block.rich_content.body.present?
+
+        b = block.rich_content.body
+        html = b.respond_to?(:to_html) ? b.to_html : b.to_s
+        html.to_s.strip.presence || ""
       end
 
       def audit_visual_editor_edit(changes)

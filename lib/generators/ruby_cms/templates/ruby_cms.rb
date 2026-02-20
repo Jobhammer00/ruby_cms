@@ -40,44 +40,47 @@ RubyCms.configure do |c|
   # c.bootstrap_admin_with_role = true
 
   # Redirect path when unauthenticated or not permitted (default: "/").
-  # Use "/session/new" to send to sign-in, or main_app.root_path in a proc if you define root.
+  # Use "/session/new" to send to sign-in.
   # c.unauthorized_redirect_path = "/"
 
-  # Content blocks: key prefixes that cannot be used (default: ["admin_"]).
-  # c.reserved_key_prefixes = %w[admin_]
-
-  # Content blocks: translation namespace for seed-from-YAML. When set (e.g. "content_blocks"),
-  # put content under that key in config/locales/<locale>.yml, then run:
-  #   rails ruby_cms:content_blocks:seed
-  # Or from db/seeds.rb: Rake::Task["ruby_cms:content_blocks:seed"].invoke
-  # Example in config/locales/en.yml:
-  #   en:
-  #     content_blocks:
-  #       hero_title: "Welcome"
-  #       about_intro: "About us..."
-  # c.content_blocks_translation_namespace = "content_blocks"
-
-  # Visual editor: allowlist of page_key => template path;
-  # Page records are merged with this config. Example: "home" => "pages/home"
+  # Visual editor: allowlist of page_key => template path.
   # c.preview_templates = { "home" => "pages/home", "about" => "pages/about" }
 
-  # Preview data proc to pass instance variables to the preview template. Example:
+  # Preview data proc to pass instance variables.
   # c.preview_data = ->(page_key, view) { { products: Product.limit(5) } }
 
-  # App Integration: Link App routes and settings
-  # Register app routes that can be linked from CMS navigation:
-  #   RubyCms.register_app_route(
-  #     key: "products",
-  #     route_name: "products_path",
-  #     label: "Products",
-  #     description: "View all products"
-  #   )
+  # Optional hook: customize Ahoy visit scope (e.g. exclude internal traffic)
+  # c.analytics_visit_scope = ->(scope) { scope.where.not(ip: ["127.0.0.1"]) }
+
+  # Optional hook: customize Ahoy event scope
+  # c.analytics_event_scope = ->(scope) { scope }
+
+  # Optional hook: provide extra dashboard cards
+  # c.analytics_extra_cards = lambda do |start_date:, end_date:, period:, visits_scope:, events_scope:|
+  #   [{ title: "Custom KPI", value: visits_scope.where.not(utm_source: nil).count }]
+  # end
+
+  # -----------------------------------------------------------------------------
+  # Optional bootstrap values (initializer -> DB import, once)
   #
-  # Register app settings to load into CMS context:
-  #   RubyCms.register_app_setting(
-  #     key: "current_tenant",
-  #     loader: ->(view) { view.current_tenant }
-  #   )
+  # On first boot/install, RubyCMS imports matching keys from config.ruby_cms into
+  # ruby_cms_preferences. After that, DB settings are source of truth.
   #
-  # In views, use: cms_app_setting("current_tenant")
+  # Example bootstrap values:
+  # c.analytics_default_period = "week"
+  # c.analytics_max_date_range_days = 365
+  # c.analytics_cache_duration_seconds = 600
+  # c.analytics_max_popular_pages = 10
+  # c.analytics_max_top_visitors = 10
+  # c.analytics_high_volume_threshold = 1000
+  # c.analytics_rapid_request_threshold = 50
+  # c.pagination_min_per_page = 5
+  # c.pagination_max_per_page = 200
+  # c.reserved_key_prefixes = %w[admin_]
+  # c.image_content_types = %w[image/png image/jpeg image/gif image/webp]
+  # c.image_max_size = 5 * 1024 * 1024
+  #
+  # To re-run manually:
+  #   rails ruby_cms:import_initializer_settings
+  # -----------------------------------------------------------------------------
 end

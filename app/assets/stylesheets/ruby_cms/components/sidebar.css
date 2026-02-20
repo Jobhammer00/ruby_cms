@@ -54,6 +54,26 @@
   padding: var(--spacing-md) var(--spacing-sm);
 }
 
+.ruby_cms-admin-sidebar-section-divider {
+  height: 1px;
+  background: var(--pelican-border, #e5e7eb);
+  margin: var(--spacing-lg) 0 var(--spacing-sm);
+}
+
+.ruby_cms-admin-sidebar-section-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--pelican-text-muted, #6b7280);
+  padding: 0 0.75rem 0.35rem;
+  margin-bottom: 0.125rem;
+}
+
+.ruby_cms-admin-sidebar-section {
+  margin-bottom: 0.25rem;
+}
+
 .ruby_cms-admin-sidebar-nav a {
   display: flex;
   align-items: center;

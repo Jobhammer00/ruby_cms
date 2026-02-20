@@ -1,0 +1,48 @@
+<div class="ruby_cms-analytics__chart ruby_cms-analytics__chart--daily">
+  <div class="ruby_cms-analytics__chart-header">
+    <div>
+      <h3 class="ruby_cms-analytics__chart-title"><%= t("ruby_cms.admin.analytics.daily_activity", default: "Daily activity") %></h3>
+      <p class="ruby_cms-analytics__chart-subtitle"><%= t("ruby_cms.admin.analytics.page_views_visitors_over_time", default: "Page views and visitors over time") %></p>
+    </div>
+    <div class="ruby_cms-analytics__chart-legend">
+      <span class="ruby_cms-analytics__chart-legend-dot ruby_cms-analytics__chart-legend-dot--blue"></span>
+      <span class="ruby_cms-analytics__chart-legend-label"><%= t("ruby_cms.admin.analytics.views", default: "Views") %></span>
+      <span class="ruby_cms-analytics__chart-legend-dot ruby_cms-analytics__chart-legend-dot--emerald"></span>
+      <span class="ruby_cms-analytics__chart-legend-label"><%= t("ruby_cms.admin.analytics.visitors", default: "Visitors") %></span>
+    </div>
+  </div>
+  <div class="ruby_cms-analytics__chart-body">
+    <% if @daily_activity.present? && @daily_activity.any? %>
+      <%
+        daily_activity_arr = @daily_activity.is_a?(Hash) ? @daily_activity.to_a : @daily_activity
+        max_views = daily_activity_arr.map { |_k, v| v.to_i }.max || 0
+        max_visitors = (@daily_visitors || {}).values.map(&:to_i).max || 0
+        max_value = [max_views, max_visitors].max
+        max_value = 1 if max_value.zero?
+      %>
+      <div class="ruby_cms-analytics__chart-y-axis">
+        <% [100, 75, 50, 25, 0].each do |pct| %>
+          <div class="ruby_cms-analytics__chart-y-label"><%= number_with_delimiter((max_value * pct / 100.0).round) %></div>
+        <% end %>
+      </div>
+      <div class="ruby_cms-analytics__chart-bars">
+        <% daily_activity_arr.each do |date, views_count| %>
+          <% visitors_count = (@daily_visitors || {})[date] || 0 %>
+          <div class="ruby_cms-analytics__chart-bar-group">
+            <div class="ruby_cms-analytics__chart-bar-wrap">
+              <div class="ruby_cms-analytics__chart-bar ruby_cms-analytics__chart-bar--blue"
+                   style="height: <%= max_value.zero? ? 4 : [ (views_count.to_f / max_value * 200).round, 4 ].max %>px;"
+                   title="<%= format_chart_date(date) %> — Views: <%= number_with_delimiter(views_count) %>, Visitors: <%= number_with_delimiter(visitors_count) %>"></div>
+              <div class="ruby_cms-analytics__chart-bar ruby_cms-analytics__chart-bar--emerald"
+                   style="height: <%= max_value.zero? ? 4 : [ (visitors_count.to_f / max_value * 200).round, 4 ].max %>px;"
+                   title="<%= format_chart_date(date) %> — Views: <%= number_with_delimiter(views_count) %>, Visitors: <%= number_with_delimiter(visitors_count) %>"></div>
+            </div>
+            <div class="ruby_cms-analytics__chart-x-label"><%= format_chart_date_short(date) %></div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="ruby_cms-analytics__empty"><%= t("ruby_cms.admin.analytics.no_daily_data", default: "No daily activity data") %></p>
+    <% end %>
+  </div>
+</div>

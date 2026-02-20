@@ -1,0 +1,27 @@
+<div class="ruby_cms-analytics__panel">
+  <h3 class="ruby_cms-analytics__panel-title">
+    <span class="ruby_cms-analytics__panel-icon ruby_cms-analytics__panel-icon--indigo">◐</span>
+    <%= t("ruby_cms.admin.analytics.browsers_devices", default: "Browsers & devices") %>
+  </h3>
+  <div class="ruby_cms-analytics__list">
+    <% if @browser_stats.present? && @browser_stats.any? %>
+      <% @browser_stats.sort_by { |_, v| -v }.first(3).each do |browser, count| %>
+        <div class="ruby_cms-analytics__item">
+          <span class="ruby_cms-analytics__item-title"><%= browser %></span>
+          <span class="ruby_cms-analytics__item-count"><%= number_with_delimiter(count) %></span>
+        </div>
+      <% end %>
+    <% end %>
+    <% if @device_stats.present? && @device_stats.any? %>
+      <% @device_stats.sort_by { |_, v| -v }.each do |device, count| %>
+        <div class="ruby_cms-analytics__item">
+          <span class="ruby_cms-analytics__item-title"><%= device %></span>
+          <span class="ruby_cms-analytics__item-count"><%= number_with_delimiter(count) %></span>
+        </div>
+      <% end %>
+    <% end %>
+    <% if (@browser_stats.blank? || @browser_stats.empty?) && (@device_stats.blank? || @device_stats.empty?) %>
+      <p class="ruby_cms-analytics__empty"><%= t("ruby_cms.admin.analytics.no_data", default: "No data yet.") %></p>
+    <% end %>
+  </div>
+</div>

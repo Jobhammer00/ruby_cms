@@ -1,575 +1,598 @@
 /* ============================================
-   Bulk Action Table - Main Component
+   Bulk Action Table - Clean Unified Styling
    ============================================ */
 
-.bulk-action-table {
-  /* Uses: .card from shared.css */
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-  background-color: var(--pelican-bg-primary);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--pelican-border);
-  margin: 0 -1.5rem -1.5rem -1.5rem;
-}
-
-.bulk-action-table__header-bar {
-  padding: var(--spacing-lg) var(--spacing-2xl);
-  border-bottom: 1px solid var(--pelican-border);
-}
-
-.bulk-action-table__header-content {
-  /* Uses: .flex .items-center .justify-between from shared.css */
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: var(--spacing-lg);
-}
-
-.bulk-action-table__header-content .ruby_cms-page-header__action-icons {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  flex-shrink: 0;
-}
-
-.bulk-action-table__header-content .ruby_cms-page-header__search-form {
-  margin: var(--spacing-xs) 0 var(--spacing-xs) auto;
-  flex-shrink: 0;
-}
-
-.bulk-action-table__wrapper {
-  /* Uses: .flex .flex-col .flex-1 from shared.css */
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-}
-
-.bulk-action-table__footer {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  position: sticky;
-  bottom: -1.5rem;
-  background-color: var(--pelican-bg-primary);
-  z-index: 10;
-  border-radius: 0 0 var(--radius-md) var(--radius-md);
-}
-
-.bulk-action-table__scroll-container {
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  overflow: auto;
-  overscroll-behavior: none;
-  padding-bottom: var(--spacing-2xl);
-}
-
-.bulk-action-table__table {
-  /* Uses: .table from shared.css */
-  width: 100%;
-  font-size: 0.875rem;
-  border-collapse: collapse;
-  table-layout: auto;
-}
-
-.bulk-action-table__table th,
-.bulk-action-table__table td {
-  vertical-align: middle;
-}
-
-.bulk-action-table__header {
-  /* Uses: .table-header from shared.css */
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background-color: var(--pelican-bg-primary);
-  border-bottom: 1px solid var(--pelican-border);
-}
-
-.bulk-action-table__header th {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  font-weight: 500;
-  font-size: 0.875rem;
-  color: var(--pelican-text-secondary);
-}
-
-.bulk-action-table__header th.text-center {
-  text-align: center;
-}
-
-.bulk-action-table__header th.text-right {
-  text-align: right;
-}
-
-.bulk-action-table__row {
-  /* Uses: .table-row from shared.css */
-  border-bottom: 1px solid var(--pelican-border);
-  transition: background-color var(--transition-fast);
-}
-
-.bulk-action-table__row:last-child {
-  border-bottom: 0;
-}
-
-.bulk-action-table__row:hover {
-  background-color: var(--pelican-bg-secondary);
-}
-
-.bulk-action-table__row--clickable {
-  /* Uses: .table-row-clickable from shared.css */
-  cursor: pointer;
-}
-
-.bulk-action-table__row--clickable:hover {
-  background-color: var(--pelican-accent-blue-bg);
-}
-
-.bulk-action-table__row[data-state="selected"] {
-  background-color: var(--pelican-accent-blue-bg);
-}
-
-.bulk-action-table__row td {
-  padding: 0.875rem 1rem;
-  font-size: 0.875rem;
-  color: var(--pelican-text-primary);
-  vertical-align: middle;
-}
-
-.bulk-action-table__row td.text-right {
-  /* Uses: .text-right from shared.css */
-  text-align: right;
-}
-
-.bulk-action-table__row td.text-center {
-  /* Uses: .text-center from shared.css */
-  text-align: center;
-}
-
-.bulk-action-table__row td.text-muted {
-  /* Uses: .text-muted from shared.css */
-  color: var(--pelican-text-secondary);
-}
-
-/* Checkboxes */
-.bulk-action-table__checkbox-head,
-.bulk-action-table__checkbox-cell {
-  padding: var(--spacing-sm);
-  vertical-align: middle;
-}
-
-.bulk-action-table__checkbox-head-wrapper,
-.bulk-action-table__checkbox-cell-wrapper {
-  display: inline-block;
-  padding: var(--spacing-sm);
-  margin: calc(var(--spacing-sm) * -1);
-  cursor: pointer;
-}
-
-.bulk-action-table__checkbox-head-input,
-.bulk-action-table__checkbox-cell-input {
-  /* Uses: .form-checkbox from shared.css */
-  height: 1rem;
-  width: 1rem;
-  color: var(--pelican-accent-emerald);
-  border-color: var(--pelican-border-light);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-}
-
-.bulk-action-table__checkbox-head-input:focus,
-.bulk-action-table__checkbox-cell-input:focus {
-  outline: 2px solid transparent;
-  box-shadow: 0 0 0 2px var(--pelican-accent-emerald);
-}
-
-/* Actions */
-.bulk-action-table__actions {
-  /* Uses: .flex .items-center .justify-end .gap-sm from shared.css */
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--spacing-sm);
-}
-
-.bulk-action-table__link {
-  /* Uses: .btn .btn-link from shared.css */
-  display: inline-flex;
-  align-items: center;
-  padding: 0.375rem 0.75rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--pelican-accent-blue);
-  text-decoration: none;
-  background-color: transparent;
-  transition: background-color var(--transition-fast);
-  cursor: pointer;
-}
-
-.bulk-action-table__link:hover {
-  background-color: var(--pelican-accent-blue-bg);
-}
-
-.bulk-action-table__action-button {
-  /* Uses: .btn .btn-icon from shared.css */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.375rem;
-  border-radius: var(--radius-sm);
-  transition: background-color var(--transition-fast);
-  text-decoration: none;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-}
-
-.bulk-action-table__action-button--edit {
-  color: var(--pelican-accent-blue);
-}
-
-.bulk-action-table__action-button--edit:hover {
-  background: var(--pelican-accent-blue-bg);
-}
-
-.bulk-action-table__action-button--delete {
-  color: var(--pelican-accent-red);
-}
-
-.bulk-action-table__action-button--delete:hover {
-  background: var(--pelican-accent-red-bg);
-}
-
-.bulk-action-table__action-icon {
-  /* Uses: .icon-sm from shared.css */
-  width: 1rem;
-  height: 1rem;
-}
-
-/* Bulk actions bar - now using shared button styles */
-.bulk-actions-bar {
-  flex-shrink: 0;
-  display: none;
-  background-color: var(--pelican-bg-primary);
-  padding: var(--spacing-lg) var(--spacing-2xl);
-  border-top: 1px solid var(--pelican-border);
-}
-
-.bulk-actions-bar--visible {
-  display: block;
-}
-
-.bulk-actions-bar__content {
-  /* Uses: .flex .items-center .justify-between from shared.css */
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.bulk-actions-bar__selection-info {
-  /* Uses: .flex .items-center .gap-md from shared.css */
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-.bulk-actions-bar__selected-count {
-  /* Uses: .text-sm .font-medium from shared.css */
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--pelican-text-primary);
-}
-
-.bulk-actions-bar__select-all-button,
-.bulk-actions-bar__clear-button {
-  font-size: 0.875rem;
-  color: var(--pelican-text-secondary);
-  font-weight: 500;
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  transition: background-color var(--transition-fast);
-}
-
-.bulk-actions-bar__select-all-button:hover,
-.bulk-actions-bar__clear-button:hover {
-  color: var(--pelican-text-primary);
-  text-decoration-color: currentColor;
-}
-
-.bulk-actions-bar__buttons {
-  /* Uses: .flex .items-center .gap-sm from shared.css */
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.bulk-actions-bar__button,
-.bulk-action-button {
-  /* Uses: .btn .btn-lg .btn-secondary from shared.css */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 2.75rem;
-  padding: 0 var(--spacing-2xl);
-  border-radius: var(--radius-lg);
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: 1px solid var(--pelican-border);
-  background-color: white;
-  color: var(--pelican-text-primary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
-}
-
-.bulk-actions-bar__button:hover,
-.bulk-action-button:hover {
-  background-color: var(--pelican-bg-tertiary);
-  border-color: var(--pelican-border-light);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.bulk-actions-bar__button:disabled,
-.bulk-action-button:disabled {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
-.bulk-actions-bar__button--delete,
-.bulk-action-button--delete {
-  /* Uses: .btn .btn-danger from shared.css */
-  color: var(--pelican-accent-red);
-  background-color: white;
-  border-color: var(--pelican-border);
-}
-
-.bulk-actions-bar__button--delete:hover,
-.bulk-action-button--delete:hover {
-  background-color: #fef2f2;
-  border-color: #fecaca;
-}
-
-/* Pagination - uses shared pagination component */
-.bulk-action-table__pagination {
-  /* Uses: .pagination from shared.css */
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-lg) var(--spacing-2xl);
-  background-color: var(--pelican-bg-primary);
-  border-top: 1px solid var(--pelican-border);
-}
-
-.bulk-action-table__pagination-info {
-  /* Uses: .pagination-info from shared.css */
-  font-size: 0.875rem;
-  color: var(--pelican-text-secondary);
-}
-
-.bulk-action-table__pagination-controls {
-  /* Uses: .pagination-controls from shared.css */
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.bulk-action-table__pagination-button {
-  /* Uses: .pagination-button from shared.css */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2rem;
-  height: 2rem;
-  padding: 0 var(--spacing-sm);
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--pelican-text-primary);
-  background-color: var(--pelican-bg-primary);
-  border: 1px solid var(--pelican-border);
-  border-radius: var(--radius-sm);
-  text-decoration: none;
-  transition: background-color var(--transition-fast);
-  cursor: pointer;
-}
-
-.bulk-action-table__pagination-button:hover:not(
-    .bulk-action-table__pagination-button--disabled
-  ) {
-  background-color: var(--pelican-bg-secondary);
-}
-
-.bulk-action-table__pagination-button--current {
-  /* Uses: .pagination-button-current from shared.css */
-  background-color: var(--pelican-accent-blue);
-  color: white;
-  border-color: var(--pelican-accent-blue);
-}
-
-.bulk-action-table__pagination-button--disabled {
-  /* Uses: .pagination-button-disabled from shared.css */
-  opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
-.bulk-action-table__pagination-ellipsis {
-  /* Uses: .pagination-ellipsis from shared.css */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 2rem;
-  min-width: 2rem;
-  padding: 0 var(--spacing-sm);
-  font-size: 0.875rem;
-  color: var(--pelican-text-secondary);
-}
-
-/* Delete dialog - uses shared dialog component */
-.bulk-action-dialog {
-  /* Uses: .dialog-overlay from shared.css */
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  overflow-y: auto;
-}
-
-.bulk-action-dialog.hidden {
-  display: none;
-}
-
-.bulk-action-dialog__backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 0;
-}
-
-.bulk-action-dialog__container {
-  /* Uses: .dialog-container from shared.css */
-  position: relative;
-  z-index: 1;
-  display: flex;
-  min-height: 100%;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-lg);
-  pointer-events: none;
-}
-
-.bulk-action-dialog__container > * {
-  pointer-events: auto;
-}
-
-.bulk-action-dialog__content {
-  /* Uses: .dialog-content from shared.css */
-  background: var(--pelican-bg-primary);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xl);
-  max-width: 28rem;
-  width: 100%;
-  padding: var(--spacing-2xl);
-}
-
-.bulk-action-dialog__header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--spacing-lg);
-}
-
-.bulk-action-dialog__header {
-  flex: 1;
-}
-
-.bulk-action-dialog__title {
-  /* Uses: .dialog-title from shared.css */
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--pelican-text-primary);
-  margin: 0;
-}
-
-.bulk-action-dialog__close {
-  /* Uses: .dialog-close from shared.css */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  border: none;
-  color: var(--pelican-text-secondary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  flex-shrink: 0;
-}
-
-.bulk-action-dialog__close:hover {
-  background: var(--pelican-bg-secondary);
-  color: var(--pelican-text-primary);
-}
-
-.bulk-action-dialog__close-icon {
-  /* Uses: .icon-sm from shared.css */
-  width: 1rem;
-  height: 1rem;
-}
-
-.bulk-action-dialog__message {
-  color: var(--pelican-text-secondary);
-  margin-bottom: var(--spacing-2xl);
-}
-
-.bulk-action-dialog__message p {
-  font-size: 0.875rem;
-  margin: 0;
-}
-
-.bulk-action-dialog__footer {
-  /* Uses: .dialog-footer from shared.css */
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--spacing-sm);
-}
-
-.bulk-action-dialog__button {
-  /* Uses: .btn .btn-md from shared.css */
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 2.5rem;
-  padding: 0 var(--spacing-lg);
-  border-radius: var(--radius-sm);
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: 1px solid var(--pelican-border-light);
-  background: var(--pelican-bg-primary);
-  color: var(--pelican-text-primary);
-  cursor: pointer;
-  transition: background-color var(--transition-fast);
-}
-
-.bulk-action-dialog__button:hover {
-  background: var(--pelican-bg-secondary);
-}
-
-.bulk-action-dialog__button--confirm {
-  /* Uses: .btn .btn-primary (danger variant) from shared.css */
-  background: var(--pelican-accent-red);
-  color: white;
-  border-color: var(--pelican-accent-red);
-}
-
-.bulk-action-dialog__button--confirm:hover {
-  background: var(--pelican-accent-red-hover);
-}
+   .bulk-action-table {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  
+    /* shared spacing/tint */
+    --bulk-table-pad-x: var(--spacing-xl);
+    --bulk-table-pad-y: var(--spacing-lg);
+    --bulk-table-blue-tint: var(--pelican-accent-blue-bg);
+  }
+  
+  .bulk-action-table__wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+  }
+  
+  .bulk-action-table__scroll-container {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    overflow: auto;
+    overscroll-behavior: none;
+    padding-bottom: var(--spacing-2xl);
+  }
+  
+  .bulk-action-table__table-container {
+    width: 100%;
+  }
+  
+  /* --------------------------------------------
+     Header / title bar
+     -------------------------------------------- */
+  .bulk-action-table__header-bar {
+    padding: var(--bulk-table-pad-y) var(--bulk-table-pad-x);
+    border-bottom: 1px solid var(--pelican-border);
+    background-color: var(--pelican-bg-primary);
+  }
+  
+  .bulk-action-table__header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-lg);
+    width: 100%;
+  }
+  
+  .bulk-action-table__header-content h1,
+  .bulk-action-table__header-content h2,
+  .bulk-action-table__header-content .ruby_cms-page-title {
+    margin: 0;
+  }
+  
+  .bulk-action-table__header-content .ruby_cms-page-header__action-icons {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-shrink: 0;
+  }
+  
+  .bulk-action-table__header-content .ruby_cms-page-header__search-form {
+    margin: var(--spacing-xs) 0 var(--spacing-xs) auto;
+    flex-shrink: 0;
+  }
+  
+  /* --------------------------------------------
+     Table
+     -------------------------------------------- */
+  .bulk-action-table__table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    font-size: 0.875rem;
+  }
+  
+  .bulk-action-table__table th,
+  .bulk-action-table__table td {
+    vertical-align: middle;
+  }
+  
+  /* sticky table header */
+  .bulk-action-table__header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: var(--pelican-bg-primary);
+    border-bottom: 1px solid var(--pelican-border);
+  }
+  
+  .bulk-action-table__header th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    color: var(--pelican-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    background: transparent;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+  }
+  
+  /* one consistent tint on header hover (whole row) */
+  .bulk-action-table__header:hover,
+  .bulk-action-table__header:hover th {
+    background-color: var(--bulk-table-blue-tint);
+    color: var(--pelican-text-primary);
+  }
+  
+  .bulk-action-table__header th.text-center {
+    text-align: center;
+  }
+  
+  .bulk-action-table__header th.text-right {
+    text-align: right;
+  }
+  
+  /* body rows */
+  .bulk-action-table__row {
+    border-bottom: 1px solid var(--pelican-border);
+    transition: background-color var(--transition-fast);
+  }
+  
+  .bulk-action-table__row:last-child {
+    border-bottom: 0;
+  }
+  
+  /* same tint for all row hover variants */
+  .bulk-action-table__row:hover,
+  .bulk-action-table__row--clickable:hover,
+  .bulk-action-table__row[data-state="selected"] {
+    background-color: var(--bulk-table-blue-tint);
+  }
+  
+  .bulk-action-table__row--clickable {
+    cursor: pointer;
+  }
+  
+  .bulk-action-table__row td {
+    padding: 0.875rem 1rem;
+    font-size: 0.875rem;
+    color: var(--pelican-text-primary);
+  }
+  
+  .bulk-action-table__row td.text-right {
+    text-align: right;
+  }
+  
+  .bulk-action-table__row td.text-center {
+    text-align: center;
+  }
+  
+  .bulk-action-table__row td.text-muted,
+  .ruby_cms-bulk-action-table-cell-muted {
+    color: var(--pelican-text-secondary);
+  }
+  
+  /* --------------------------------------------
+     Checkboxes (rounder)
+     -------------------------------------------- */
+  .bulk-action-table__checkbox-head,
+  .bulk-action-table__checkbox-cell {
+    padding: var(--spacing-sm);
+    vertical-align: middle;
+  }
+  
+  .bulk-action-table__checkbox-head-wrapper,
+  .bulk-action-table__checkbox-cell-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-sm);
+    margin: calc(var(--spacing-sm) * -1);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+  }
+  
+  .bulk-action-table__checkbox-head-wrapper:hover,
+  .bulk-action-table__checkbox-cell-wrapper:hover {
+    background-color: var(--bulk-table-blue-tint);
+  }
+  
+  .bulk-action-table__checkbox-head-input,
+  .bulk-action-table__checkbox-cell-input {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 1.05rem;
+    height: 1.05rem;
+    margin: 0;
+    border: 1px solid var(--pelican-border-light);
+    border-radius: 0.42rem; /* rounder */
+    background-color: #fff;
+    cursor: pointer;
+    position: relative;
+    transition: all var(--transition-fast);
+  }
+  
+  .bulk-action-table__checkbox-head-input:hover,
+  .bulk-action-table__checkbox-cell-input:hover {
+    border-color: var(--pelican-accent-blue);
+  }
+  
+  .bulk-action-table__checkbox-head-input:checked,
+  .bulk-action-table__checkbox-cell-input:checked {
+    background-color: var(--pelican-accent-blue);
+    border-color: var(--pelican-accent-blue);
+  }
+  
+  .bulk-action-table__checkbox-head-input:checked::after,
+  .bulk-action-table__checkbox-cell-input:checked::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    margin: auto;
+    width: 0.26rem;
+    height: 0.52rem;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) translate(-1px, -1px);
+  }
+  
+  .bulk-action-table__checkbox-head-input:focus,
+  .bulk-action-table__checkbox-cell-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--pelican-accent-blue) 28%, transparent);
+  }
+  
+  /* --------------------------------------------
+     Row actions
+     -------------------------------------------- */
+  .bulk-action-table__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+  }
+  
+  .bulk-action-table__link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--pelican-accent-blue);
+    text-decoration: none;
+    background-color: transparent;
+    transition: background-color var(--transition-fast);
+  }
+  
+  .bulk-action-table__link:hover {
+    background-color: var(--bulk-table-blue-tint);
+  }
+  
+  .bulk-action-table__action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.375rem;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: transparent;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+  }
+  
+  .bulk-action-table__action-button--edit {
+    color: var(--pelican-accent-blue);
+  }
+  
+  .bulk-action-table__action-button--edit:hover {
+    background: var(--bulk-table-blue-tint);
+  }
+  
+  .bulk-action-table__action-button--delete {
+    color: var(--pelican-accent-red);
+  }
+  
+  .bulk-action-table__action-button--delete:hover {
+    background: var(--pelican-accent-red-bg);
+  }
+  
+  .bulk-action-table__action-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  /* --------------------------------------------
+     Bulk actions bar
+     -------------------------------------------- */
+  .bulk-actions-bar {
+    display: none;
+    flex-shrink: 0;
+    background-color: var(--pelican-bg-primary);
+    border-top: 1px solid var(--pelican-border);
+    padding: var(--spacing-md) var(--bulk-table-pad-x);
+  }
+  
+  .bulk-actions-bar--visible {
+    display: block;
+  }
+  
+  .bulk-actions-bar__content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+  }
+  
+  .bulk-actions-bar__selection-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+  
+  .bulk-actions-bar__selected-count {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--pelican-text-primary);
+  }
+  
+  .bulk-actions-bar__select-all-button,
+  .bulk-actions-bar__clear-button {
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--pelican-text-secondary);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+  }
+  
+  .bulk-actions-bar__select-all-button:hover,
+  .bulk-actions-bar__clear-button:hover {
+    color: var(--pelican-text-primary);
+    text-decoration-color: currentColor;
+  }
+  
+  .bulk-actions-bar__buttons {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+  }
+  
+  .ruby_cms-bulk-action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.5rem;
+    padding: 0 var(--spacing-xl);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--pelican-border);
+    background: #fff;
+    color: var(--pelican-text-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-fast);
+  }
+  
+  .ruby_cms-bulk-action-button:hover {
+    background-color: var(--pelican-bg-tertiary);
+    border-color: var(--pelican-border-light);
+  }
+  
+  .ruby_cms-bulk-action-button:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  
+  .ruby_cms-bulk-action-button--delete {
+    color: var(--pelican-accent-red);
+    background-color: #fff;
+    border-color: var(--pelican-border);
+  }
+  
+  .ruby_cms-bulk-action-button--delete:hover {
+    background-color: #fef2f2;
+    border-color: #fecaca;
+  }
+  
+  /* --------------------------------------------
+     Footer / pagination
+     -------------------------------------------- */
+  .bulk-action-table__footer {
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    background-color: transparent;
+  }
+  
+  .bulk-action-table__pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md) var(--bulk-table-pad-x);
+    border-top: 1px solid var(--pelican-border);
+    background-color: var(--pelican-bg-primary);
+  }
+  
+  .bulk-action-table__pagination-info {
+    font-size: 0.875rem;
+    color: var(--pelican-text-secondary);
+  }
+  
+  .bulk-action-table__pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+  }
+  
+  .bulk-action-table__pagination-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 var(--spacing-sm);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--pelican-border);
+    background-color: var(--pelican-bg-primary);
+    color: var(--pelican-text-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+  }
+  
+  .bulk-action-table__pagination-button:hover:not(.bulk-action-table__pagination-button--disabled) {
+    background-color: var(--pelican-bg-secondary);
+  }
+  
+  .bulk-action-table__pagination-button--current {
+    background-color: var(--pelican-accent-blue);
+    border-color: var(--pelican-accent-blue);
+    color: #fff;
+  }
+  
+  .bulk-action-table__pagination-button--disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+  
+  .bulk-action-table__pagination-ellipsis {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 var(--spacing-sm);
+    color: var(--pelican-text-secondary);
+    font-size: 0.875rem;
+  }
+  
+  /* --------------------------------------------
+     Dialog
+     -------------------------------------------- */
+  .bulk-action-dialog {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    overflow-y: auto;
+  }
+  
+  .bulk-action-dialog.hidden {
+    display: none;
+  }
+  
+  .bulk-action-dialog__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: rgba(0, 0, 0, 0.5);
+  }
+  
+  .bulk-action-dialog__container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    min-height: 100%;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-lg);
+    pointer-events: none;
+  }
+  
+  .bulk-action-dialog__container > * {
+    pointer-events: auto;
+  }
+  
+  .bulk-action-dialog__content {
+    width: 100%;
+    max-width: 28rem;
+    padding: var(--spacing-2xl);
+    border-radius: var(--radius-md);
+    background: var(--pelican-bg-primary);
+    box-shadow: var(--shadow-xl);
+  }
+  
+  .bulk-action-dialog__header {
+    margin-bottom: var(--spacing-lg);
+  }
+  
+  .bulk-action-dialog__title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--pelican-text-primary);
+  }
+  
+  .bulk-action-dialog__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: transparent;
+    color: var(--pelican-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+  
+  .bulk-action-dialog__close:hover {
+    background: var(--pelican-bg-secondary);
+    color: var(--pelican-text-primary);
+  }
+  
+  .bulk-action-dialog__close-icon {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  .bulk-action-dialog__message {
+    margin-bottom: var(--spacing-2xl);
+    color: var(--pelican-text-secondary);
+  }
+  
+  .bulk-action-dialog__message p {
+    margin: 0;
+    font-size: 0.875rem;
+  }
+  
+  .bulk-action-dialog__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-sm);
+  }
+  
+  .bulk-action-dialog__button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.5rem;
+    padding: 0 var(--spacing-lg);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--pelican-border-light);
+    background: var(--pelican-bg-primary);
+    color: var(--pelican-text-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+  }
+  
+  .bulk-action-dialog__button:hover {
+    background: var(--pelican-bg-secondary);
+  }
+  
+  .bulk-action-dialog__button--confirm {
+    background: var(--pelican-accent-red);
+    border-color: var(--pelican-accent-red);
+    color: #fff;
+  }
+  
+  .bulk-action-dialog__button--confirm:hover {
+    background: var(--pelican-accent-red-hover);
+  }

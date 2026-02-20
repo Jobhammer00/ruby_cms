@@ -6,7 +6,7 @@ module RubyCms
     # Inherits from the host's ApplicationController (or config.admin_base_controller).
     # This layout must not be used for public pages.
     class BaseController < Rails.application.config.ruby_cms.admin_base_controller.constantize
-      layout "ruby_cms/admin"
+      layout -> { Rails.application.config.ruby_cms.admin_layout.presence || "admin/admin" }
       before_action :set_cms_locale
       before_action :require_cms_access
 
@@ -80,7 +80,7 @@ module RubyCms
       end
 
       def render_not_found
-        render "ruby_cms/errors/not_found", status: :not_found, layout: "ruby_cms/admin"
+        render "ruby_cms/errors/not_found", status: :not_found, layout: (Rails.application.config.ruby_cms.admin_layout.presence || "admin/admin")
       end
 
       def set_cms_locale

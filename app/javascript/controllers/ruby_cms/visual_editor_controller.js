@@ -25,8 +25,9 @@ export default class extends Controller {
   connect() {
     this.currentContentBlockKey = null
     this.currentContentBlockLocale = null
+    this.currentBlockIndex = 0
     this.editMode = false
-    
+
     // Listen for messages from iframe
     window.addEventListener("message", this.handleMessage.bind(this))
     
@@ -57,71 +58,74 @@ export default class extends Controller {
 
   async openBlockEditor(blockKey, blockIndex = 0) {
     this.currentContentBlockKey = blockKey
+    this.currentBlockIndex = blockIndex
     this.blockKeyTarget.textContent = blockKey
-    
+
     try {
-      // Fetch content block data
       const response = await fetch(`/admin/content_blocks?search=${encodeURIComponent(blockKey)}&format=json`, {
-        headers: {
-          "Accept": "application/json"
-        }
+        headers: { "Accept": "application/json" }
       })
-      
-      if (!response.ok) {
-        throw new Error("Failed to fetch content block")
-      }
-      
+      if (!response.ok) throw new Error("Failed to fetch content block")
+
       const data = await response.json()
       const blocks = data.content_blocks || []
-      // Find block by key, prefer current locale if available
       const currentLocale = this.getCurrentLocale()
-      const block = blocks.find(b => b.key === blockKey && b.locale === currentLocale) ||
+      // Prefer block matching key and current locale; else first block with same key
+      const block = blocks.find(b => b.key === blockKey && (b.locale === currentLocale || !b.locale)) ||
                     blocks.find(b => b.key === blockKey) ||
-                    blocks[blockIndex] ||
+                    (blocks[blockIndex]?.key === blockKey ? blocks[blockIndex] : null) ||
                     {}
-      
-      // Store locale for saving
+
       this.currentContentBlockLocale = block.locale || currentLocale
-      
-      // Populate form
-      this.contentTypeTarget.value = block.content_type || "text"
+
+      const contentType = String(block.content_type || "text").toLowerCase()
+      this.contentTypeTarget.value = contentType
       this.changeContentType()
-      
-      if (block.content_type === "rich_text") {
-        const editor = this.richTextContainerTarget.querySelector("trix-editor")
-        if (editor) {
-          editor.editor.loadHTML(block.rich_content || "")
+
+      if (contentType === "rich_text") {
+        let html = String(block.rich_content != null ? block.rich_content : "").trim()
+        if (!html && block.content) {
+          const text = String(block.content).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+          html = `<p>${text}</p>`
         }
+        if (html && !html.trimStart().startsWith("<")) {
+          const escaped = html.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;")
+          html = `<p>${escaped}</p>`
+        }
+        this.richContentInputTarget.value = html || ""
+        this.lastUpdatedTarget.textContent = block.updated_at || "Never"
+        this.updateCharCount()
+
+        this.modalTarget.classList.add("ruby_cms-visual-editor-modal--visible")
+        document.addEventListener("keydown", this.boundHandleEscape)
+
+        const tryLoadHTML = (attempt = 0) => {
+          const editorEl = this.richTextContainerTarget.querySelector("trix-editor")
+          if (editorEl?.editor) {
+            editorEl.editor.loadHTML(html || "")
+            this.updateCharCount()
+            editorEl.focus?.()
+          } else if (attempt < 50) {
+            setTimeout(() => tryLoadHTML(attempt + 1), 80)
+          }
+        }
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => setTimeout(() => tryLoadHTML(), 120))
+        })
       } else {
         this.contentInputTarget.value = block.content || ""
+        this.lastUpdatedTarget.textContent = block.updated_at || "Never"
+        this.updateCharCount()
+        this.modalTarget.classList.add("ruby_cms-visual-editor-modal--visible")
+        document.addEventListener("keydown", this.boundHandleEscape)
+        setTimeout(() => this.contentInputTarget.focus(), 50)
       }
-      
-      this.lastUpdatedTarget.textContent = block.updated_at || "Never"
-      this.updateCharCount()
-      
-      // Show modal
-      this.modalTarget.classList.add("ruby_cms-visual-editor-modal--visible")
-      
-      // Add Escape key listener when modal opens
-      document.addEventListener("keydown", this.boundHandleEscape)
-      
-      // Focus the first input for better UX
-      setTimeout(() => {
-        if (this.contentTypeTarget.value === "rich_text") {
-          const editor = this.richTextContainerTarget.querySelector("trix-editor")
-          editor?.focus()
-        } else {
-          this.contentInputTarget.focus()
-        }
-      }, 100)
-      
-      // Highlight block in preview
+
       this.sendMessageToPreview({
         type: "HIGHLIGHT_BLOCK",
         blockId: blockKey,
         blockIndex: blockIndex
       })
-      
     } catch (error) {
       console.error("Error loading content block:", error)
       alert("Failed to load content block")
@@ -132,11 +136,9 @@ export default class extends Controller {
     this.modalTarget.classList.remove("ruby_cms-visual-editor-modal--visible")
     this.currentContentBlockKey = null
     this.currentContentBlockLocale = null
-    
-    // Remove Escape key listener when modal closes
+    this.currentBlockIndex = 0
+
     document.removeEventListener("keydown", this.boundHandleEscape)
-    
-    // Clear highlight in preview
     this.sendMessageToPreview({ type: "CLEAR_HIGHLIGHT" })
   }
   
@@ -221,16 +223,16 @@ export default class extends Controller {
       // Update last updated time
       this.lastUpdatedTarget.textContent = data.updated_at
       
-      // Update content in preview without refreshing
-      const contentToDisplay = contentType === "rich_text" 
+      // Update content in preview (same message format as app so page_preview_controller works)
+      const contentToDisplay = contentType === "rich_text"
         ? (data.rich_content_html || data.content || "")
         : (data.content || "")
-      
+
       this.sendMessageToPreview({
-        type: "UPDATE_BLOCK_CONTENT",
-        blockId: this.currentContentBlockKey,
+        type: "content-updated",
+        key: this.currentContentBlockKey,
         content: contentToDisplay,
-        contentType: contentType
+        blockIndex: this.currentBlockIndex ?? 0
       })
       
       // Close modal
