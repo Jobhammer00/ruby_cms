@@ -10,6 +10,14 @@
 # Pin the main RubyCms controllers index for easy registration
 pin "ruby_cms", to: "controllers/ruby_cms/index.js", preload: true
 
+# Some downstream UI libraries (e.g. RubyUI) pin `@floating-ui/dom` to Skypack.
+# Skypack intermittently returns 500s, which can prevent Stimulus controllers from
+# loading (tooltip/select/etc) and break the Visual Editor experience.
+#
+# We pin it here (in the engine) to a more reliable ESM endpoint. Importmap pins
+# are evaluated in order; later pins override earlier ones.
+pin "@floating-ui/dom", to: "https://cdn.jsdelivr.net/npm/@floating-ui/dom/+esm"
+
 # Alias pins for ruby_cms/ namespace (used by index.js imports)
 pin "ruby_cms/visual_editor_controller", to: "controllers/ruby_cms/visual_editor_controller.js"
 pin "ruby_cms/mobile_menu_controller", to: "controllers/ruby_cms/mobile_menu_controller.js"
