@@ -2,9 +2,13 @@
 
 module RubyCms
   module Admin
-    # Admin page wrapper component
+    # Admin page wrapper component (Tailwind-first)
+    #
+    # NOTE: This file must exist (at this path) so Zeitwerk autoloads
+    # `RubyCms::Admin::AdminPage` as a CLASS (not a module inferred from the
+    # `admin_page/` directory).
     class AdminPage < BaseComponent
-      def initialize(title: nil, **options) # rubocop:disable Metrics/MethodLength
+      def initialize(title: nil, footer: nil, **options) # rubocop:disable Metrics/MethodLength
         super()
         @title = title
         @subtitle = options[:subtitle]
@@ -14,15 +18,17 @@ module RubyCms
         @breadcrumbs = options[:breadcrumbs]
         @padding = options.fetch(:padding, false)
         @overflow = options.fetch(:overflow, true)
+        @content_card = options.fetch(:content_card, true)
         @turbo_frame = options[:turbo_frame]
         @turbo_frame_options = options[:turbo_frame_options]
+        @footer = footer
         @user_attrs = extract_user_attrs(options)
       end
 
       def extract_user_attrs(options)
         excluded_keys = %i[
           title subtitle actions action_icons search breadcrumbs padding overflow
-          turbo_frame turbo_frame_options
+          content_card turbo_frame turbo_frame_options
         ]
         options.except(*excluded_keys)
       end
@@ -36,10 +42,12 @@ module RubyCms
 
       def build_page_content(&block)
         lambda do
-          div(class: "ruby_cms-admin-page", **@user_attrs) do
+          div(class: build_classes("flex flex-col gap-4", @user_attrs[:class]),
+              **@user_attrs.except(:class)) do
             render_breadcrumbs if @breadcrumbs&.any?
             render_header
             render_content(&block)
+            render_footer if @footer.present?
           end
         end
       end
@@ -68,8 +76,8 @@ module RubyCms
       end
 
       def render_breadcrumbs
-        nav(class: "ruby_cms-admin-page__breadcrumbs", aria_label: "Breadcrumb") do
-          ol(class: "ruby_cms-admin-page__breadcrumb-list") do
+        nav(class: "text-sm text-gray-500", aria_label: "Breadcrumb") do
+          ol(class: "flex items-center flex-wrap gap-x-2 gap-y-1") do
             @breadcrumbs.each_with_index do |crumb, index|
               render_breadcrumb_item(crumb, index == @breadcrumbs.size - 1)
             end
@@ -78,49 +86,52 @@ module RubyCms
       end
 
       def render_breadcrumb_item(crumb, last)
-        li(class: "ruby_cms-admin-page__breadcrumb-item") do
+        li(class: "flex items-center") do
           last ? render_breadcrumb_current(crumb) : render_breadcrumb_link(crumb)
         end
       end
 
       def render_breadcrumb_current(crumb)
-        span(class: "ruby_cms-admin-page__breadcrumb-current", aria_current: "page") do
+        span(class: "font-medium text-gray-900", aria_current: "page") do
           crumb[:label] || crumb[:text]
         end
       end
 
       def render_breadcrumb_link(crumb)
-        a(href: crumb[:url] || crumb[:path], class: "ruby_cms-admin-page__breadcrumb-link") do
-          crumb[:label] || crumb[:text]
+        a(href: crumb[:url] || crumb[:path], class: "hover:text-gray-700") do
+          span { crumb[:label] || crumb[:text] }
+          span(class: "px-2 text-gray-300") { "/" }
         end
       end
 
       def render_header
         return unless @title || @action_icons.any? || @actions.any? || @search
 
-        div(class: "ruby_cms-page-header") do
-          div(class: "ruby_cms-page-header__content") do
+        div(class: "flex flex-col gap-3") do
+          div(class: "flex flex-wrap items-start justify-between gap-4") do
             render_header_title_group
             render_header_actions_icons
           end
-          render_search if @search
-          render_header_action_buttons
+          div(class: "flex flex-wrap items-center justify-between gap-3") do
+            render_search if @search
+            div(class: "flex items-center gap-2 flex-wrap") { render_header_action_buttons }
+          end
         end
       end
 
       def render_header_title_group
         return unless @title || @subtitle
 
-        div(class: "ruby_cms-page-header__title-group") do
-          h1(class: "ruby_cms-page-title") { @title } if @title
-          p(class: "ruby_cms-page-subtitle") { @subtitle } if @subtitle
+        div(class: "min-w-0") do
+          h1(class: "text-lg font-semibold text-gray-900 truncate") { @title } if @title
+          p(class: "text-sm text-gray-500 mt-0.5") { @subtitle } if @subtitle
         end
       end
 
       def render_header_actions_icons
         return unless @action_icons.any?
 
-        div(class: "ruby_cms-page-header__action-icons") do
+        div(class: "flex items-center gap-2 flex-wrap") do
           @action_icons.each {|icon_action| render_icon_action(icon_action) }
         end
       end
@@ -143,15 +154,25 @@ module RubyCms
 
       def render_icon_form(action)
         form_with(url: action_url(action), method: action[:method],
-                  class: "ruby_cms-inline-form") do
+                  class: "inline") do
           button(type: "submit", **icon_attrs(action)) { render_icon(action[:icon]) }
         end
       end
 
       def icon_attrs(action)
+        color = (action[:color] || "blue").to_s
+        color_classes = {
+          "blue" => "text-blue-600 hover:bg-blue-50",
+          "green" => "text-green-600 hover:bg-green-50",
+          "red" => "text-red-600 hover:bg-red-50",
+          "purple" => "text-purple-600 hover:bg-purple-50",
+          "gray" => "text-gray-700 hover:bg-gray-50",
+          "teal" => "text-teal-600 hover:bg-teal-50"
+        }
+        color_class = color_classes[color] || color_classes["blue"]
+
         attrs = {
-          class: "ruby_cms-page-header__icon-action \
-            ruby_cms-page-header__icon-action--#{action[:color] || 'blue'}",
+          class: build_classes("inline-flex items-center justify-center w-9 h-9 rounded-lg", color_class),
           title: action[:title] || action[:label] || "",
           aria_label: action[:title] || action[:label] || ""
         }
@@ -179,14 +200,14 @@ module RubyCms
       end
 
       def svg_icon_path(path)
-        svg(class: "ruby_cms-page-header__icon", fill: "none", stroke: "currentColor",
+        svg(class: "w-5 h-5", fill: "none", stroke: "currentColor",
             viewBox: "0 0 24 24") do |s|
           s.path(stroke_linecap: "round", stroke_linejoin: "round", stroke_width: "2", d: path)
         end
       end
 
       def svg_icon_hash(icon)
-        svg(class: "ruby_cms-page-header__icon",
+        svg(class: "w-5 h-5",
             fill: icon[:fill] || "none",
             stroke: icon[:stroke] || "currentColor",
             viewBox: icon[:viewBox] || "0 0 24 24") do |s|
@@ -214,11 +235,10 @@ module RubyCms
       end
 
       def build_action_attributes(action)
-        class_name = "ruby_cms-btn"
-        class_name += " #{action[:class]}" if action[:class]
-        class_name += " ruby_cms-btn-primary" if action_primary?(action)
-        class_name += " ruby_cms-btn-secondary" if action_secondary?(action)
-        attrs = { class: class_name }
+        base = "inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition"
+        secondary = "bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50"
+        variant = action_primary?(action) ? "bg-teal-600 text-white hover:bg-teal-700" : secondary
+        attrs = { class: build_classes(base, variant, action[:class]) }
         attrs[:data] = action[:data] if action[:data]
         attrs
       end
@@ -233,33 +253,54 @@ module RubyCms
 
       def render_action_element(url, method, attrs, label)
         if get_method?(method)
-          a(href: url, **attrs) do
-            label
-          end
+          a(href: url, **attrs) { label }
         else
           render_form_action(url, method, attrs, label)
         end
       end
 
       def render_form_action(url, method, attrs, label)
-        form_with(url: url, method: method, class: "ruby_cms-inline-form") do
+        form_with(url: url, method: method, class: "inline") do
           button(type: "submit", **attrs) { label }
         end
       end
 
       def render_content(&)
-        div(class: "ruby_cms-admin-page__content") { yield if block_given? }
+        div(class: "flex-1 flex flex-col min-h-0") do
+          if @content_card
+            div(
+              class: "bg-white rounded-lg border border-gray-200/80 shadow-sm " \
+                     "p-5 sm:p-6 flex-1 flex flex-col min-h-0"
+            ) { yield if block_given? }
+          else
+            yield if block_given?
+          end
+        end
+      end
+
+      def render_footer
+        div(class: "mt-4") do
+          case @footer
+          when Proc
+            instance_exec(&@footer)
+          else
+            plain @footer
+          end
+        end
       end
 
       def render_search
         opts = @search.kind_of?(Hash) ? @search : { placeholder: "Search" }
-        form_with(url: opts[:url] || "#", method: :get, class: "ruby_cms-page-header__search-form",
+        form_with(url: opts[:url] || "#", method: :get, class: "w-full sm:w-auto",
                   data: { turbo_frame: opts[:turbo_frame] || "admin_table_content" }) do
-          div(class: "ruby_cms-page-header__search-wrapper") do
-            svg_icon_path("M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z")
+          div(class: "relative flex items-center") do
+            span(class: "absolute left-3 text-gray-400 pointer-events-none") do
+              svg_icon_path("M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z")
+            end
             input(
               type: "search", name: opts[:name] || "q", placeholder: opts[:placeholder] || "Search",
-              class: "ruby_cms-page-header__search-input", value: opts[:value],
+              class: "w-full sm:w-72 pl-10 pr-3 py-2 text-sm rounded-lg bg-white ring-1 ring-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-200",
+              value: opts[:value],
               data: { action: "input->turbo-frame#submit" }
             )
           end

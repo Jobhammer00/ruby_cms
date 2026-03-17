@@ -201,6 +201,17 @@ module RubyCms
       rescue StandardError => e
         say "⚠ Task css/copy: Could not copy CSS files: #{e.message}.", :yellow
       end
+
+      def create_admin_layout
+        layout_path = Rails.root.join("app/views/layouts/admin.html.erb")
+        return if File.exist?(layout_path)
+
+        template "admin.html.erb", layout_path.to_s
+        say "✓ Layout admin: Created app/views/layouts/admin.html.erb", :green
+      rescue StandardError => e
+        say "⚠ Layout admin: Could not create admin.html.erb: #{e.message}. " \
+            "Create it manually using the RubyCMS template.", :yellow
+      end
       no_tasks do
         def copy_admin_css(dest_dir)
           admin_css_dest = dest_dir.join("admin.css")
@@ -375,7 +386,7 @@ module RubyCms
 
       def install_tailwind
         gemfile = Rails.root.join("Gemfile")
-        tailwind_css = Rails.root.join("app/assets/tailwind/application.css")
+        tailwind_css = detect_tailwind_entry_css_path
 
         install_tailwind_if_needed(gemfile, tailwind_css)
         configure_tailwind(tailwind_css)
@@ -385,6 +396,15 @@ module RubyCms
       end
 
       no_tasks do
+        def detect_tailwind_entry_css_path
+          candidates = [
+            Rails.root.join("app/assets/tailwind/application.css"),
+            Rails.root.join("app/assets/stylesheets/application.tailwind.css"),
+            Rails.root.join("app/assets/stylesheets/tailwind.css")
+          ]
+          candidates.find(&:exist?) || candidates.first
+        end
+
         def install_tailwind_if_needed(gemfile, tailwind_css)
           return if File.exist?(tailwind_css)
 
@@ -400,6 +420,7 @@ module RubyCms
 
         def configure_tailwind(tailwind_css)
           add_ruby_cms_tailwind_source(tailwind_css)
+          add_ruby_cms_tailwind_content_paths
           run "bin/rails tailwindcss:build" if File.exist?(tailwind_css)
           # Importmap pins are provided by the engine via `ruby_cms/config/importmap.rb`.
           add_importmap_pins
@@ -776,36 +797,85 @@ module RubyCms
           end.join("\n")
         end
 
-        # Helper: add @source for RubyCMS views. Not a generator task.
+        # Helper: add @source for RubyCMS views/components so Tailwind finds utility classes.
+        # Not a generator task.
         def add_ruby_cms_tailwind_source(tailwind_css_path)
           return unless tailwind_css_path.to_s.present? && File.exist?(tailwind_css_path)
 
           content = File.read(tailwind_css_path)
-          gem_source_line = build_gem_source_line
-          return if content.include?(gem_source_line)
+          gem_source_lines = build_gem_source_lines(tailwind_css_path)
+          return if gem_source_lines.all? {|line| content.include?(line) }
 
-          inject_tailwind_source(tailwind_css_path, content, gem_source_line)
+          inject_tailwind_source(tailwind_css_path, content, gem_source_lines)
         rescue StandardError => e
           say "⚠ Task tailwind/source: Could not add @source: #{e.message}. Add manually.", :yellow
         end
 
-        def build_gem_source_line
-          gem_views = RubyCms::Engine.root.join("app/views").relative_path_from(Rails.root).to_s
-          %(@source "#{gem_views}/**/*.erb";)
+        # Tailwind v3 support (tailwind.config.js content array)
+        def add_ruby_cms_tailwind_content_paths
+          config_path = Rails.root.join("config/tailwind.config.js")
+          return unless File.exist?(config_path)
+
+          content = File.read(config_path)
+          patterns = ruby_cms_tailwind_content_patterns
+          return if patterns.all? {|p| content.include?(p) }
+
+          inject = patterns.map {|p| "    \"#{p}\"," }.join("\n") + "\n"
+
+          # Insert inside `content: [` if present; otherwise no-op.
+          inserted = false
+          if content.match?(/content:\s*\[/)
+            gsub_file config_path.to_s, /content:\s*\[\s*\n/ do |match|
+              inserted = true
+              "#{match}#{inject}"
+            end
+          end
+
+          return unless inserted
+
+          say "✓ Task tailwind/content: Added RubyCMS paths to config/tailwind.config.js.", :green
+        rescue StandardError => e
+          say "⚠ Task tailwind/content: Could not update tailwind.config.js: #{e.message}.", :yellow
         end
 
-        def inject_tailwind_source(tailwind_css_path, content, gem_source_line)
-          to_inject = build_tailwind_source_injection(gem_source_line)
+        def ruby_cms_tailwind_content_patterns
+          views = RubyCms::Engine.root.join("app/views").relative_path_from(Rails.root).to_s
+          components = RubyCms::Engine.root.join("app/components").relative_path_from(Rails.root).to_s
+          [
+            "#{views}/**/*.erb",
+            "#{components}/**/*.rb"
+          ]
+        end
+
+        def build_gem_source_lines(tailwind_css_path)
+          css_dir = Pathname.new(tailwind_css_path).dirname
+          gem_views = path_relative_to_css_or_absolute(RubyCms::Engine.root.join("app/views"), css_dir)
+          gem_components = path_relative_to_css_or_absolute(RubyCms::Engine.root.join("app/components"), css_dir)
+          [
+            %(@source "#{gem_views}/**/*.erb";),
+            %(@source "#{gem_components}/**/*.rb";)
+          ]
+        end
+
+        def path_relative_to_css_or_absolute(target_path, css_dir)
+          Pathname.new(target_path).relative_path_from(css_dir).to_s
+        rescue ArgumentError
+          # Different mount/volume: fall back to absolute path.
+          Pathname.new(target_path).to_s
+        end
+
+        def inject_tailwind_source(tailwind_css_path, content, gem_source_lines)
+          to_inject = build_tailwind_source_injection(gem_source_lines)
           inserted = try_insert_after_patterns?(tailwind_css_path, content, to_inject)
           inject_at_start(tailwind_css_path, to_inject) unless inserted
-          say "✓ Task tailwind/source: Added @source for RubyCMS views to " \
+          say "✓ Task tailwind/source: Added @source for RubyCMS views/components to " \
               "tailwind/application.css.",
               :green
         end
 
-        def build_tailwind_source_injection(gem_source_line)
-          to_inject = +"\n/* Include RubyCMS admin views so Tailwind finds utility classes. */\n"
-          to_inject << gem_source_line
+        def build_tailwind_source_injection(gem_source_lines)
+          to_inject = +"\n/* Include RubyCMS views/components so Tailwind finds utility classes. */\n"
+          Array(gem_source_lines).each {|line| to_inject << line << "\n" }
           to_inject << "\n"
           to_inject
         end

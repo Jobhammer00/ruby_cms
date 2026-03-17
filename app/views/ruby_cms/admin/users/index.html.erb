@@ -9,36 +9,37 @@
   email_attr = user_class.column_names.include?("email_address") ? :email_address : :email
 %>
 
-<%= render RubyCms::Admin::AdminPage.new do %>
   <% if flash[:alert] %>
-    <%= tag.div class: "ruby_cms-alert ruby_cms-alert--error" do %>
-      <%= tag.p flash[:alert] %>
-    <% end %>
+    <div class="rounded-md border border-rose-200 bg-rose-50 p-4">
+      <p class="text-sm text-rose-700 m-0"><%= flash[:alert] %></p>
+    </div>
   <% end %>
 
-  <%= tag.div id: "new-user-form", class: "hidden ruby_cms-card ruby_cms-card--padded ruby_cms-card--form" do %>
-    <%= tag.h2 "Create User", class: "ruby_cms-card-title" %>
-    <%= form_with url: ruby_cms_admin_users_path, method: :post, class: "ruby_cms-form" do |f| %>
-      <%= tag.div class: "ruby_cms-field" do %>
-        <%= f.label email_attr, class: "ruby_cms-label" %>
-        <%= f.text_field email_attr, class: "ruby_cms-input", placeholder: "user@example.com" %>
-      <% end %>
-      <% if user_class.column_names.include?("password") %>
-        <%= tag.div class: "ruby_cms-field" do %>
-          <%= f.label :password, class: "ruby_cms-label" %>
-          <%= f.password_field :password, class: "ruby_cms-input" %>
+  <div id="new-user-form" class="hidden rounded-lg border border-gray-200/80 bg-white shadow-sm p-6">
+    <h2 class="text-base font-semibold text-gray-900 mb-4">Create User</h2>
+    <%= form_with url: ruby_cms_admin_users_path, method: :post do |f| %>
+      <div class="space-y-4 max-w-sm">
+        <div class="flex flex-col gap-1">
+          <%= f.label email_attr, class: "text-sm font-medium text-gray-700" %>
+          <%= f.text_field email_attr, class: "h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200", placeholder: "user@example.com" %>
+        </div>
+        <% if user_class.column_names.include?("password") %>
+          <div class="flex flex-col gap-1">
+            <%= f.label :password, class: "text-sm font-medium text-gray-700" %>
+            <%= f.password_field :password, class: "h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200" %>
+          </div>
+          <div class="flex flex-col gap-1">
+            <%= f.label :password_confirmation, "Password Confirmation", class: "text-sm font-medium text-gray-700" %>
+            <%= f.password_field :password_confirmation, class: "h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200" %>
+          </div>
         <% end %>
-        <%= tag.div class: "ruby_cms-field" do %>
-          <%= f.label :password_confirmation, "Password Confirmation", class: "ruby_cms-label" %>
-          <%= f.password_field :password_confirmation, class: "ruby_cms-input" %>
-        <% end %>
-      <% end %>
-      <%= tag.div class: "ruby_cms-button-group" do %>
-        <%= f.submit "Create User", class: "ruby_cms-btn ruby_cms-btn-primary" %>
-        <%= tag.button "Cancel", type: "button", class: "ruby_cms-btn ruby_cms-btn-secondary", data: { controller: "ruby-cms--toggle", action: "click->ruby-cms--toggle#hide", toggle_target_id: "new-user-form" } %>
-      <% end %>
+        <div class="flex items-center gap-2">
+          <%= f.submit "Create User", class: "inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 text-sm font-medium text-white shadow-sm hover:bg-gray-800 transition-colors cursor-pointer" %>
+          <%= tag.button "Cancel", type: "button", class: "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors cursor-pointer", data: { controller: "ruby-cms--toggle", action: "click->ruby-cms--toggle#hide", toggle_target_id: "new-user-form" } %>
+        </div>
+      </div>
     <% end %>
-  <% end %>
+  </div>
 
   <%= render partial: "ruby_cms/admin/shared/bulk_action_table_index", locals: {
     title: "Users",
@@ -67,4 +68,3 @@
     pagination_path: @pagination_path,
     row_partial: "ruby_cms/admin/users/row"
   } %>
-<% end %>

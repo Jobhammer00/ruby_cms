@@ -19,26 +19,19 @@ module RubyCms
         end
 
         def view_template
-          td(class: "bulk-action-table__checkbox-cell") do
-            div(
-              class: "bulk-action-table__checkbox-cell-wrapper",
+          td(class: "w-12 px-6 py-3", data: { action: "click->#{@controller_name}#stopPropagation" }) do
+            input(
+              type: "checkbox",
+              role: "checkbox",
+              value: @item_id,
+              class: "h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-200",
               data: {
-                action: "click->#{@controller_name}#stopPropagation"
-              }
-            ) do
-              input(
-                type: "checkbox",
-                role: "checkbox",
-                value: @item_id,
-                class: "bulk-action-table__checkbox-cell-input",
-                data: {
-                  "#{@controller_name}-target": "itemCheckbox",
-                  item_id: @item_id,
-                  action: "change->#{@controller_name}#updateSelection"
-                },
-                aria_label: "Select row"
-              )
-            end
+                "#{@controller_name}-target": "itemCheckbox",
+                item_id: @item_id,
+                action: "change->#{@controller_name}#updateSelection"
+              },
+              aria_label: "Select row"
+            )
           end
         end
       end

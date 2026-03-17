@@ -1,18 +1,21 @@
-<div class="ruby_cms-analytics__panel">
-  <h3 class="ruby_cms-analytics__panel-title">
-    <span class="ruby_cms-analytics__panel-icon ruby_cms-analytics__panel-icon--green">↗</span>
-    <%= t("ruby_cms.admin.analytics.top_referrers", default: "Top referrers") %>
-  </h3>
-  <div class="ruby_cms-analytics__list">
+<div class="rounded-lg border border-gray-200/80 bg-white shadow-sm">
+  <div class="px-6 py-4 border-b border-gray-100">
+    <p class="text-sm font-semibold text-gray-900"><%= t("ruby_cms.admin.analytics.top_referrers", default: "Top referrers") %></p>
+    <p class="text-sm text-gray-500">Where visitors came from.</p>
+  </div>
+
+  <div class="px-6 py-4">
     <% if @top_referrers.present? && @top_referrers.any? %>
-      <% @top_referrers.first(6).each do |referrer, count| %>
-        <div class="ruby_cms-analytics__item">
-          <span class="ruby_cms-analytics__item-title ruby_cms-analytics__item-title--truncate" title="<%= referrer %>"><%= referrer %></span>
-          <span class="ruby_cms-analytics__item-count"><%= number_with_delimiter(count) %></span>
-        </div>
-      <% end %>
+      <ul class="space-y-2">
+        <% @top_referrers.first(8).each do |referrer, count| %>
+          <li class="flex items-center justify-between gap-3">
+            <span class="text-sm text-gray-700 truncate" title="<%= referrer %>"><%= referrer %></span>
+            <span class="text-sm font-semibold tabular-nums text-gray-900"><%= number_with_delimiter(count) %></span>
+          </li>
+        <% end %>
+      </ul>
     <% else %>
-      <p class="ruby_cms-analytics__empty"><%= t("ruby_cms.admin.analytics.no_referrers", default: "No referrers recorded") %></p>
+      <p class="text-sm text-gray-500"><%= t("ruby_cms.admin.analytics.no_referrers", default: "No referrers recorded") %></p>
     <% end %>
   </div>
 </div>

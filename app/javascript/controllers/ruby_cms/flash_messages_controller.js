@@ -21,9 +21,9 @@ export default class extends Controller {
   }
 
   dismissMessage(message) {
-    message.style.animation = "slideOut 0.3s ease-out"
+    message.classList.add("opacity-0", "-translate-y-1")
     setTimeout(() => {
       message.remove()
-    }, 300)
+    }, 200)
   }
 }

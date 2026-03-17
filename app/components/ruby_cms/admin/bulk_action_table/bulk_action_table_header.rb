@@ -22,7 +22,7 @@ module RubyCms
         end
 
         def view_template
-          thead(class: "bulk-action-table__header") do
+          thead(class: "bg-gray-50") do
             tr do
               render_bulk_checkbox_header
               render_table_headers
@@ -41,11 +41,15 @@ module RubyCms
         def render_table_headers
           Array(@headers).each do |header|
             if header.kind_of?(Hash)
-              th(class: header[:class]) { header[:text] || header[:label] }
+              th(class: build_classes(th_base_classes, header[:class])) { header[:text] || header[:label] }
             else
-              th { header }
+              th(class: th_base_classes) { header }
             end
           end
+        end
+
+        def th_base_classes
+          "px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500"
         end
       end
     end

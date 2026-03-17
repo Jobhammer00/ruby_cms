@@ -53,7 +53,6 @@ class UseUnprefixedCmsTables < ActiveRecord::Migration[7.1]
     add_index :content_blocks, %i[key locale], unique: true
     add_index :content_blocks, :locale
     add_index :content_blocks, %i[published content_type]
-    add_index :content_blocks, :updated_by_id
   end
 
   def ensure_content_blocks_columns

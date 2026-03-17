@@ -68,6 +68,7 @@ module RubyCms
         helper RubyCms::SettingsHelper
         helper RubyCms::BulkActionTableHelper
         helper RubyCms::Admin::BulkActionTableHelper
+        helper RubyCms::Admin::AdminPageHelper
       end
     end
 

@@ -24,7 +24,7 @@ module RubyCms
         def view_template
           return unless @pagination[:total_pages] && @pagination[:total_pages] > 1
 
-          div(class: "bulk-action-table__pagination") do
+          div(class: "px-6 py-3 flex items-center justify-between gap-4") do
             render_pagination_info
             render_pagination_controls
           end
@@ -37,9 +37,7 @@ module RubyCms
             return
           end
 
-          div(class: "bulk-action-table__pagination-info") do
-            pagination_info_text
-          end
+          div(class: "text-sm text-gray-500") { pagination_info_text }
         end
 
         def pagination_info_text
@@ -50,7 +48,7 @@ module RubyCms
         end
 
         def render_pagination_controls
-          nav(class: "bulk-action-table__pagination-controls") do
+          nav(class: "inline-flex items-center gap-1") do
             render_previous_button
             render_page_numbers
             render_next_button
@@ -68,25 +66,22 @@ module RubyCms
         def render_previous_link
           link_options = {
             href: @pagination_path.call(@pagination[:previous_page]),
-            class: previous_button_classes
+            class: pagination_button_classes
           }
           link_options[:data] = { turbo_frame: @turbo_frame } if @turbo_frame
           a(**link_options) { "Previous" }
         end
 
         def render_previous_disabled
-          span(class: previous_button_disabled_classes) { "Previous" }
+          span(class: pagination_button_disabled_classes) { "Previous" }
         end
 
-        def previous_button_classes
-          "bulk-action-table__pagination-button " \
-            "bulk-action-table__pagination-button--previous"
+        def pagination_button_classes
+          "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-900 shadow-sm hover:bg-gray-50 transition-colors"
         end
 
-        def previous_button_disabled_classes
-          "bulk-action-table__pagination-button " \
-            "bulk-action-table__pagination-button--previous " \
-            "bulk-action-table__pagination-button--disabled"
+        def pagination_button_disabled_classes
+          "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-400 opacity-60 cursor-not-allowed"
         end
 
         def render_next_button
@@ -100,25 +95,14 @@ module RubyCms
         def render_next_link
           link_options = {
             href: @pagination_path.call(@pagination[:next_page]),
-            class: next_button_classes
+            class: pagination_button_classes
           }
           link_options[:data] = { turbo_frame: @turbo_frame } if @turbo_frame
           a(**link_options) { "Next" }
         end
 
         def render_next_disabled
-          span(class: next_button_disabled_classes) { "Next" }
-        end
-
-        def next_button_classes
-          "bulk-action-table__pagination-button " \
-            "bulk-action-table__pagination-button--next"
-        end
-
-        def next_button_disabled_classes
-          "bulk-action-table__pagination-button " \
-            "bulk-action-table__pagination-button--next " \
-            "bulk-action-table__pagination-button--disabled"
+          span(class: pagination_button_disabled_classes) { "Next" }
         end
 
         def render_page_numbers
@@ -142,7 +126,7 @@ module RubyCms
         end
 
         def render_ellipsis
-          span(class: "bulk-action-table__pagination-ellipsis") { "..." }
+          span(class: "px-2 text-sm text-gray-500") { "…" }
         end
 
         def render_current_page(page_num)
@@ -152,15 +136,14 @@ module RubyCms
         def render_page_link(page_num)
           link_options = {
             href: @pagination_path.call(page_num),
-            class: "bulk-action-table__pagination-button"
+            class: pagination_button_classes
           }
           link_options[:data] = { turbo_frame: @turbo_frame } if @turbo_frame
           a(**link_options) { page_num.to_s }
         end
 
         def current_page_classes
-          "bulk-action-table__pagination-button " \
-            "bulk-action-table__pagination-button--current"
+          "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-gray-900 px-3 text-sm font-medium text-white shadow-sm"
         end
 
         def calculate_pages_to_show(current_page, total_pages)

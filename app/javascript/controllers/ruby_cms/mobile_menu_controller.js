@@ -16,25 +16,32 @@ export default class extends Controller {
   }
 
   toggle() {
-    if (this.hasSidebarTarget) {
-      this.sidebarTarget.classList.toggle("open")
-    }
-    if (this.hasOverlayTarget) {
-      this.overlayTarget.classList.toggle("show")
-    }
+    const isOpen = this.hasSidebarTarget && this.sidebarTarget.classList.contains("translate-x-0")
+    isOpen ? this.close() : this.open()
   }
 
   close() {
     if (this.hasSidebarTarget) {
-      this.sidebarTarget.classList.remove("open")
+      this.sidebarTarget.classList.remove("translate-x-0")
+      this.sidebarTarget.classList.add("-translate-x-full")
     }
     if (this.hasOverlayTarget) {
-      this.overlayTarget.classList.remove("show")
+      this.overlayTarget.classList.add("hidden")
+    }
+  }
+
+  open() {
+    if (this.hasSidebarTarget) {
+      this.sidebarTarget.classList.remove("-translate-x-full")
+      this.sidebarTarget.classList.add("translate-x-0")
+    }
+    if (this.hasOverlayTarget) {
+      this.overlayTarget.classList.remove("hidden")
     }
   }
 
   handleOutsideClick(event) {
-    if (!this.hasSidebarTarget || !this.sidebarTarget.classList.contains("open")) {
+    if (!this.hasSidebarTarget || !this.sidebarTarget.classList.contains("translate-x-0")) {
       return
     }
 

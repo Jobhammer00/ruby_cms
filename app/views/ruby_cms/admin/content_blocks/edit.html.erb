@@ -1,23 +1,17 @@
-<div class="ruby_cms-page-header ruby_cms-content-blocks-edit-header">
-  <div class="ruby_cms-page-header__content">
-    <div class="ruby_cms-page-header__title-group">
-      <h1 class="ruby_cms-page-title">Edit content block</h1>
-    </div>
-
-    <div class="ruby_cms-page-header__action-icons">
-      <%= link_to "Cancel",
-                  ruby_cms_admin_content_block_path(@content_block),
-                  class: "ruby_cms-pelican-button ruby_cms-pelican-button--ghost" %>
-
-      <button type="submit"
-              form="content-block-form"
-              class="ruby_cms-pelican-button ruby_cms-pelican-button--primary">
-        Save
-      </button>
-    </div>
+<div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+  <h1 class="text-lg font-semibold tracking-tight text-gray-900">Edit content block</h1>
+  <div class="flex items-center gap-2">
+    <%= link_to "Cancel",
+                ruby_cms_admin_content_block_path(@content_block),
+                class: "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors no-underline" %>
+    <button type="submit"
+            form="content-block-form"
+            class="inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 text-sm font-medium text-white shadow-sm hover:bg-gray-800 transition-colors">
+      Save
+    </button>
   </div>
 </div>
 
-<div class="ruby_cms-pelican-card">
+<div class="rounded-lg border border-gray-200/80 bg-white shadow-sm overflow-hidden">
   <%= render "form" %>
 </div>

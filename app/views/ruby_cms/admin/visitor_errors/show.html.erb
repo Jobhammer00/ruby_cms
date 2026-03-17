@@ -1,152 +1,147 @@
-<div class="visitor-error-show">
-  <div class="visitor-error-show__container">
-    <div class="visitor-error-header">
-    <div class="visitor-error-breadcrumbs">
-      <%= link_to t("ruby_cms.admin.navigation.admin", default: "Admin"), ruby_cms_admin_root_path %> /
-      <%= link_to t("ruby_cms.admin.navigation.visitor_errors", default: "Visitor Errors"), ruby_cms_admin_visitor_errors_path %> /
+<div class="rounded-lg border border-gray-200/80 bg-white shadow-sm overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-100">
+    <nav class="text-sm text-gray-500 mb-3">
+      <%= link_to t("ruby_cms.admin.navigation.admin", default: "Admin"), ruby_cms_admin_root_path, class: "hover:text-gray-700 transition-colors" %> /
+      <%= link_to t("ruby_cms.admin.navigation.visitor_errors", default: "Visitor Errors"), ruby_cms_admin_visitor_errors_path, class: "hover:text-gray-700 transition-colors" %> /
       <span><%= t("ruby_cms.admin.visitor_errors.error", default: "Error") %> #<%= @visitor_error.id %></span>
-    </div>
+    </nav>
 
-    <h1 class="visitor-error-title"><%= t("ruby_cms.admin.visitor_errors.error_details", default: "Error Details") %></h1>
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <h1 class="text-lg font-semibold text-gray-900"><%= t("ruby_cms.admin.visitor_errors.error_details", default: "Error Details") %></h1>
+      <div class="flex items-center gap-2">
+        <% unless @visitor_error.resolved %>
+          <%= button_to resolve_ruby_cms_admin_visitor_error_path(@visitor_error),
+              method: :patch,
+              class: "inline-flex items-center gap-1.5 h-9 rounded-md bg-emerald-600 px-4 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 transition-colors border-0 cursor-pointer",
+              data: { confirm: t("ruby_cms.admin.visitor_errors.mark_resolved_confirm", default: "Mark this error as resolved?") } do %>
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <%= t("ruby_cms.admin.visitor_errors.mark_as_resolved", default: "Mark as Resolved") %>
+          <% end %>
+        <% end %>
 
-    <div class="visitor-error-actions">
-      <% unless @visitor_error.resolved %>
-        <%= button_to resolve_ruby_cms_admin_visitor_error_path(@visitor_error),
-            method: :patch,
-            class: "visitor-error-btn visitor-error-btn-primary",
-            data: { confirm: t("ruby_cms.admin.visitor_errors.mark_resolved_confirm", default: "Mark this error as resolved?") } do %>
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        <%= link_to ruby_cms_admin_visitor_errors_path, class: "inline-flex items-center gap-1.5 h-9 rounded-md border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors no-underline" do %>
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
           </svg>
-          <%= t("ruby_cms.admin.visitor_errors.mark_as_resolved", default: "Mark as Resolved") %>
+          <%= t("ruby_cms.admin.visitor_errors.back_to_errors", default: "Back to Errors") %>
         <% end %>
-      <% end %>
+      </div>
+    </div>
+  </div>
 
-      <%= link_to ruby_cms_admin_visitor_errors_path, class: "visitor-error-btn visitor-error-btn-secondary" do %>
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+  <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+    <h3 class="text-base font-semibold text-gray-900"><%= t("ruby_cms.admin.visitor_errors.error_information", default: "Error Information") %></h3>
+    <% if @visitor_error.resolved %>
+      <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
+        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
         </svg>
-        <%= t("ruby_cms.admin.visitor_errors.back_to_errors", default: "Back to Errors") %>
-      <% end %>
-    </div>
+        <%= t("ruby_cms.admin.visitor_errors.resolved", default: "Resolved") %>
+      </span>
+    <% else %>
+      <span class="inline-flex items-center gap-1 rounded-full bg-rose-50 px-3 py-1 text-sm font-medium text-rose-700">
+        <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+        </svg>
+        <%= t("ruby_cms.admin.visitor_errors.open", default: "Open") %>
+      </span>
+    <% end %>
   </div>
 
-  <div class="visitor-error-content">
-    <div class="visitor-error-status-bar">
-      <h3 class="visitor-error-status-title"><%= t("ruby_cms.admin.visitor_errors.error_information", default: "Error Information") %></h3>
+  <div class="p-6 space-y-6">
+    <div class="grid gap-6" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
       <div>
-        <% if @visitor_error.resolved %>
-          <span class="visitor-error-badge visitor-error-badge-resolved">
-            <svg fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-            </svg>
-            <%= t("ruby_cms.admin.visitor_errors.resolved", default: "Resolved") %>
-          </span>
-        <% else %>
-          <span class="visitor-error-badge visitor-error-badge-open">
-            <svg fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-            </svg>
-            <%= t("ruby_cms.admin.visitor_errors.open", default: "Open") %>
-          </span>
-        <% end %>
-      </div>
-    </div>
-
-    <div class="visitor-error-body">
-      <div class="visitor-error-grid">
-        <div class="visitor-error-field">
-          <label class="visitor-error-label"><%= t("ruby_cms.admin.visitor_errors.error_id", default: "Error ID") %></label>
-          <p class="visitor-error-value"><%= @visitor_error.id %></p>
-        </div>
-
-        <div class="visitor-error-field">
-          <label class="visitor-error-label"><%= t("ruby_cms.admin.visitor_errors.error_class", default: "Error Class") %></label>
-          <p class="visitor-error-value"><%= @visitor_error.error_class %></p>
-        </div>
-
-        <div class="visitor-error-field">
-          <label class="visitor-error-label"><%= t("ruby_cms.admin.visitor_errors.request_method", default: "Request Method") %></label>
-          <p class="visitor-error-value"><%= @visitor_error.request_method %></p>
-        </div>
-
-        <div class="visitor-error-field">
-          <label class="visitor-error-label"><%= t("ruby_cms.admin.visitor_errors.request_path", default: "Request Path") %></label>
-          <p class="visitor-error-value"><%= @visitor_error.request_path %></p>
-        </div>
-
-        <div class="visitor-error-field">
-          <label class="visitor-error-label"><%= t("ruby_cms.admin.visitor_errors.ip_address", default: "IP Address") %></label>
-          <p class="visitor-error-value"><%= @visitor_error.ip_address %></p>
-        </div>
-
-        <div class="visitor-error-field">
-          <label class="visitor-error-label"><%= t("ruby_cms.admin.visitor_errors.browser", default: "Browser") %></label>
-          <p class="visitor-error-value"><%= @visitor_error.browser_info %></p>
-        </div>
-
-        <div class="visitor-error-field">
-          <label class="visitor-error-label"><%= t("ruby_cms.admin.visitor_errors.occurred_at", default: "Occurred At") %></label>
-          <p class="visitor-error-value"><%= @visitor_error.created_at.strftime("%B %d, %Y at %I:%M %p") %></p>
-        </div>
-
-        <div class="visitor-error-field">
-          <label class="visitor-error-label"><%= t("ruby_cms.admin.visitor_errors.last_updated", default: "Last Updated") %></label>
-          <p class="visitor-error-value"><%= @visitor_error.updated_at.strftime("%B %d, %Y at %I:%M %p") %></p>
-        </div>
-
-        <% if @visitor_error.respond_to?(:referer) && @visitor_error.referer.present? %>
-          <div class="visitor-error-field">
-            <label class="visitor-error-label"><%= t("ruby_cms.admin.visitor_errors.referer", default: "Referer") %></label>
-            <p class="visitor-error-value visitor-error-value--break"><%= @visitor_error.referer %></p>
-          </div>
-        <% end %>
-
-        <% if @visitor_error.respond_to?(:query_string) && @visitor_error.query_string.present? %>
-          <div class="visitor-error-field">
-            <label class="visitor-error-label"><%= t("ruby_cms.admin.visitor_errors.query_string", default: "Query String") %></label>
-            <p class="visitor-error-value visitor-error-value--break"><%= @visitor_error.query_string %></p>
-          </div>
-        <% end %>
-
-        <% if @visitor_error.respond_to?(:session_id) && @visitor_error.session_id.present? %>
-          <div class="visitor-error-field">
-            <label class="visitor-error-label"><%= t("ruby_cms.admin.visitor_errors.session_id", default: "Session ID") %></label>
-            <p class="visitor-error-value visitor-error-value--break"><%= @visitor_error.session_id %></p>
-          </div>
-        <% end %>
+        <label class="block text-xs font-medium uppercase tracking-wide text-gray-400 mb-1.5"><%= t("ruby_cms.admin.visitor_errors.error_id", default: "Error ID") %></label>
+        <p class="text-sm font-mono text-gray-900 bg-gray-50 px-3 py-2 rounded-md m-0 break-all"><%= @visitor_error.id %></p>
       </div>
 
-      <div class="visitor-error-section">
-        <label class="visitor-error-label"><%= t("ruby_cms.admin.visitor_errors.error_message", default: "Error Message") %></label>
-        <div class="visitor-error-message">
-          <p><%= @visitor_error.error_message %></p>
-        </div>
+      <div>
+        <label class="block text-xs font-medium uppercase tracking-wide text-gray-400 mb-1.5"><%= t("ruby_cms.admin.visitor_errors.error_class", default: "Error Class") %></label>
+        <p class="text-sm font-mono text-gray-900 bg-gray-50 px-3 py-2 rounded-md m-0 break-all"><%= @visitor_error.error_class %></p>
       </div>
 
-      <div class="visitor-error-section">
-        <label class="visitor-error-label"><%= t("ruby_cms.admin.visitor_errors.codepath", default: "Code Path") %></label>
-        <div class="visitor-error-backtrace">
-          <pre><%= @visitor_error.codepath %></pre>
-        </div>
+      <div>
+        <label class="block text-xs font-medium uppercase tracking-wide text-gray-400 mb-1.5"><%= t("ruby_cms.admin.visitor_errors.request_method", default: "Request Method") %></label>
+        <p class="text-sm font-mono text-gray-900 bg-gray-50 px-3 py-2 rounded-md m-0"><%= @visitor_error.request_method %></p>
       </div>
 
-      <% if @visitor_error.request_params.present? %>
-        <div class="visitor-error-section">
-          <label class="visitor-error-label"><%= t("ruby_cms.admin.visitor_errors.request_parameters", default: "Request Parameters") %></label>
-          <div class="visitor-error-params">
-            <pre><%= JSON.pretty_generate(JSON.parse(@visitor_error.request_params)) rescue @visitor_error.request_params %></pre>
-          </div>
+      <div>
+        <label class="block text-xs font-medium uppercase tracking-wide text-gray-400 mb-1.5"><%= t("ruby_cms.admin.visitor_errors.request_path", default: "Request Path") %></label>
+        <p class="text-sm font-mono text-gray-900 bg-gray-50 px-3 py-2 rounded-md m-0 break-all"><%= @visitor_error.request_path %></p>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium uppercase tracking-wide text-gray-400 mb-1.5"><%= t("ruby_cms.admin.visitor_errors.ip_address", default: "IP Address") %></label>
+        <p class="text-sm font-mono text-gray-900 bg-gray-50 px-3 py-2 rounded-md m-0"><%= @visitor_error.ip_address %></p>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium uppercase tracking-wide text-gray-400 mb-1.5"><%= t("ruby_cms.admin.visitor_errors.browser", default: "Browser") %></label>
+        <p class="text-sm font-mono text-gray-900 bg-gray-50 px-3 py-2 rounded-md m-0 break-all"><%= @visitor_error.browser_info %></p>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium uppercase tracking-wide text-gray-400 mb-1.5"><%= t("ruby_cms.admin.visitor_errors.occurred_at", default: "Occurred At") %></label>
+        <p class="text-sm font-mono text-gray-900 bg-gray-50 px-3 py-2 rounded-md m-0"><%= @visitor_error.created_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium uppercase tracking-wide text-gray-400 mb-1.5"><%= t("ruby_cms.admin.visitor_errors.last_updated", default: "Last Updated") %></label>
+        <p class="text-sm font-mono text-gray-900 bg-gray-50 px-3 py-2 rounded-md m-0"><%= @visitor_error.updated_at.strftime("%B %d, %Y at %I:%M %p") %></p>
+      </div>
+
+      <% if @visitor_error.respond_to?(:referer) && @visitor_error.referer.present? %>
+        <div>
+          <label class="block text-xs font-medium uppercase tracking-wide text-gray-400 mb-1.5"><%= t("ruby_cms.admin.visitor_errors.referer", default: "Referer") %></label>
+          <p class="text-sm font-mono text-gray-900 bg-gray-50 px-3 py-2 rounded-md m-0 break-all"><%= @visitor_error.referer %></p>
         </div>
       <% end %>
 
-      <% if @visitor_error.user_agent.present? %>
-        <div class="visitor-error-section">
-          <label class="visitor-error-label"><%= t("ruby_cms.admin.visitor_errors.user_agent", default: "User Agent") %></label>
-          <p class="visitor-error-value"><%= @visitor_error.user_agent %></p>
+      <% if @visitor_error.respond_to?(:query_string) && @visitor_error.query_string.present? %>
+        <div>
+          <label class="block text-xs font-medium uppercase tracking-wide text-gray-400 mb-1.5"><%= t("ruby_cms.admin.visitor_errors.query_string", default: "Query String") %></label>
+          <p class="text-sm font-mono text-gray-900 bg-gray-50 px-3 py-2 rounded-md m-0 break-all"><%= @visitor_error.query_string %></p>
+        </div>
+      <% end %>
+
+      <% if @visitor_error.respond_to?(:session_id) && @visitor_error.session_id.present? %>
+        <div>
+          <label class="block text-xs font-medium uppercase tracking-wide text-gray-400 mb-1.5"><%= t("ruby_cms.admin.visitor_errors.session_id", default: "Session ID") %></label>
+          <p class="text-sm font-mono text-gray-900 bg-gray-50 px-3 py-2 rounded-md m-0 break-all"><%= @visitor_error.session_id %></p>
         </div>
       <% end %>
     </div>
-  </div>
+
+    <div>
+      <label class="block text-xs font-medium uppercase tracking-wide text-gray-400 mb-1.5"><%= t("ruby_cms.admin.visitor_errors.error_message", default: "Error Message") %></label>
+      <div class="rounded-md border border-rose-200 bg-rose-50 p-4">
+        <p class="text-sm font-mono text-rose-700 m-0"><%= @visitor_error.error_message %></p>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium uppercase tracking-wide text-gray-400 mb-1.5"><%= t("ruby_cms.admin.visitor_errors.codepath", default: "Code Path") %></label>
+      <div class="rounded-md border border-gray-200 bg-gray-50 p-4 overflow-x-auto">
+        <pre class="text-xs font-mono text-gray-900 m-0 whitespace-pre-wrap break-words"><%= @visitor_error.codepath %></pre>
+      </div>
+    </div>
+
+    <% if @visitor_error.request_params.present? %>
+      <div>
+        <label class="block text-xs font-medium uppercase tracking-wide text-gray-400 mb-1.5"><%= t("ruby_cms.admin.visitor_errors.request_parameters", default: "Request Parameters") %></label>
+        <div class="rounded-md border border-gray-200 bg-gray-50 p-4 overflow-x-auto">
+          <pre class="text-xs font-mono text-gray-900 m-0 whitespace-pre-wrap break-words"><%= JSON.pretty_generate(JSON.parse(@visitor_error.request_params)) rescue @visitor_error.request_params %></pre>
+        </div>
+      </div>
+    <% end %>
+
+    <% if @visitor_error.user_agent.present? %>
+      <div>
+        <label class="block text-xs font-medium uppercase tracking-wide text-gray-400 mb-1.5"><%= t("ruby_cms.admin.visitor_errors.user_agent", default: "User Agent") %></label>
+        <p class="text-sm font-mono text-gray-900 bg-gray-50 px-3 py-2 rounded-md m-0 break-all"><%= @visitor_error.user_agent %></p>
+      </div>
+    <% end %>
   </div>
 </div>

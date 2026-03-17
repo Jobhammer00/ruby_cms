@@ -26,12 +26,12 @@ module RubyCms
 
         def view_template
           div(
-            class: "bulk-actions-bar",
+            class: "hidden px-6 py-3",
             data: {
               "#{@controller_name}-target": "bulkBar"
             }
           ) do
-            div(class: "bulk-actions-bar__content") do
+            div(class: "flex items-center justify-between gap-3 rounded-lg border border-gray-200/80 bg-white px-4 py-3 shadow-sm") do
               render_selection_info
               render_action_buttons
             end
@@ -41,16 +41,16 @@ module RubyCms
         private
 
         def render_selection_info
-          div(class: "bulk-actions-bar__selection-info") do
+          div(class: "flex items-center gap-3 flex-wrap") do
             span(
-              class: "bulk-actions-bar__selected-count",
+              class: "text-sm font-medium text-gray-700",
               data: {
                 "#{@controller_name}-target": "selectedCount"
               }
             ) { "0 #{@item_name}s selected:" }
             button(
               type: "button",
-              class: "bulk-actions-bar__select-all-button",
+              class: "text-sm font-medium text-gray-600 hover:text-gray-900 hover:underline transition-colors",
               data: {
                 "#{@controller_name}-target": "selectAllButton",
                 action: "click->#{@controller_name}#selectAll"
@@ -58,7 +58,7 @@ module RubyCms
             ) { "Select all" }
             button(
               type: "button",
-              class: "bulk-actions-bar__clear-button",
+              class: "text-sm font-medium text-gray-600 hover:text-gray-900 hover:underline transition-colors",
               data: {
                 action: "click->#{@controller_name}#clearSelection"
               }
@@ -67,7 +67,7 @@ module RubyCms
         end
 
         def render_action_buttons
-          div(class: "bulk-actions-bar__buttons") do
+          div(class: "flex items-center gap-2 flex-wrap") do
             @bulk_action_buttons.each do |button_config|
               render_custom_action_button(button_config)
             end
@@ -88,9 +88,8 @@ module RubyCms
         end
 
         def build_button_class(config)
-          classes = ["bulk-action-button"]
-          classes << config[:class] if config[:class].present?
-          classes.join(" ")
+          base = "inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm hover:bg-gray-50 transition-colors"
+          config[:class].present? ? "#{base} #{config[:class]}" : base
         end
 
         def build_button_data_attrs(config, label, action_name)
@@ -112,7 +111,7 @@ module RubyCms
         def render_delete_button
           button(
             type: "button",
-            class: "bulk-action-button bulk-action-button--delete",
+            class: "inline-flex items-center justify-center rounded-md border border-rose-200 bg-white px-3 py-2 text-sm font-medium text-rose-700 shadow-sm hover:bg-rose-50 transition-colors",
             data: {
               action: "click->#{@controller_name}#showActionDialog",
               action_name: "delete",

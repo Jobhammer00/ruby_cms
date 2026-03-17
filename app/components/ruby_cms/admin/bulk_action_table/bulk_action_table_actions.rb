@@ -33,7 +33,7 @@ module RubyCms
         end
 
         def view_template
-          div(class: "bulk-action-table__actions") do
+          div(class: "flex items-center justify-end gap-1") do
             render_edit_button if @edit_path
 
             render_delete_button if @delete_path
@@ -45,7 +45,7 @@ module RubyCms
         def render_edit_button
           link_options = {
             href: @edit_path,
-            class: "bulk-action-table__action-button bulk-action-table__action-button--edit"
+            class: "inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
           }
           link_options[:data] = { turbo_frame: @turbo_frame } if @turbo_frame
 
@@ -54,7 +54,7 @@ module RubyCms
               xmlns: "http://www.w3.org/2000/svg",
               viewBox: "0 0 20 20",
               fill: "currentColor",
-              class: "bulk-action-table__action-icon"
+              class: "h-4 w-4"
             ) do |s|
               s.path(
                 d: edit_icon_path_d
@@ -70,7 +70,7 @@ module RubyCms
           item_id = @item_id || extract_item_id_from_path
           button(
             type: "button",
-            class: "bulk-action-table__action-button bulk-action-table__action-button--delete",
+            class: "inline-flex h-8 w-8 items-center justify-center rounded-md text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors",
             data: {
               action: "click->#{@controller_name}#showIndividualDeleteDialog",
               "#{@controller_name}-item-id-param": item_id,
@@ -82,7 +82,7 @@ module RubyCms
               xmlns: "http://www.w3.org/2000/svg",
               viewBox: "0 0 20 20",
               fill: "currentColor",
-              class: "bulk-action-table__action-icon"
+              class: "h-4 w-4"
             ) do |s|
               s.path(
                 fill_rule: "evenodd",

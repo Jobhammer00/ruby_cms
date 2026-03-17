@@ -111,11 +111,11 @@ export default class extends Controller {
     const count = selectedItems.length;
 
     if (count > 0) {
-      bulkBar.classList.add("bulk-actions-bar--visible");
+      bulkBar.classList.remove("hidden");
       const itemName = this.itemNameValue || "item";
       selectedCount.textContent = `${count} ${itemName}${count === 1 ? "" : "s"} selected:`;
     } else {
-      bulkBar.classList.remove("bulk-actions-bar--visible");
+      bulkBar.classList.add("hidden");
     }
 
     this.updateRowHighlighting(selectedItems);
@@ -143,8 +143,10 @@ export default class extends Controller {
       const itemId = String(row.getAttribute("data-item-id") || "");
       if (selectedIdsStr.includes(itemId)) {
         row.setAttribute("data-state", "selected");
+        row.classList.add("bg-gray-50");
       } else {
         row.removeAttribute("data-state");
+        row.classList.remove("bg-gray-50");
       }
     });
   }

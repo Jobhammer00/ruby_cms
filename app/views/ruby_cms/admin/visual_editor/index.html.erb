@@ -1,182 +1,165 @@
 <% content_for :full_width, true %>
 
-<div class="ruby_cms-admin-main-inner" style="padding: 1.5rem;">
-  <!-- Header outside card -->
-  <div class="ruby_cms-page-header" style="margin-bottom: 1.5rem;">
-    <div class="ruby_cms-page-header__content">
-      <div class="ruby_cms-page-header__title-group">
-        <h1 class="ruby_cms-page-title">Visual Editor</h1>
-      </div>
-      <div class="ruby_cms-page-header__action-icons" 
-           data-controller="ruby-cms--visual-editor-header" 
+<div class="flex-1 flex flex-col min-h-0 p-6 overflow-y-auto bg-gray-50">
+  <div class="mx-auto w-full max-w-7xl flex flex-col gap-4 flex-1 min-h-0">
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <h1 class="text-lg font-semibold tracking-tight text-gray-900">Visual Editor</h1>
+      <div class="flex items-center gap-2"
+           data-controller="ruby-cms--visual-editor-header"
            data-ruby-cms--visual-editor-header-current-page-value="<%= @current_page.to_s %>">
         <% if @available_pages && @available_pages.size > 1 %>
-          <%= select_tag('page-selector', 
+          <%= select_tag('page-selector',
             options_for_select(@available_pages.map { |k, v| [v[:name], k] }, @current_page),
-            class: "ruby_cms-visual-editor-header__select",
-            style: "margin-right: 0.5rem;",
-            data: { 
+            class: "h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200",
+            data: {
               ruby_cms__visual_editor_header_target: "pageSelector",
               action: "change->ruby-cms--visual-editor-header#changePage"
             }
           ) %>
         <% end %>
-        
-        <!-- Edit Mode Toggle Icon -->
-        <button 
+
+        <button
           type="button"
-          class="ruby_cms-page-header__icon-action ruby_cms-page-header__icon-action--blue"
+          class="inline-flex items-center justify-center h-9 w-9 rounded-md border border-gray-200 bg-white text-blue-600 shadow-sm hover:bg-blue-50 transition-colors"
           title="Edit Mode"
           data-ruby-cms__visual_editor_header_target="editModeToggle"
           data-action="click->ruby-cms--visual-editor-header#toggleEditMode">
-          <svg class="ruby_cms-page-header__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
           </svg>
         </button>
-        
-        <!-- Refresh Icon -->
-        <button 
+
+        <button
           type="button"
-          class="ruby_cms-page-header__icon-action ruby_cms-page-header__icon-action--green"
+          class="inline-flex items-center justify-center h-9 w-9 rounded-md border border-gray-200 bg-white text-emerald-600 shadow-sm hover:bg-emerald-50 transition-colors"
           title="Refresh"
           data-action="click->ruby-cms--visual-editor-header#refresh">
-          <svg class="ruby_cms-page-header__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
           </svg>
         </button>
       </div>
     </div>
-  </div>
 
-  <!-- Content area (no card wrapper) -->
-  <div class="ruby_cms-admin-page" style="padding: 0; border: none; background: transparent;">
-    <div class="ruby_cms-admin-page__content" style="padding: 0;">
-<div class="ruby_cms-visual-editor" data-controller="ruby-cms--visual-editor" data-ruby-cms--visual-editor-current-page-value="<%= @current_page.to_s %>">
-  <div class="ruby_cms-visual-editor__container">
-    <!-- Preview Area -->
-    <div class="ruby_cms-visual-editor-preview">
-      <iframe 
-        id="preview-frame"
-        class="ruby_cms-visual-editor-preview__iframe"
-        data-ruby-cms--visual-editor-target="previewFrame"
-        src="<%= ruby_cms_admin_visual_editor_page_preview_path(page: @current_page, edit_mode: @edit_mode) %>">
-      </iframe>
-    </div>
-  </div>
+    <!-- Visual Editor -->
+    <div class="rounded-lg border border-gray-200/80 bg-white shadow-sm overflow-hidden flex flex-col flex-1 min-h-0"
+         data-controller="ruby-cms--visual-editor"
+         data-ruby-cms--visual-editor-current-page-value="<%= @current_page.to_s %>">
 
-  <!-- Edit Modal -->
-  <div class="ruby_cms-visual-editor-modal" data-ruby-cms--visual-editor-target="modal">
-    <div class="ruby_cms-visual-editor-modal__content">
-      <div class="ruby_cms-visual-editor-modal__header">
-        <div class="ruby_cms-visual-editor-modal__header-content">
-          <h2 class="ruby_cms-visual-editor-modal__title">Edit Content Block</h2>
-          <p class="ruby_cms-visual-editor-modal__subtitle">
-            Block: <span class="ruby_cms-visual-editor-modal__key-badge" data-ruby-cms--visual-editor-target="blockKey"></span>
-          </p>
-        </div>
-        <button 
-          type="button"
-          class="ruby_cms-visual-editor-modal__close-button"
-          data-action="click->ruby-cms--visual-editor#closeModal">
-          <svg class="ruby_cms-visual-editor-modal__close-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
+      <!-- Preview iframe -->
+      <div class="flex-1 min-h-0 overflow-hidden">
+        <iframe
+          id="preview-frame"
+          class="w-full h-full border-0"
+          data-ruby-cms--visual-editor-target="previewFrame"
+          src="<%= ruby_cms_admin_visual_editor_page_preview_path(page: @current_page, edit_mode: @edit_mode) %>">
+        </iframe>
       </div>
 
-      <form class="ruby_cms-visual-editor-modal__form" data-action="submit->ruby-cms--visual-editor#saveContent keydown->ruby-cms--visual-editor#handleKeydown">
-        <div class="ruby_cms-visual-editor-modal__body" data-ruby-cms--visual-editor-target="modalBody">
-          <div class="ruby_cms-visual-editor-modal__form-group">
-            <!-- Content Type Selector -->
+      <!-- Edit Modal (overlay) -->
+      <div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+           data-ruby-cms--visual-editor-target="modal">
+        <div class="absolute inset-0 bg-black/50" data-action="click->ruby-cms--visual-editor#closeModal"></div>
+        <div class="relative w-full max-w-xl bg-white rounded-lg shadow-xl flex flex-col max-h-[90vh]">
+          <!-- Modal header -->
+          <div class="flex items-start justify-between gap-4 px-6 py-4 border-b border-gray-200">
             <div>
-              <label class="ruby_cms-visual-editor-modal__label" for="content-type">
-                Content Type
-              </label>
-              <select 
-                id="content-type"
-                class="ruby_cms-visual-editor-modal__select"
-                data-ruby-cms--visual-editor-target="contentType"
-                data-action="change->ruby-cms--visual-editor#changeContentType">
-                <option value="text">Text</option>
-                <option value="rich_text">Rich Text</option>
-                <option value="image">Image</option>
-                <option value="link">Link</option>
-                <option value="list">List</option>
-              </select>
+              <h2 class="text-base font-semibold text-gray-900">Edit Content Block</h2>
+              <p class="text-sm text-gray-500 mt-0.5">
+                Block: <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-200" data-ruby-cms--visual-editor-target="blockKey"></span>
+              </p>
             </div>
-
-            <!-- Text Editor (for text, image, link, list) -->
-            <div data-ruby-cms--visual-editor-target="textContainer">
-              <label class="ruby_cms-visual-editor-modal__label" for="content">
-                Content
-              </label>
-              <textarea 
-                id="content"
-                rows="10"
-                class="ruby_cms-visual-editor-modal__textarea"
-                data-ruby-cms--visual-editor-target="contentInput"
-                data-action="input->ruby-cms--visual-editor#updateCharCount"></textarea>
-            </div>
-
-            <!-- Rich Text Editor (Action Text) -->
-            <% if ::ContentBlock.respond_to?(:action_text_available?) && ::ContentBlock.action_text_available? %>
-              <div class="ruby_cms-visual-editor-modal__rich-text-container" data-ruby-cms--visual-editor-target="richTextContainer">
-                <label class="ruby_cms-visual-editor-modal__label" for="rich-content-input">
-                  Rich Content
-                </label>
-                <input id="rich-content-input" type="hidden" name="rich_content" data-ruby-cms--visual-editor-target="richContentInput">
-                <trix-editor 
-                  input="rich-content-input"
-                  class="ruby_cms-visual-editor-modal__rich-text-editor"
-                  data-action="trix-change->ruby-cms--visual-editor#updateCharCount"></trix-editor>
-              </div>
-            <% else %>
-              <div class="ruby_cms-visual-editor-modal__rich-text-container" data-ruby-cms--visual-editor-target="richTextContainer" style="display: none;">
-                <p class="text-gray-500 text-sm">Rich text requires Action Text. Run: <code>bin/rails action_text:install</code></p>
-              </div>
-            <% end %>
-
-            <!-- Info Bar -->
-            <div class="ruby_cms-visual-editor-modal__info-bar">
-              <div>
-                <span class="ruby_cms-visual-editor-modal__info-bar-text" data-ruby-cms--visual-editor-target="charCount">0 characters</span>
-              </div>
-              <div>
-                Last updated: <span data-ruby-cms--visual-editor-target="lastUpdated">Never</span>
-              </div>
-            </div>
+            <button
+              type="button"
+              class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+              data-action="click->ruby-cms--visual-editor#closeModal">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
           </div>
-        </div>
 
-        <div class="ruby_cms-visual-editor-modal__footer">
-          <button 
-            type="button"
-            class="ruby_cms-visual-editor-modal__cancel-button"
-            data-action="click->ruby-cms--visual-editor#closeModal">
-            Cancel
-          </button>
-          <button 
-            type="submit"
-            class="ruby_cms-visual-editor-modal__save-button"
-            data-ruby-cms--visual-editor-target="saveButton">
-            Save Changes
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+          <!-- Modal body -->
+          <form class="flex flex-col flex-1 min-h-0 overflow-hidden"
+                data-action="submit->ruby-cms--visual-editor#saveContent keydown->ruby-cms--visual-editor#handleKeydown">
+            <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4" data-ruby-cms--visual-editor-target="modalBody">
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1" for="content-type">Content Type</label>
+                  <select
+                    id="content-type"
+                    class="w-full h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200"
+                    data-ruby-cms--visual-editor-target="contentType"
+                    data-action="change->ruby-cms--visual-editor#changeContentType">
+                    <option value="text">Text</option>
+                    <option value="rich_text">Rich Text</option>
+                    <option value="image">Image</option>
+                    <option value="link">Link</option>
+                    <option value="list">List</option>
+                  </select>
+                </div>
 
-  <!-- Success Toast -->
-  <div class="ruby_cms-visual-editor-toast" data-ruby-cms--visual-editor-target="toast">
-    <div class="ruby_cms-visual-editor-toast__content">
-      <div class="ruby_cms-visual-editor-toast__inner">
-        <svg class="ruby_cms-visual-editor-toast__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-        </svg>
-        <span class="ruby_cms-visual-editor-toast__message" data-ruby-cms--visual-editor-target="toastMessage">Content updated successfully</span>
+                <div data-ruby-cms--visual-editor-target="textContainer">
+                  <label class="block text-sm font-medium text-gray-700 mb-1" for="content">Content</label>
+                  <textarea
+                    id="content"
+                    rows="10"
+                    class="w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200 resize-y"
+                    data-ruby-cms--visual-editor-target="contentInput"
+                    data-action="input->ruby-cms--visual-editor#updateCharCount"></textarea>
+                </div>
+
+                <% if ::ContentBlock.respond_to?(:action_text_available?) && ::ContentBlock.action_text_available? %>
+                  <div data-ruby-cms--visual-editor-target="richTextContainer">
+                    <label class="block text-sm font-medium text-gray-700 mb-1" for="rich-content-input">Rich Content</label>
+                    <input id="rich-content-input" type="hidden" name="rich_content" data-ruby-cms--visual-editor-target="richContentInput">
+                    <trix-editor
+                      input="rich-content-input"
+                      class="w-full rounded-md border border-gray-200 bg-white text-sm shadow-sm focus:outline-none"
+                      data-action="trix-change->ruby-cms--visual-editor#updateCharCount"></trix-editor>
+                  </div>
+                <% else %>
+                  <div data-ruby-cms--visual-editor-target="richTextContainer" style="display: none;">
+                    <p class="text-sm text-gray-500">Rich text requires Action Text. Run: <code>bin/rails action_text:install</code></p>
+                  </div>
+                <% end %>
+
+                <div class="flex items-center justify-between text-xs text-gray-400 pt-1">
+                  <span data-ruby-cms--visual-editor-target="charCount">0 characters</span>
+                  <span>Last updated: <span data-ruby-cms--visual-editor-target="lastUpdated">Never</span></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-200 bg-gray-50">
+              <button
+                type="button"
+                class="inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-4 text-sm font-medium text-gray-900 shadow-sm hover:bg-gray-50 transition-colors"
+                data-action="click->ruby-cms--visual-editor#closeModal">
+                Cancel
+              </button>
+              <button
+                type="submit"
+                class="inline-flex h-9 items-center justify-center rounded-md bg-teal-600 px-4 text-sm font-medium text-white shadow-sm hover:bg-teal-700 transition-colors"
+                data-ruby-cms--visual-editor-target="saveButton">
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Success Toast -->
+      <div class="hidden fixed bottom-6 right-6 z-50" data-ruby-cms--visual-editor-target="toast">
+        <div class="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800 shadow-lg">
+          <svg class="h-5 w-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <span data-ruby-cms--visual-editor-target="toastMessage">Content updated successfully</span>
+        </div>
       </div>
     </div>
-  </div>
-</div>
   </div>
 </div>

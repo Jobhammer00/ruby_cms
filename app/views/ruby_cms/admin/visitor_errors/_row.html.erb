@@ -1,30 +1,35 @@
 <% visitor_error = local_assigns.fetch(:visitor_error) %>
-<%= tag.td do %>
-  <div class="ruby_cms-visitor-error-time">
-    <span class="ruby_cms-visitor-error-time-date"><%= visitor_error.created_at.strftime("%m/%d") %></span>
-    <span class="ruby_cms-visitor-error-time-clock"><%= visitor_error.created_at.strftime("%H:%M") %></span>
+<%= tag.td class: "px-6 py-3" do %>
+  <div class="text-sm text-gray-900">
+    <div class="font-medium tabular-nums"><%= visitor_error.created_at.strftime("%m/%d") %></div>
+    <div class="text-xs text-gray-500 tabular-nums"><%= visitor_error.created_at.strftime("%H:%M") %></div>
   </div>
 <% end %>
-<%= tag.td do %>
-  <div class="ruby_cms-visitor-error-page">
-    <span class="ruby_cms-visitor-error-path"><%= visitor_error.request_path %></span>
+
+<%= tag.td class: "px-6 py-3" do %>
+  <div class="min-w-0">
+    <div class="text-sm font-medium text-gray-900 truncate"><%= visitor_error.request_path %></div>
     <% if visitor_error.request_method != "GET" %>
-      <span class="ruby_cms-visitor-error-method"><%= visitor_error.request_method %></span>
+      <div class="mt-1">
+        <span class="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 ring-1 ring-inset ring-gray-200"><%= visitor_error.request_method %></span>
+      </div>
     <% end %>
   </div>
 <% end %>
-<%= tag.td do %>
-  <div class="ruby_cms-visitor-error-details">
-    <div class="ruby_cms-visitor-error-class"><%= visitor_error.error_class %></div>
-    <div class="ruby_cms-visitor-error-message" title="<%= visitor_error.error_message %>"><%= visitor_error.error_message.truncate(50) %></div>
+
+<%= tag.td class: "px-6 py-3" do %>
+  <div class="min-w-0">
+    <div class="text-sm font-medium text-gray-900 truncate"><%= visitor_error.error_class %></div>
+    <div class="text-sm text-gray-500 truncate" title="<%= visitor_error.error_message %>"><%= visitor_error.error_message.truncate(70) %></div>
   </div>
 <% end %>
-<%= tag.td visitor_error.browser_info, class: "ruby_cms-visitor-error-browser" %>
-<%= tag.td visitor_error.ip_address, class: "ruby_cms-visitor-error-ip" %>
-<%= tag.td do %>
+
+<%= tag.td visitor_error.browser_info, class: "px-6 py-3 text-sm text-gray-700" %>
+<%= tag.td visitor_error.ip_address, class: "px-6 py-3 text-sm text-gray-700 tabular-nums" %>
+<%= tag.td class: "px-6 py-3" do %>
   <% if visitor_error.resolved? %>
-    <span class="ruby_cms-badge ruby_cms-badge-success"><%= t("ruby_cms.admin.visitor_errors.resolved") %></span>
+    <span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200"><%= t("ruby_cms.admin.visitor_errors.resolved") %></span>
   <% else %>
-    <span class="ruby_cms-badge ruby_cms-badge-error"><%= t("ruby_cms.admin.visitor_errors.open") %></span>
+    <span class="inline-flex items-center rounded-md bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700 ring-1 ring-inset ring-rose-200"><%= t("ruby_cms.admin.visitor_errors.open") %></span>
   <% end %>
 <% end %>

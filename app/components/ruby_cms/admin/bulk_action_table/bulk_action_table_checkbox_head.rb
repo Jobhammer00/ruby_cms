@@ -14,19 +14,17 @@ module RubyCms
         end
 
         def view_template
-          th(class: "bulk-action-table__checkbox-head") do
-            div(class: "bulk-action-table__checkbox-head-wrapper") do
-              input(
-                type: "checkbox",
-                role: "checkbox",
-                class: "bulk-action-table__checkbox-head-input",
-                data: {
-                  "#{@controller_name}-target": "selectAllCheckbox",
-                  action: "change->#{@controller_name}#toggleSelectAll"
-                },
-                aria_label: "Select all"
-              )
-            end
+          th(class: "w-12 px-6 py-3") do
+            input(
+              type: "checkbox",
+              role: "checkbox",
+              class: "h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-200",
+              data: {
+                "#{@controller_name}-target": "selectAllCheckbox",
+                action: "change->#{@controller_name}#toggleSelectAll"
+              },
+              aria_label: "Select all"
+            )
           end
         end
       end

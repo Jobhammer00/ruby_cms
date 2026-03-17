@@ -31,10 +31,10 @@ module RubyCms
         end
 
         def view_template
-          div(class: "bulk-action-table__header-bar") do
-            div(class: "ruby_cms-page-header__content") do
+          div(class: "px-6 py-4 border-b border-gray-200/80 bg-white") do
+            div(class: "flex flex-wrap items-center justify-between gap-4") do
               render_title_group if @title.present?
-              div(class: "ruby_cms-page-header__action-icons") do
+              div(class: "flex items-center gap-2 flex-wrap") do
                 render_header_filter if @header_filter.present?
                 render_action_icons
                 render_search_form
@@ -46,8 +46,8 @@ module RubyCms
         private
 
         def render_title_group
-          div(class: "ruby_cms-page-header__title-group") do
-            h1(class: "ruby_cms-page-title") { @title }
+          div(class: "min-w-0") do
+            h2(class: "text-sm font-semibold text-gray-900") { @title }
           end
         end
 
@@ -66,13 +66,26 @@ module RubyCms
           icon_path = config[:icon] || "M12 4.5v15m7.5-7.5h-15"
           data_attrs = config[:data] || {}
 
+          color_classes = {
+            "blue" => "text-blue-600 hover:bg-blue-50",
+            "green" => "text-emerald-600 hover:bg-emerald-50",
+            "red" => "text-rose-600 hover:bg-rose-50",
+            "purple" => "text-violet-600 hover:bg-violet-50",
+            "gray" => "text-gray-700 hover:bg-gray-50",
+            "teal" => "text-teal-600 hover:bg-teal-50"
+          }
+          color_class = color_classes[color.to_s] || color_classes["blue"]
+
           a(
             href: url,
-            class: "ruby_cms-page-header__icon-action ruby_cms-page-header__icon-action--#{color}",
+            class: build_classes(
+              "inline-flex items-center justify-center h-9 w-9 rounded-md border border-gray-200 bg-white shadow-sm transition-colors",
+              color_class
+            ),
             title: title,
             data: data_attrs
           ) do
-            svg(class: "ruby_cms-page-header__icon", fill: "none", stroke: "currentColor",
+            svg(class: "h-4 w-4", fill: "none", stroke: "currentColor",
                 viewBox: "0 0 24 24") do |s|
               s.path(stroke_linecap: "round", stroke_linejoin: "round", stroke_width: "2",
                      d: icon_path)
@@ -84,12 +97,12 @@ module RubyCms
           form_options = {
             url: @search_url,
             method: :get,
-            class: "ruby_cms-page-header__search-form"
+            class: "w-full sm:w-auto"
           }
           form_options[:data] = { turbo_frame: @turbo_frame } if @turbo_frame.present?
 
           form_with(**form_options) do
-            div(class: "ruby_cms-page-header__search-wrapper") do
+            div(class: "relative flex items-center") do
               render_search_icon
               render_search_input
             end
@@ -97,7 +110,8 @@ module RubyCms
         end
 
         def render_search_icon
-          svg(class: "ruby_cms-page-header__search-icon", fill: "none", stroke: "currentColor",
+          span(class: "absolute left-3 text-gray-400 pointer-events-none") do
+            svg(class: "h-4 w-4", fill: "none", stroke: "currentColor",
               viewBox: "0 0 24 24") do |s|
             s.path(
               stroke_linecap: "round",
@@ -106,6 +120,7 @@ module RubyCms
               d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
             )
           end
+          end
         end
 
         def render_search_input
@@ -113,7 +128,7 @@ module RubyCms
             type: "search",
             name: @search_param,
             placeholder: "Search",
-            class: "ruby_cms-page-header__search-input",
+            class: "h-9 w-full sm:w-72 rounded-md border border-gray-200 bg-white pl-9 pr-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200",
             value: search_value,
             data: { action: "input->turbo-frame#submit" }
           )

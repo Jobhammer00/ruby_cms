@@ -1,102 +1,92 @@
-<div class="ruby_cms-page-header ruby_cms-content-blocks-edit-header">
-  <div class="ruby_cms-page-header__content">
-    <div class="ruby_cms-page-header__title-group">
-      <h1 class="ruby_cms-page-title">Content block</h1>
-    </div>
-
-    <div class="ruby_cms-page-header__action-icons">
-      <%= link_to "Edit",
-                  edit_ruby_cms_admin_content_block_path(@content_block),
-                  class: "ruby_cms-pelican-button ruby_cms-pelican-button--primary" %>
-
-      <%= link_to "Back",
-                  ruby_cms_admin_content_blocks_path,
-                  class: "ruby_cms-pelican-button ruby_cms-pelican-button--ghost" %>
-    </div>
+<div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+  <h1 class="text-lg font-semibold tracking-tight text-gray-900">Content block</h1>
+  <div class="flex items-center gap-2">
+    <%= link_to "Edit",
+                edit_ruby_cms_admin_content_block_path(@content_block),
+                class: "inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 text-sm font-medium text-white shadow-sm hover:bg-gray-800 transition-colors no-underline" %>
+    <%= link_to "Back",
+                ruby_cms_admin_content_blocks_path,
+                class: "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors no-underline" %>
   </div>
 </div>
 
-<div class="ruby_cms-pelican-card ruby_cms-content-blocks-show">
+<div class="rounded-lg border border-gray-200/80 bg-white shadow-sm overflow-hidden">
 
-  <div class="ruby_cms-content-blocks-show__meta">
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 p-6 border-b border-gray-100">
     <div>
-      <div class="ruby_cms-content-blocks-show__label">ID</div>
-      <div class="ruby_cms-content-blocks-show__value"><%= @content_block.id %></div>
+      <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">ID</div>
+      <div class="text-sm text-gray-900"><%= @content_block.id %></div>
     </div>
 
     <div>
-      <div class="ruby_cms-content-blocks-show__label">Key</div>
-      <div class="ruby_cms-content-blocks-show__value ruby_cms-content-blocks-show__mono"><%= @content_block.key %></div>
+      <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Key</div>
+      <div class="text-sm font-mono text-gray-900"><%= @content_block.key %></div>
     </div>
 
     <div>
-      <div class="ruby_cms-content-blocks-show__label">Locale</div>
-      <div class="ruby_cms-content-blocks-show__value"><%= ruby_cms_locale_display_name(@content_block.locale) %></div>
+      <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Locale</div>
+      <div class="text-sm text-gray-900"><%= ruby_cms_locale_display_name(@content_block.locale) %></div>
     </div>
 
     <div>
-      <div class="ruby_cms-content-blocks-show__label">Type</div>
-      <div class="ruby_cms-content-blocks-show__value"><%= @content_block.content_type %></div>
+      <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Type</div>
+      <div class="text-sm text-gray-900"><%= @content_block.content_type %></div>
     </div>
 
     <div>
-      <div class="ruby_cms-content-blocks-show__label">Published</div>
-      <div class="ruby_cms-content-blocks-show__value">
+      <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Published</div>
+      <div class="text-sm text-gray-900">
         <% if @content_block.published? %>
-          <span class="ruby_cms-status-pill ruby_cms-status-pill--success">Published</span>
+          <span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">Published</span>
         <% else %>
-          <span class="ruby_cms-status-pill ruby_cms-status-pill--muted">Draft</span>
+          <span class="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-200">Draft</span>
         <% end %>
       </div>
     </div>
 
     <div>
-      <div class="ruby_cms-content-blocks-show__label">Created At</div>
-      <div class="ruby_cms-content-blocks-show__value"><%= @content_block.created_at.strftime("%B %d, %Y at %I:%M %p") %></div>
+      <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Created At</div>
+      <div class="text-sm text-gray-900"><%= @content_block.created_at.strftime("%B %d, %Y at %I:%M %p") %></div>
     </div>
 
     <div>
-      <div class="ruby_cms-content-blocks-show__label">Last Updated</div>
-      <div class="ruby_cms-content-blocks-show__value"><%= @content_block.updated_at.strftime("%B %d, %Y at %I:%M %p") %></div>
+      <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Last Updated</div>
+      <div class="text-sm text-gray-900"><%= @content_block.updated_at.strftime("%B %d, %Y at %I:%M %p") %></div>
     </div>
 
     <% if @content_block.updated_by.present? %>
       <div>
-        <div class="ruby_cms-content-blocks-show__label">Updated By</div>
-        <div class="ruby_cms-content-blocks-show__value"><%= ruby_cms_user_display(@content_block.updated_by) %></div>
+        <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Updated By</div>
+        <div class="text-sm text-gray-900"><%= ruby_cms_user_display(@content_block.updated_by) %></div>
       </div>
     <% end %>
   </div>
 
   <% if @blocks_by_locale.present? %>
-    <div class="ruby_cms-content-blocks-show__locales">
+    <div class="grid gap-4 p-6" style="grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));">
       <% @blocks_by_locale.each do |locale_s, block| %>
-        <div class="ruby_cms-content-blocks-show__locale-card">
-          <div class="ruby_cms-content-blocks-show__locale-header">
-            <span class="ruby_cms-content-blocks-show__locale-pill">
+        <div class="rounded-md border border-gray-200 bg-gray-50 overflow-hidden">
+          <div class="px-3 py-2 border-b border-gray-200 bg-gray-100">
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-white text-gray-600 ring-1 ring-gray-200">
               <%= ruby_cms_locale_display_name(locale_s) %>
             </span>
           </div>
 
-          <div class="ruby_cms-content-blocks-show__fields">
+          <div class="p-4 grid grid-cols-2 gap-4">
             <div>
-              <div class="ruby_cms-content-blocks-show__label">Title</div>
-              <div class="ruby_cms-content-blocks-show__value"><%= block.title.presence || "—" %></div>
+              <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Title</div>
+              <div class="text-sm text-gray-900"><%= block.title.presence || "—" %></div>
             </div>
 
-            <div class="ruby_cms-content-blocks-show__field-full">
-              <div class="ruby_cms-content-blocks-show__label">Content</div>
-              <div class="ruby_cms-content-blocks-show__value ruby_cms-content-blocks-show__content">
-                <%= block.content_body.presence || "—" %>
-              </div>
+            <div class="col-span-2">
+              <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Content</div>
+              <div class="text-sm text-gray-900 whitespace-pre-wrap"><%= block.content_body.presence || "—" %></div>
             </div>
 
             <% if block.respond_to?(:rich_content) && block.rich_content.present? %>
-              <div class="ruby_cms-content-blocks-show__field-full">
-                <div class="ruby_cms-content-blocks-show__label">Rich content</div>
-                <div class="ruby_cms-content-blocks-show__value ruby_cms-content-blocks-show__rich-content">
-                  <%= block.rich_content %>
-                </div>
+              <div class="col-span-2">
+                <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Rich content</div>
+                <div class="text-sm text-gray-900 whitespace-pre-wrap"><%= block.rich_content %></div>
               </div>
             <% end %>
           </div>
@@ -104,18 +94,15 @@
       <% end %>
     </div>
   <% else %>
-    <%# fallback single-locale %>
-    <div class="ruby_cms-content-blocks-show__single">
+    <div class="grid grid-cols-2 gap-6 p-6">
       <div>
-        <div class="ruby_cms-content-blocks-show__label">Title</div>
-        <div class="ruby_cms-content-blocks-show__value"><%= @content_block.title %></div>
+        <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Title</div>
+        <div class="text-sm text-gray-900"><%= @content_block.title %></div>
       </div>
 
       <div>
-        <div class="ruby_cms-content-blocks-show__label">Content</div>
-        <div class="ruby_cms-content-blocks-show__value ruby_cms-content-blocks-show__content">
-          <%= @content_block.content_body %>
-        </div>
+        <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Content</div>
+        <div class="text-sm text-gray-900 whitespace-pre-wrap"><%= @content_block.content_body %></div>
       </div>
     </div>
   <% end %>

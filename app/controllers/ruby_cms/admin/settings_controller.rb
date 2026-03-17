@@ -9,9 +9,9 @@ module RubyCms
         RubyCms::Settings.ensure_defaults!
 
         @registry_entries = sorted_registry_entries
-        @categories = @registry_entries.map(&:category).uniq
+        @categories = @registry_entries.map { |e| e.category.to_s }.uniq
         @active_tab = resolve_active_tab(params[:tab], @categories)
-        @entries_for_tab = @registry_entries.select { |entry| entry.category == @active_tab }
+        @entries_for_tab = @registry_entries.select { |entry| entry.category.to_s == @active_tab }
 
         @values = @entries_for_tab.each_with_object({}) do |entry, hash|
           hash[entry.key] = RubyCms::Settings.get(entry.key, default: entry.default)

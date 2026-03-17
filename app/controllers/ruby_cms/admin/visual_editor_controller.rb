@@ -288,6 +288,16 @@ module RubyCms
 
       def load_preview_data(page_key)
         @page_title = page_key.humanize
+
+        data_proc = Rails.application.config.ruby_cms.preview_data
+        return unless data_proc.respond_to?(:call)
+
+        data = data_proc.call(page_key, view_context)
+        return unless data.is_a?(Hash)
+
+        data.each do |k, v|
+          instance_variable_set(:"@#{k}", v)
+        end
       end
     end
   end

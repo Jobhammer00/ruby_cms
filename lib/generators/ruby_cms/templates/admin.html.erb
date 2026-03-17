@@ -2,13 +2,13 @@
 <!DOCTYPE html>
 <html lang="<%= I18n.locale %>">
   <head>
-    <title><%= content_for(:title) || "RubyCMS Admin" %></title>
+    <title><%= content_for(:title) || "Admin Panel" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="rails-env" content="<%= Rails.env %>">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%= favicon_link_tag asset_path("favicon.ico") if respond_to?(:favicon_link_tag, true) %>
+    <%= favicon_link_tag asset_path("favicon.ico") rescue nil %>
     <link rel="icon" type="image/png" sizes="32x32" href="<%= asset_path("favicon-32x32.png") %>">
     <link rel="icon" type="image/png" sizes="16x16" href="<%= asset_path("favicon-16x16.png") %>">
     <link rel="apple-touch-icon" href="<%= asset_path("apple-touch-icon.png") %>">
@@ -16,7 +16,7 @@
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
-    <%= stylesheet_link_tag "actiontext", "data-turbo-track": "reload" if asset_path("actiontext.css") rescue nil %>
+    <%= stylesheet_link_tag "actiontext", "data-turbo-track": "reload" rescue nil %>
     <%= javascript_importmap_tags "admin" %>
   </head>
   <body class="min-h-screen bg-gray-50 text-gray-900">
@@ -33,7 +33,7 @@
       <%# Mobile overlay (JS adds class "show") %>
       <div class="hidden fixed inset-0 bg-black/50 z-40 lg:hidden" data-ruby-cms--mobile-menu-target="overlay" data-action="click->ruby-cms--mobile-menu#close"></div>
 
-      <main class="bg-gray-50 flex-1 flex flex-col overflow-hidden min-w-0" role="main">
+      <main class="flex-1 flex flex-col overflow-hidden bg-gray-50 min-w-0" role="main">
         <% if content_for?(:full_width) %>
           <%= yield %>
         <% else %>
@@ -79,3 +79,4 @@
     </div>
   </body>
 </html>
+

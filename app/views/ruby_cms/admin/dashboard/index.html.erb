@@ -1,194 +1,198 @@
-<div class="ruby_cms-admin-main-inner--surface">
-  <div class="ruby_cms-dashboard-header">
-    <div>
-      <h1 class="ruby_cms-page-title">Dashboard</h1>
-      <p class="ruby_cms-dashboard-subtitle">Welcome back! Here's an overview of your CMS.</p>
-    </div>
-  </div>
+<%= AdminPage(
+  title: "Dashboard",
+  subtitle: "Welcome back! Here's an overview of your CMS.",
+  content_card: false
+) do %>
+  <div class="space-y-6">
 
-  <div class="ruby_cms-dashboard-grid">
-    <%# Content Blocks Card %>
-    <div class="ruby_cms-dashboard-card">
-      <div class="ruby_cms-dashboard-card-body">
-        <div class="ruby_cms-dashboard-card-icon ruby_cms-dashboard-card-icon--blue">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-          </svg>
-        </div>
-        <div class="ruby_cms-dashboard-card-content">
-          <div class="ruby_cms-dashboard-card-label">Content Blocks</div>
-          <div class="ruby_cms-dashboard-card-value">
-            <span class="ruby_cms-dashboard-card-number"><%= @content_blocks_count %></span>
-            <span class="ruby_cms-dashboard-card-subtext ruby_cms-dashboard-card-subtext--success"><%= @content_blocks_published_count %> published</span>
+    <%# Stats %>
+    <div class="grid grid-cols-4 gap-4">
+
+      <div class="rounded-lg border border-gray-200/80 bg-white p-5 shadow-sm">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-gray-500">Content blocks</p>
+            <p class="mt-2 text-3xl font-semibold tracking-tight text-gray-900 tabular-nums"><%= @content_blocks_count %></p>
+            <p class="mt-1 text-xs text-gray-500"><%= @content_blocks_published_count %> published</p>
+          </div>
+          <div class="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-teal-50 text-teal-700 ring-1 ring-inset ring-teal-100">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h8"/></svg>
           </div>
         </div>
-      </div>
-      <div class="ruby_cms-dashboard-card-footer">
-        <%= link_to "Manage content blocks →", ruby_cms_admin_content_blocks_path, class: "ruby_cms-dashboard-card-link" %>
-      </div>
-    </div>
-
-    <%# Users Card %>
-    <div class="ruby_cms-dashboard-card">
-      <div class="ruby_cms-dashboard-card-body">
-        <div class="ruby_cms-dashboard-card-icon ruby_cms-dashboard-card-icon--green">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-          </svg>
+        <div class="mt-4 border-t border-gray-100 pt-3">
+          <%= link_to ruby_cms_admin_content_blocks_path, class: "inline-flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors" do %>
+            Manage <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+          <% end %>
         </div>
-        <div class="ruby_cms-dashboard-card-content">
-          <div class="ruby_cms-dashboard-card-label">Users</div>
-          <div class="ruby_cms-dashboard-card-value">
-            <span class="ruby_cms-dashboard-card-number"><%= @users_count %></span>
-            <span class="ruby_cms-dashboard-card-subtext">registered</span>
+      </div>
+
+      <div class="rounded-lg border border-gray-200/80 bg-white p-5 shadow-sm">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-gray-500">Users</p>
+            <p class="mt-2 text-3xl font-semibold tracking-tight text-gray-900 tabular-nums"><%= @users_count %></p>
+            <p class="mt-1 text-xs text-gray-500">registered</p>
+          </div>
+          <div class="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-100">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-4-4h-1M9 20H4v-2a4 4 0 014-4h1m4-4a4 4 0 110-8 4 4 0 010 8z"/></svg>
           </div>
         </div>
-      </div>
-      <div class="ruby_cms-dashboard-card-footer">
-        <%= link_to "Manage users →", ruby_cms_admin_users_path, class: "ruby_cms-dashboard-card-link" %>
-      </div>
-    </div>
-
-    <%# Permissions Card %>
-    <div class="ruby_cms-dashboard-card">
-      <div class="ruby_cms-dashboard-card-body">
-        <div class="ruby_cms-dashboard-card-icon ruby_cms-dashboard-card-icon--purple">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-          </svg>
+        <div class="mt-4 border-t border-gray-100 pt-3">
+          <%= link_to ruby_cms_admin_users_path, class: "inline-flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors" do %>
+            Manage <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+          <% end %>
         </div>
-        <div class="ruby_cms-dashboard-card-content">
-          <div class="ruby_cms-dashboard-card-label">Permissions</div>
-          <div class="ruby_cms-dashboard-card-value">
-            <span class="ruby_cms-dashboard-card-number"><%= @permissions_count %></span>
-            <span class="ruby_cms-dashboard-card-subtext">defined (<%= @user_permissions_count %> grants)</span>
+      </div>
+
+      <div class="rounded-lg border border-gray-200/80 bg-white p-5 shadow-sm">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-gray-500">Permissions</p>
+            <p class="mt-2 text-3xl font-semibold tracking-tight text-gray-900 tabular-nums"><%= @permissions_count %></p>
+            <p class="mt-1 text-xs text-gray-500"><%= @user_permissions_count %> grants</p>
+          </div>
+          <div class="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-100">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
           </div>
         </div>
+        <div class="mt-4 border-t border-gray-100 pt-3">
+          <%= link_to ruby_cms_admin_permissions_path, class: "inline-flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors" do %>
+            Manage <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+          <% end %>
+        </div>
       </div>
-      <div class="ruby_cms-dashboard-card-footer">
-        <%= link_to "Manage permissions →", ruby_cms_admin_permissions_path, class: "ruby_cms-dashboard-card-link" %>
+
+      <div class="rounded-lg border border-gray-200/80 bg-white p-5 shadow-sm">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-gray-500">Visitor errors</p>
+            <p class="mt-2 text-3xl font-semibold tracking-tight text-gray-900 tabular-nums"><%= @visitor_errors_count %></p>
+            <p class="mt-1 text-xs font-medium">
+              <% if @unresolved_errors_count.to_i > 0 %>
+                <span class="text-rose-600"><%= @unresolved_errors_count %> unresolved</span>
+              <% else %>
+                <span class="text-emerald-600">all clear</span>
+              <% end %>
+            </p>
+          </div>
+          <% icon_bg = @unresolved_errors_count.to_i > 0 ? "bg-rose-50 text-rose-700 ring-rose-100" : "bg-emerald-50 text-emerald-700 ring-emerald-100" %>
+          <div class="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-lg ring-1 ring-inset <%= icon_bg %>">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+          </div>
+        </div>
+        <div class="mt-4 border-t border-gray-100 pt-3">
+          <%= link_to ruby_cms_admin_visitor_errors_path, class: "inline-flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors" do %>
+            View all <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+          <% end %>
+        </div>
       </div>
+
     </div>
 
-    <%# Visitor Errors Card %>
-    <div class="ruby_cms-dashboard-card">
-      <div class="ruby_cms-dashboard-card-body">
-        <div class="ruby_cms-dashboard-card-icon ruby_cms-dashboard-card-icon--red">
-          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-          </svg>
+    <div class="grid grid-cols-3 gap-4">
+      <div class="col-span-2 rounded-lg border border-gray-200/80 bg-white shadow-sm">
+        <div class="flex items-center justify-between gap-4 px-6 py-4 border-b border-gray-100">
+          <div>
+            <p class="text-sm font-semibold text-gray-900">Quick actions</p>
+            <p class="text-sm text-gray-500">Jump to common admin tasks.</p>
+          </div>
         </div>
-        <div class="ruby_cms-dashboard-card-content">
-          <div class="ruby_cms-dashboard-card-label">Visitor Errors</div>
-          <div class="ruby_cms-dashboard-card-value">
-            <span class="ruby_cms-dashboard-card-number"><%= @visitor_errors_count %></span>
-            <% if @unresolved_errors_count > 0 %>
-              <span class="ruby_cms-dashboard-card-subtext ruby_cms-dashboard-card-subtext--danger"><%= @unresolved_errors_count %> unresolved</span>
-            <% else %>
-              <span class="ruby_cms-dashboard-card-subtext">all resolved</span>
+
+        <div class="divide-y divide-gray-100">
+          <%= link_to new_ruby_cms_admin_content_block_path, class: "group flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors" do %>
+            <div class="flex items-center gap-3">
+              <div class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-teal-50 text-teal-700 ring-1 ring-inset ring-teal-100">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-900">New content block</p>
+                <p class="text-sm text-gray-500">Create a new block</p>
+              </div>
+            </div>
+            <svg class="h-4 w-4 text-gray-300 group-hover:text-gray-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <% end %>
+
+          <%= link_to ruby_cms_admin_visual_editor_path, class: "group flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors" do %>
+            <div class="flex items-center gap-3">
+              <div class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-100">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 11l6 6M3 21h18"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-900">Visual editor</p>
+                <p class="text-sm text-gray-500">Edit content visually</p>
+              </div>
+            </div>
+            <svg class="h-4 w-4 text-gray-300 group-hover:text-gray-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <% end %>
+
+          <%= link_to ruby_cms_admin_visitor_errors_path, class: "group flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors" do %>
+            <div class="flex items-center gap-3">
+              <div class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-rose-50 text-rose-700 ring-1 ring-inset ring-rose-100">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-900">Visitor errors</p>
+                <p class="text-sm text-gray-500">Review recent issues</p>
+              </div>
+            </div>
+            <svg class="h-4 w-4 text-gray-300 group-hover:text-gray-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <% end %>
+
+          <%= link_to ruby_cms_admin_settings_path, class: "group flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition-colors" do %>
+            <div class="flex items-center gap-3">
+              <div class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gray-100 text-gray-700 ring-1 ring-inset ring-gray-200">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-900">Settings</p>
+                <p class="text-sm text-gray-500">Configure RubyCMS</p>
+              </div>
+            </div>
+            <svg class="h-4 w-4 text-gray-300 group-hover:text-gray-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="rounded-lg border border-gray-200/80 bg-white shadow-sm">
+        <div class="flex items-center justify-between gap-4 px-6 py-4 border-b border-gray-100">
+          <div>
+            <p class="text-sm font-semibold text-gray-900">Recent errors</p>
+            <p class="text-sm text-gray-500">Latest visitor errors.</p>
+          </div>
+          <%= link_to "View all", ruby_cms_admin_visitor_errors_path, class: "text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors" %>
+        </div>
+
+        <% if @recent_errors.any? %>
+          <div class="divide-y divide-gray-100">
+            <% @recent_errors.first(5).each do |error| %>
+              <div class="px-6 py-4">
+                <p class="text-sm font-medium text-gray-900 truncate">
+                  <span class="text-gray-500 font-normal"><%= error.error_class %>:</span>
+                  <%= error.error_message.truncate(70) %>
+                </p>
+                <div class="mt-2 flex items-center justify-between gap-3">
+                  <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset <%= error.resolved? ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-rose-50 text-rose-700 ring-rose-200' %>">
+                      <%= error.resolved? ? 'Resolved' : 'Unresolved' %>
+                    </span>
+                    <span class="text-xs text-gray-500"><%= time_ago_in_words(error.created_at) %> ago</span>
+                  </div>
+                  <%= link_to "Open", ruby_cms_admin_visitor_error_path(error), class: "text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors" %>
+                </div>
+              </div>
             <% end %>
           </div>
-        </div>
-      </div>
-      <div class="ruby_cms-dashboard-card-footer">
-        <%= link_to "View errors →", ruby_cms_admin_visitor_errors_path, class: "ruby_cms-dashboard-card-link" %>
-      </div>
-    </div>
-  </div>
-
-  <%# Quick Actions Section %>
-  <div class="ruby_cms-dashboard-section">
-    <h2 class="ruby_cms-dashboard-section-title">Quick Actions</h2>
-    <div class="ruby_cms-dashboard-quick-actions">
-      <%= link_to new_ruby_cms_admin_content_block_path, class: "ruby_cms-btn ruby_cms-btn-primary" do %>
-        <svg class="ruby_cms-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-        </svg>
-        New Content Block
-      <% end %>
-      <%= link_to ruby_cms_admin_visual_editor_path, class: "ruby_cms-btn ruby_cms-btn-secondary" do %>
-        <svg class="ruby_cms-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-        </svg>
-        Visual Editor
-      <% end %>
-      <%= link_to ruby_cms_admin_visitor_errors_path, class: "ruby_cms-btn ruby_cms-btn-secondary" do %>
-        <svg class="ruby_cms-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-        </svg>
-        View Errors
-      <% end %>
-      <%= link_to ruby_cms_admin_settings_path, class: "ruby_cms-btn ruby_cms-btn-secondary" do %>
-        <svg class="ruby_cms-btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-        </svg>
-        Settings
-      <% end %>
-    </div>
-  </div>
-
-  <%# Recent Activity Section %>
-  <h2 class="ruby_cms-dashboard-section-title">Recent Activity</h2>
-  <div class="ruby_cms-dashboard-activity-grid">
-    <%# Recent Content Blocks %>
-    <div class="ruby_cms-card ruby_cms-card--padded">
-      <div class="ruby_cms-dashboard-activity-header">
-        <h2 class="ruby_cms-card-title">Recent Content</h2>
-        <%= link_to "View all →", ruby_cms_admin_content_blocks_path, class: "ruby_cms-dashboard-activity-link" %>
-      </div>
-      <% if @recent_content_blocks.any? %>
-        <div class="ruby_cms-dashboard-activity-list">
-          <% @recent_content_blocks.each do |block| %>
-            <div class="ruby_cms-dashboard-activity-item">
-              <div class="ruby_cms-dashboard-activity-item-content">
-                <div class="ruby_cms-dashboard-activity-item-title"><%= block.key %></div>
-                <div class="ruby_cms-dashboard-activity-item-meta">
-                  <span class="ruby_cms-dashboard-activity-item-status ruby_cms-dashboard-activity-item-status--<%= block.published? ? 'success' : 'muted' %>">
-                    <%= block.published? ? 'Published' : 'Draft' %>
-                  </span>
-                  <span class="ruby_cms-dashboard-activity-item-time">
-                    Updated <%= time_ago_in_words(block.updated_at) %> ago
-                  </span>
-                </div>
-              </div>
-              <%= link_to "Edit", edit_ruby_cms_admin_content_block_path(block), class: "ruby_cms-dashboard-activity-item-action" %>
+        <% else %>
+          <div class="px-6 py-12 text-center">
+            <div class="mx-auto mb-3 inline-flex h-11 w-11 items-center justify-center rounded-lg bg-emerald-50 ring-1 ring-inset ring-emerald-100">
+              <svg class="h-5 w-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             </div>
-          <% end %>
-        </div>
-      <% else %>
-        <p class="ruby_cms-dashboard-activity-empty">No content blocks yet</p>
-      <% end %>
+            <p class="text-sm font-medium text-gray-900">No errors recorded</p>
+            <p class="mt-1 text-sm text-gray-500">Everything is running smoothly.</p>
+          </div>
+        <% end %>
+      </div>
     </div>
 
-    <%# Recent Errors %>
-    <div class="ruby_cms-card ruby_cms-card--padded">
-      <div class="ruby_cms-dashboard-activity-header">
-        <h2 class="ruby_cms-card-title">Recent Errors</h2>
-        <%= link_to "View all →", ruby_cms_admin_visitor_errors_path, class: "ruby_cms-dashboard-activity-link" %>
-      </div>
-      <% if @recent_errors.any? %>
-        <div class="ruby_cms-dashboard-activity-list">
-          <% @recent_errors.each do |error| %>
-            <div class="ruby_cms-dashboard-activity-item">
-              <div class="ruby_cms-dashboard-activity-item-content">
-                <div class="ruby_cms-dashboard-activity-item-title"><%= error.error_class %>: <%= error.error_message.truncate(60) %></div>
-                <div class="ruby_cms-dashboard-activity-item-meta">
-                  <span class="ruby_cms-dashboard-activity-item-status ruby_cms-dashboard-activity-item-status--<%= error.resolved? ? 'success' : 'danger' %>">
-                    <%= error.resolved? ? 'Resolved' : 'Unresolved' %>
-                  </span>
-                  <span class="ruby_cms-dashboard-activity-item-time">
-                    <%= time_ago_in_words(error.created_at) %> ago
-                  </span>
-                </div>
-              </div>
-              <%= link_to "View", ruby_cms_admin_visitor_error_path(error), class: "ruby_cms-dashboard-activity-item-action" %>
-            </div>
-          <% end %>
-        </div>
-      <% else %>
-        <p class="ruby_cms-dashboard-activity-empty">No errors recorded</p>
-      <% end %>
-    </div>
   </div>
-</div>
+<% end %>

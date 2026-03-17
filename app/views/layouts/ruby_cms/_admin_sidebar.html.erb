@@ -1,21 +1,19 @@
 <%# Admin Sidebar Navigation %>
-<aside class="ruby_cms-admin-sidebar" aria-label="Admin" data-ruby-cms--mobile-menu-target="sidebar">
-  <div class="ruby_cms-admin-sidebar-header">
-    <div class="ruby_cms-admin-sidebar-header-content" data-ruby-cms--mobile-menu-target="sidebarContent">
+<aside class="w-56 flex-shrink-0 bg-[#FAF9F5] flex flex-col overflow-hidden" aria-label="Admin" data-ruby-cms--mobile-menu-target="sidebar">
+  <div class="px-5 py-5 flex-shrink-0 bg-[#FAF9F5]">
+    <div class="flex items-center gap-3" data-ruby-cms--mobile-menu-target="sidebarContent">
       <% if respond_to?(:image_tag, true) %>
-        <div class="ruby_cms-admin-sidebar-logo">
+        <div class="w-7 h-7 flex-shrink-0 rounded-sm bg-gray-900 flex items-center justify-center text-white font-bold text-sm">
           <% if respond_to?(:main_app, true) && main_app.respond_to?(:image_path) %>
-            <%= image_tag main_app.image_path("logo.png"), alt: "Logo", onerror: "this.style.display='none'" rescue nil %>
+            <%= image_tag main_app.image_path("logo.png"), alt: "Logo", onerror: "this.style.display='none'", class: "w-full h-full object-contain" rescue nil %>
           <% end %>
         </div>
       <% end %>
-      <div>
-        <p class="ruby_cms-admin-sidebar-title">RubyCMS</p>
-      </div>
+      <p class="text-base font-semibold text-gray-900 m-0">RubyCMS</p>
     </div>
   </div>
 
-  <nav class="ruby_cms-admin-sidebar-nav flex-1 px-3 py-6 overflow-y-auto" aria-label="Admin" data-ruby-cms--mobile-menu-target="sidebarContent">
+  <nav class="flex-1 px-3 py-6 overflow-y-auto" aria-label="Admin" data-ruby-cms--mobile-menu-target="sidebarContent">
     <%
       nav_main = "main"
       nav_bottom = "Settings"
@@ -32,13 +30,13 @@
           <% next if path.blank? %>
           <% path_str = path.respond_to?(:to_str) ? path.to_str : path.to_s %>
           <% active = (path_str == "/admin" || path_str == "/admin/") ? request.path.match?(%r{\A/admin/?\z}) : request.path.start_with?(path_str) %>
-          <%= link_to path, class: "ruby_cms-admin-sidebar-link #{active ? 'active' : ''}" do %>
+          <%= link_to path, class: "flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md mb-0.5 no-underline transition-colors #{ active ? 'text-blue-600 font-semibold' : 'text-gray-600 hover:bg-blue-500 hover:text-white' }" do %>
             <% if e[:icon].present? %>
-              <svg class="ruby_cms-admin-sidebar-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-5 h-5 flex-shrink-0 text-current" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <%= raw e[:icon] %>
               </svg>
             <% end %>
-            <span class="ruby_cms-admin-sidebar-nav-text"><%= e[:label] %></span>
+            <span class="flex-1"><%= e[:label] %></span>
           <% end %>
         <% rescue => ex %>
           <% Rails.logger.error "RubyCMS nav error for #{e[:key]}: #{ex.message}" if defined?(Rails.logger) %>
@@ -59,13 +57,13 @@
               <% next if path.blank? %>
               <% path_str = path.respond_to?(:to_str) ? path.to_str : path.to_s %>
               <% active = request.path.start_with?(path_str) %>
-              <%= link_to path, class: "ruby_cms-admin-sidebar-link #{active ? 'active' : ''}" do %>
+              <%= link_to path, class: "flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-md mb-0.5 no-underline transition-colors #{ active ? 'text-blue-600 font-semibold' : 'text-gray-600 hover:bg-blue-500 hover:text-white' }" do %>
                 <% if e[:icon].present? %>
-                  <svg class="ruby_cms-admin-sidebar-nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="w-5 h-5 flex-shrink-0 text-current" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <%= raw e[:icon] %>
                   </svg>
                 <% end %>
-                <span class="ruby_cms-admin-sidebar-nav-text"><%= e[:label] %></span>
+                <span class="flex-1"><%= e[:label] %></span>
               <% end %>
             <% rescue => ex %>
               <% Rails.logger.error "RubyCMS nav error for #{e[:key]}: #{ex.message}" if defined?(Rails.logger) %>
@@ -76,34 +74,34 @@
     </div>
   </nav>
 
-  <div class="ruby_cms-admin-sidebar-footer flex-shrink-0" data-ruby-cms--mobile-menu-target="sidebarContent">
-    <div class="ruby_cms-admin-locale-switcher">
+  <div class="px-3 py-3 flex-shrink-0 bg-[#FAF9F5]" data-ruby-cms--mobile-menu-target="sidebarContent">
+    <div class="mb-2">
       <%= form_with url: ruby_cms_admin_locale_path, method: :patch, data: { turbo: true } do |form| %>
         <%= form.select :locale,
             options_for_select(I18n.available_locales.map { |loc| [loc.to_s.upcase, loc.to_s] }, I18n.locale.to_s),
             {},
             {
-              class: "ruby_cms-admin-locale-select",
+              class: "w-full h-10 px-10 border-0 rounded-md text-sm font-medium bg-transparent text-teal-700 cursor-pointer appearance-none focus:outline-none focus:bg-teal-50 hover:bg-teal-50 transition-colors",
               onchange: "this.form.requestSubmit()"
             } %>
       <% end %>
     </div>
 
     <% if respond_to?(:main_app, true) && main_app.respond_to?(:root_path) %>
-      <%= link_to main_app.root_path, target: "_blank", class: "ruby_cms-admin-sidebar-footer-item" do %>
-        <svg class="ruby_cms-admin-sidebar-footer-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <%= link_to main_app.root_path, target: "_blank", class: "flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-gray-600 rounded-md no-underline transition-colors hover:bg-blue-500 hover:text-white" do %>
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
         </svg>
-        <span class="ruby_cms-admin-sidebar-footer-text">View site</span>
+        <span class="flex-1 text-left">View site</span>
       <% end %>
     <% end %>
 
     <% if respond_to?(:main_app, true) && main_app.respond_to?(:session_path) %>
-      <%= button_to main_app.session_path, method: :delete, class: "ruby_cms-admin-sidebar-footer-item", data: { turbo_confirm: "Are you sure you want to logout?" } do %>
-        <svg class="ruby_cms-admin-sidebar-footer-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <%= button_to main_app.session_path, method: :delete, class: "flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-gray-600 rounded-md bg-transparent border-0 cursor-pointer transition-colors hover:bg-blue-500 hover:text-white", data: { turbo_confirm: "Are you sure you want to logout?" } do %>
+        <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
         </svg>
-        <span class="ruby_cms-admin-sidebar-footer-text">Logout</span>
+        <span class="flex-1 text-left">Logout</span>
       <% end %>
     <% end %>
   </div>

@@ -44,7 +44,7 @@ module RubyCms
       return if user.nil?
 
       grant_permissions(user)
-      notify_success(user)
+      notify_success(user, email_attr)
     end
 
     private

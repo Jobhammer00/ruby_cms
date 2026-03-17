@@ -24,7 +24,7 @@ module RubyCms
 
         def dialog_overlay_attributes
           {
-            class: "bulk-action-dialog hidden",
+            class: "fixed inset-0 z-50 hidden",
             data: {
               "#{@controller_name}-target": "dialogOverlay",
               action: "keydown->#{@controller_name}#handleKeydown"
@@ -37,7 +37,7 @@ module RubyCms
 
         def render_backdrop
           div(
-            class: "bulk-action-dialog__backdrop",
+            class: "absolute inset-0 bg-black/50",
             data: {
               action: "click->#{@controller_name}#closeDialog"
             }
@@ -45,7 +45,7 @@ module RubyCms
         end
 
         def render_dialog_container
-          div(class: "bulk-action-dialog__container") do
+          div(class: "relative flex min-h-full items-center justify-center p-4") do
             div(**dialog_content_attributes) do
               render_header_with_close
               render_message
@@ -55,7 +55,7 @@ module RubyCms
         end
 
         def render_header_with_close
-          div(class: "bulk-action-dialog__header-row") do
+          div(class: "flex items-start justify-between gap-4") do
             render_header
             render_close_button
           end
@@ -63,7 +63,7 @@ module RubyCms
 
         def dialog_content_attributes
           {
-            class: "bulk-action-dialog__content",
+            class: "w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-lg",
             data: {
               "#{@controller_name}-target": "dialogContent"
             },
@@ -74,7 +74,7 @@ module RubyCms
         def render_close_button
           button(
             type: "button",
-            class: "bulk-action-dialog__close",
+            class: "inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors",
             data: {
               action: "click->#{@controller_name}#closeDialog"
             },
@@ -92,7 +92,7 @@ module RubyCms
             viewBox: "0 0 15 15",
             fill: "none",
             xmlns: "http://www.w3.org/2000/svg",
-            class: "bulk-action-dialog__close-icon"
+            class: "h-4 w-4"
           ) do |s|
             s.path(
               d: close_icon_path_d,
@@ -118,7 +118,7 @@ module RubyCms
         def render_header
           h3(
             id: "dialog-title",
-            class: "bulk-action-dialog__title",
+            class: "text-base font-semibold text-gray-900",
             data: {
               "#{@controller_name}-target": "dialogTitle"
             }
@@ -127,7 +127,7 @@ module RubyCms
 
         def render_message
           div(
-            class: "bulk-action-dialog__message",
+            class: "mt-3 text-sm text-gray-600 space-y-1",
             data: {
               "#{@controller_name}-target": "dialogMessage"
             }
@@ -138,7 +138,7 @@ module RubyCms
         end
 
         def render_footer
-          div(class: "bulk-action-dialog__footer") do
+          div(class: "mt-6 flex items-center justify-end gap-2") do
             render_cancel_button
             render_confirm_button
           end
@@ -147,7 +147,7 @@ module RubyCms
         def render_cancel_button
           button(
             type: "button",
-            class: "bulk-action-dialog__button",
+            class: "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-4 text-sm font-medium text-gray-900 shadow-sm hover:bg-gray-50 transition-colors",
             data: {
               action: "click->#{@controller_name}#closeDialog"
             }
@@ -157,7 +157,7 @@ module RubyCms
         def render_confirm_button
           button(
             type: "button",
-            class: "bulk-action-dialog__button bulk-action-dialog__button--confirm",
+            class: "inline-flex h-9 items-center justify-center rounded-md bg-rose-600 px-4 text-sm font-medium text-white shadow-sm hover:bg-rose-700 transition-colors",
             data: {
               "#{@controller_name}-target": "dialogConfirmButton",
               action: "click->#{@controller_name}#confirmAction"

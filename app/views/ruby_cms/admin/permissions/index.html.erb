@@ -6,31 +6,32 @@
   end
 %>
 
-<%= render RubyCms::Admin::AdminPage.new do %>
   <% if flash[:alert] %>
-    <%= tag.div class: "ruby_cms-alert ruby_cms-alert--error" do %>
-      <%= tag.p flash[:alert] %>
-    <% end %>
+    <div class="rounded-md border border-rose-200 bg-rose-50 p-4">
+      <p class="text-sm text-rose-700 m-0"><%= flash[:alert] %></p>
+    </div>
   <% end %>
 
-  <%= tag.div id: "new-permission-form", class: "hidden ruby_cms-card ruby_cms-card--padded ruby_cms-card--form" do %>
-    <%= tag.h2 "Create Permission", class: "ruby_cms-card-title" %>
-    <%= form_with model: [:ruby_cms_admin, RubyCms::Permission.new], url: ruby_cms_admin_permissions_path, method: :post, class: "ruby_cms-form" do |f| %>
-      <%= tag.div class: "ruby_cms-field" do %>
-        <%= f.label :key, class: "ruby_cms-label" %>
-        <%= f.text_field :key, class: "ruby_cms-input", placeholder: "manage_something" %>
-        <%= tag.p "URL-friendly key (e.g. manage_something)", class: "ruby_cms-hint" %>
-      <% end %>
-      <%= tag.div class: "ruby_cms-field" do %>
-        <%= f.label :name, class: "ruby_cms-label" %>
-        <%= f.text_field :name, class: "ruby_cms-input", placeholder: "Manage Something" %>
-      <% end %>
-      <%= tag.div class: "ruby_cms-button-group" do %>
-        <%= f.submit "Create Permission", class: "ruby_cms-btn ruby_cms-btn-primary" %>
-        <%= tag.button "Cancel", type: "button", class: "ruby_cms-btn ruby_cms-btn-secondary", data: { controller: "ruby-cms--toggle", action: "click->ruby-cms--toggle#hide", toggle_target_id: "new-permission-form" } %>
-      <% end %>
+  <div id="new-permission-form" class="hidden rounded-lg border border-gray-200/80 bg-white shadow-sm p-6">
+    <h2 class="text-base font-semibold text-gray-900 mb-4">Create Permission</h2>
+    <%= form_with model: [:ruby_cms_admin, RubyCms::Permission.new], url: ruby_cms_admin_permissions_path, method: :post do |f| %>
+      <div class="space-y-4 max-w-sm">
+        <div class="flex flex-col gap-1">
+          <%= f.label :key, class: "text-sm font-medium text-gray-700" %>
+          <%= f.text_field :key, class: "h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200", placeholder: "manage_something" %>
+          <p class="text-xs text-gray-500 m-0">URL-friendly key (e.g. manage_something)</p>
+        </div>
+        <div class="flex flex-col gap-1">
+          <%= f.label :name, class: "text-sm font-medium text-gray-700" %>
+          <%= f.text_field :name, class: "h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200", placeholder: "Manage Something" %>
+        </div>
+        <div class="flex items-center gap-2">
+          <%= f.submit "Create Permission", class: "inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 text-sm font-medium text-white shadow-sm hover:bg-gray-800 transition-colors cursor-pointer" %>
+          <%= tag.button "Cancel", type: "button", class: "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors cursor-pointer", data: { controller: "ruby-cms--toggle", action: "click->ruby-cms--toggle#hide", toggle_target_id: "new-permission-form" } %>
+        </div>
+      </div>
     <% end %>
-  <% end %>
+  </div>
 
   <%= render partial: "ruby_cms/admin/shared/bulk_action_table_index", locals: {
     title: "Permissions",
@@ -59,4 +60,3 @@
     pagination_path: @pagination_path,
     row_partial: "ruby_cms/admin/permissions/row"
   } %>
-<% end %>

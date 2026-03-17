@@ -19,18 +19,17 @@
   filter_base = ruby_cms_admin_visitor_errors_path
   header_filter_html = capture do
 %>
-  <%= tag.div class: "ruby_cms-content-blocks-filter" do %>
-    <%= tag.span class: "ruby_cms-content-blocks-filter-label" do %><%= t("ruby_cms.admin.visitor_errors.status") %>:<% end %>
+  <%= tag.div class: "flex items-center gap-1" do %>
+    <%= tag.span "#{t("ruby_cms.admin.visitor_errors.status")}:", class: "text-xs font-medium text-gray-500 mr-1" %>
     <% [[nil, t("ruby_cms.admin.visitor_errors.all")], ["false", t("ruby_cms.admin.visitor_errors.open")], ["true", t("ruby_cms.admin.visitor_errors.resolved")]].each do |resolved_val, label| %>
       <% is_active = (params[:resolved].blank? && resolved_val.nil?) || params[:resolved] == resolved_val %>
       <% q = { search: params[:search], error_type: params[:error_type] }.merge(resolved_val ? { resolved: resolved_val } : {}).compact %>
       <% url = q.any? ? "#{filter_base}?#{q.to_query}" : filter_base %>
-      <%= link_to label, url, class: "ruby_cms-content-blocks-filter-link #{is_active ? 'ruby_cms-content-blocks-filter-link--active' : ''}", data: { turbo_frame: "admin_table_content" } %>
+      <%= link_to label, url, class: "inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium transition-colors no-underline #{is_active ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'}", data: { turbo_frame: "admin_table_content" } %>
     <% end %>
   <% end %>
 <% end %>
 
-<%= render RubyCms::Admin::AdminPage.new do %>
   <%= render partial: "ruby_cms/admin/shared/bulk_action_table_index", locals: {
     header_filter: header_filter_html,
     title: t("ruby_cms.admin.visitor_errors.title"),
@@ -54,6 +53,5 @@
     pagination_path: @pagination_path,
     row_partial: "ruby_cms/admin/visitor_errors/row",
     row_click_url: ->(err) { ruby_cms_admin_visitor_error_path(err) },
-    row_class: ->(err) { err.resolved? ? "" : "ruby_cms-visitor-error-row--unresolved" }
+    row_class: ->(err) { err.resolved? ? "" : "border-l-4 border-rose-500" }
   } %>
-<% end %>

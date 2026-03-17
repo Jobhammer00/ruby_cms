@@ -49,6 +49,16 @@ module RubyCms
 
     private
 
+    def input_base_classes
+      "w-full h-9 rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-900 " \
+        "shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200"
+    end
+
+    def textarea_base_classes
+      "w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 " \
+        "shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200"
+    end
+
     def render_integer_setting_field(entry:, value:, tab:)
       min, max = integer_bounds_for(entry)
 
@@ -56,7 +66,7 @@ module RubyCms
         "preferences[#{entry.key}]",
         value,
         id: setting_input_id(entry),
-        class: "ruby_cms-input",
+        class: input_base_classes,
         min: min,
         max: max,
         data: autosave_data(entry.key, tab)
@@ -64,18 +74,32 @@ module RubyCms
     end
 
     def render_boolean_setting_field(entry:, value:, tab:)
-      content_tag(:div, class: "ruby_cms-toggle") do
-        hidden_field_tag("preferences[#{entry.key}]", "false") +
-          check_box_tag(
-            "preferences[#{entry.key}]",
-            "true",
-            ActiveModel::Type::Boolean.new.cast(value),
-            id: setting_input_id(entry),
-            class: "ruby_cms-toggle-checkbox",
-            data: autosave_data(entry.key, tab)
-          ) +
-          content_tag(:label, "", for: setting_input_id(entry), class: "ruby_cms-toggle-label")
+      checked = ActiveModel::Type::Boolean.new.cast(value)
+      hidden = hidden_field_tag("preferences[#{entry.key}]", "false")
+      checkbox = check_box_tag(
+        "preferences[#{entry.key}]",
+        "true",
+        checked,
+        id: setting_input_id(entry),
+        class: "peer sr-only",
+        data: autosave_data(entry.key, tab)
+      )
+      label = content_tag(
+        :label,
+        "",
+        for: setting_input_id(entry),
+        class: "relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full " \
+               "bg-gray-200 transition-colors peer-checked:bg-teal-600"
+      ) do
+        content_tag(
+          :span,
+          "",
+          class: "inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition " \
+                 "translate-x-0.5 peer-checked:translate-x-5"
+        )
       end
+
+      content_tag(:div, class: "inline-flex items-center") { hidden + checkbox + label }
     end
 
     def render_json_setting_field(entry:, value:, tab:)
@@ -89,7 +113,7 @@ module RubyCms
         "preferences[#{entry.key}]",
         formatted,
         id: setting_input_id(entry),
-        class: "ruby_cms-input ruby_cms-input--textarea",
+        class: textarea_base_classes,
         rows: 4,
         data: autosave_data(entry.key, tab)
       )
@@ -100,7 +124,7 @@ module RubyCms
         "preferences[#{entry.key}]",
         value,
         id: setting_input_id(entry),
-        class: "ruby_cms-input",
+        class: input_base_classes,
         data: autosave_data(entry.key, tab)
       )
     end

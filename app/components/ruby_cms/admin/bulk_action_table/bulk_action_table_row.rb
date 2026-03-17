@@ -73,9 +73,9 @@ module RubyCms
         end
 
         def build_row_classes
-          classes = ["bulk-action-table__row"]
+          classes = ["hover:bg-gray-50 transition-colors"]
           classes << @row_class if @row_class
-          classes << "bulk-action-table__row--clickable" if @click_url
+          classes << "cursor-pointer" if @click_url
           build_classes(classes)
         end
 

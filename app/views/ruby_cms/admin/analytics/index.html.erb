@@ -1,147 +1,160 @@
-<%= render RubyCms::Admin::AdminPage.new do %>
-  <div class="ruby_cms-analytics">
-    <div class="ruby_cms-analytics__header">
-      <div>
-        <h1 class="ruby_cms-page-title"><%= t("ruby_cms.admin.analytics.title", default: "Analytics") %></h1>
-        <p class="ruby_cms-dashboard-subtitle"><%= t("ruby_cms.admin.analytics.subtitle", default: "Traffic and engagement overview") %></p>
-      </div>
-
-      <div class="ruby_cms-analytics__actions">
-        <div class="ruby_cms-analytics__period-tabs">
-          <% [["Day", "day"], ["Week", "week"], ["Month", "month"], ["Year", "year"]].each do |label, value| %>
-            <% start_date = case value
-                           when "day" then Date.current
-                           when "week" then 6.days.ago.to_date
-                           when "month" then 29.days.ago.to_date
-                           else 364.days.ago.to_date
-                           end %>
-            <% active = params[:period] == value || (params[:period].blank? && value == @period.to_s) %>
-            <%= link_to label,
-                        ruby_cms_admin_analytics_path(start_date:, end_date: Date.current, period: value),
-                        class: "ruby_cms-analytics__period-tab #{active ? 'is-active' : ''}" %>
-          <% end %>
-        </div>
-
-        <%= form_with url: ruby_cms_admin_analytics_path, method: :get, local: true, class: "ruby_cms-analytics__filters" do |f| %>
-          <%= f.hidden_field :period, value: @period %>
-          <%= f.date_field :start_date, value: @start_date, class: "ruby_cms-input" %>
-          <%= f.date_field :end_date, value: @end_date, class: "ruby_cms-input" %>
-          <%= f.submit t("ruby_cms.admin.analytics.apply_filters", default: "Apply"), class: "ruby_cms-btn ruby_cms-btn-primary" %>
+<%= AdminPage(
+  title: t("ruby_cms.admin.analytics.title", default: "Analytics"),
+  subtitle: t("ruby_cms.admin.analytics.subtitle", default: "Traffic and engagement overview"),
+  content_card: false
+) do %>
+  <div class="space-y-6">
+    <div class="flex items-start justify-between gap-4">
+      <div class="inline-flex items-center rounded-lg bg-gray-100 p-1">
+        <% [["Day", "day"], ["Week", "week"], ["Month", "month"], ["Year", "year"]].each do |label, value| %>
+          <% start_date = case value
+                         when "day" then Date.current
+                         when "week" then 6.days.ago.to_date
+                         when "month" then 29.days.ago.to_date
+                         else 364.days.ago.to_date
+                         end %>
+          <% active = params[:period] == value || (params[:period].blank? && value == @period.to_s) %>
+          <%= link_to label,
+                      ruby_cms_admin_analytics_path(start_date:, end_date: Date.current, period: value),
+                      class: "px-3 py-1.5 text-sm font-medium rounded-md transition #{active ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'}" %>
         <% end %>
       </div>
+
+      <%= form_with url: ruby_cms_admin_analytics_path, method: :get, local: true, class: "flex items-end gap-2" do |f| %>
+        <%= f.hidden_field :period, value: @period %>
+        <div class="flex flex-col gap-1">
+          <span class="text-xs font-medium text-gray-500">From</span>
+          <%= f.date_field :start_date, value: @start_date, class: "h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200" %>
+        </div>
+        <div class="flex flex-col gap-1">
+          <span class="text-xs font-medium text-gray-500">To</span>
+          <%= f.date_field :end_date, value: @end_date, class: "h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200" %>
+        </div>
+        <%= f.submit t("ruby_cms.admin.analytics.apply_filters", default: "Apply"),
+                     class: "h-9 inline-flex items-center justify-center rounded-md bg-gray-900 px-4 text-sm font-medium text-white shadow-sm hover:bg-gray-800 transition-colors" %>
+      <% end %>
     </div>
 
-    <div class="ruby_cms-analytics__kpis">
-      <div class="ruby_cms-analytics__kpi">
-        <div class="ruby_cms-analytics__kpi-label"><%= t("ruby_cms.admin.analytics.total_page_views", default: "Total page views") %></div>
-        <div class="ruby_cms-analytics__kpi-value"><%= number_with_delimiter(@total_page_views) %></div>
+    <div class="grid grid-cols-3 gap-4">
+      <div class="rounded-lg border border-gray-200/80 bg-white p-5 shadow-sm">
+        <p class="text-sm font-medium text-gray-500"><%= t("ruby_cms.admin.analytics.total_page_views", default: "Total page views") %></p>
+        <p class="mt-2 text-3xl font-semibold tracking-tight text-gray-900 tabular-nums"><%= number_with_delimiter(@total_page_views) %></p>
       </div>
-      <div class="ruby_cms-analytics__kpi">
-        <div class="ruby_cms-analytics__kpi-label"><%= t("ruby_cms.admin.analytics.unique_visitors", default: "Unique visitors") %></div>
-        <div class="ruby_cms-analytics__kpi-value"><%= number_with_delimiter(@unique_visitors) %></div>
+      <div class="rounded-lg border border-gray-200/80 bg-white p-5 shadow-sm">
+        <p class="text-sm font-medium text-gray-500"><%= t("ruby_cms.admin.analytics.unique_visitors", default: "Unique visitors") %></p>
+        <p class="mt-2 text-3xl font-semibold tracking-tight text-gray-900 tabular-nums"><%= number_with_delimiter(@unique_visitors) %></p>
       </div>
-      <div class="ruby_cms-analytics__kpi">
-        <div class="ruby_cms-analytics__kpi-label"><%= t("ruby_cms.admin.analytics.total_sessions", default: "Total sessions") %></div>
-        <div class="ruby_cms-analytics__kpi-value"><%= number_with_delimiter(@total_sessions) %></div>
+      <div class="rounded-lg border border-gray-200/80 bg-white p-5 shadow-sm">
+        <p class="text-sm font-medium text-gray-500"><%= t("ruby_cms.admin.analytics.total_sessions", default: "Total sessions") %></p>
+        <p class="mt-2 text-3xl font-semibold tracking-tight text-gray-900 tabular-nums"><%= number_with_delimiter(@total_sessions) %></p>
       </div>
     </div>
 
-    <div class="ruby_cms-analytics__charts">
+    <div class="grid grid-cols-2 gap-4">
       <%= render "ruby_cms/admin/analytics/partials/daily_activity_chart" %>
       <%= render "ruby_cms/admin/analytics/partials/hourly_activity_chart" %>
     </div>
 
-    <div class="ruby_cms-analytics__shell">
-      <div class="ruby_cms-analytics__shell-body">
-        <div class="ruby_cms-analytics__grid">
-          <div class="ruby_cms-analytics__panel">
-            <h3 class="ruby_cms-analytics__panel-title">
-              <span class="ruby_cms-analytics__panel-icon ruby_cms-analytics__panel-icon--purple">#</span>
-              <%= t("ruby_cms.admin.analytics.popular_pages", default: "Popular pages") %>
-            </h3>
-            <% if @popular_pages.present? %>
-              <div class="ruby_cms-analytics__list">
-                <% @popular_pages.each_with_index do |(page_name, count), idx| %>
-                  <div class="ruby_cms-analytics__item">
-                    <div>
-                      <div class="ruby_cms-analytics__item-title"><%= "#{idx + 1}. #{page_name}" %></div>
-                      <div class="ruby_cms-analytics__item-meta">Page</div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:.45rem;">
-                      <span class="ruby_cms-analytics__item-count"><%= number_with_delimiter(count) %></span>
-                      <%= link_to "Details",
-                                  page_details_ruby_cms_admin_analytics_path(page_name:, start_date: @start_date, end_date: @end_date, period: @period),
-                                  class: "ruby_cms-dashboard-activity-item-action" %>
-                    </div>
-                  </div>
-                <% end %>
-              </div>
-            <% else %>
-              <p class="ruby_cms-analytics__empty"><%= t("ruby_cms.admin.analytics.no_data", default: "No data yet.") %></p>
-            <% end %>
+    <div class="grid grid-cols-3 gap-4">
+      <div class="col-span-2 rounded-lg border border-gray-200/80 bg-white shadow-sm">
+        <div class="flex items-center justify-between gap-4 px-6 py-4 border-b border-gray-100">
+          <div>
+            <p class="text-sm font-semibold text-gray-900"><%= t("ruby_cms.admin.analytics.popular_pages", default: "Popular pages") %></p>
+            <p class="text-sm text-gray-500">Most viewed pages in selected range.</p>
           </div>
-
-          <div class="ruby_cms-analytics__panel">
-            <h3 class="ruby_cms-analytics__panel-title">
-              <span class="ruby_cms-analytics__panel-icon ruby_cms-analytics__panel-icon--indigo">@</span>
-              <%= t("ruby_cms.admin.analytics.top_visitors", default: "Top visitors") %>
-            </h3>
-            <% if @top_visitors.present? %>
-              <div class="ruby_cms-analytics__list">
-                <% @top_visitors.each_with_index do |(ip, count), idx| %>
-                  <div class="ruby_cms-analytics__item">
-                    <div>
-                      <div class="ruby_cms-analytics__item-title ruby_cms-analytics__mono"><%= "#{idx + 1}. #{ip}" %></div>
-                      <div class="ruby_cms-analytics__item-meta">Visitor</div>
-                    </div>
-                    <div style="display:flex; align-items:center; gap:.45rem;">
-                      <span class="ruby_cms-analytics__item-count"><%= number_with_delimiter(count) %></span>
-                      <%= link_to "Details",
-                                  visitor_details_ruby_cms_admin_analytics_path(ip_address: ip, start_date: @start_date, end_date: @end_date, period: @period),
-                                  class: "ruby_cms-dashboard-activity-item-action" %>
-                    </div>
-                  </div>
-                <% end %>
-              </div>
-            <% else %>
-              <p class="ruby_cms-analytics__empty"><%= t("ruby_cms.admin.analytics.no_data", default: "No data yet.") %></p>
-            <% end %>
-          </div>
-
-          <div class="ruby_cms-analytics__panel">
-            <h3 class="ruby_cms-analytics__panel-title">
-              <span class="ruby_cms-analytics__panel-icon ruby_cms-analytics__panel-icon--emerald">!</span>
-              <%= t("ruby_cms.admin.analytics.suspicious_activity", default: "Suspicious activity") %>
-            </h3>
-            <% if @suspicious_activity.present? %>
-              <div class="ruby_cms-analytics__security">
-                <h3><%= t("ruby_cms.admin.analytics.suspicious_activity", default: "Suspicious activity") %></h3>
-                <ul>
-                  <% @suspicious_activity.each do |item| %>
-                    <li><%= item[:description] %> (<%= item[:count] %>)</li>
-                  <% end %>
-                </ul>
-              </div>
-            <% else %>
-              <p class="ruby_cms-analytics__empty"><%= t("ruby_cms.admin.analytics.none_detected", default: "None detected in selected range.") %></p>
-            <% end %>
-          </div>
-
-          <%= render "ruby_cms/admin/analytics/partials/recent_activity" %>
-          <%= render "ruby_cms/admin/analytics/partials/top_referrers" %>
-          <%= render "ruby_cms/admin/analytics/partials/browser_device" %>
         </div>
 
-        <% Array(@extra_cards).each do |card| %>
-          <div class="ruby_cms-analytics__panel" style="margin-top: 1rem;">
-            <h3 class="ruby_cms-card-title"><%= card[:title].to_s %></h3>
-            <p><%= card[:value].to_s %></p>
-            <% if card[:description].present? %>
-              <p class="ruby_cms-hint"><%= card[:description] %></p>
+        <% if @popular_pages.present? %>
+          <div class="divide-y divide-gray-100">
+            <% @popular_pages.first(8).each_with_index do |(page_name, count), idx| %>
+              <div class="flex items-center justify-between gap-4 px-6 py-4">
+                <div class="min-w-0">
+                  <p class="text-sm font-medium text-gray-900 truncate"><%= "#{idx + 1}. #{page_name}" %></p>
+                  <p class="text-sm text-gray-500">Page</p>
+                </div>
+                <div class="flex items-center gap-3 flex-shrink-0">
+                  <span class="text-sm font-semibold tabular-nums text-gray-900"><%= number_with_delimiter(count) %></span>
+                  <%= link_to "Details",
+                              page_details_ruby_cms_admin_analytics_path(page_name:, start_date: @start_date, end_date: @end_date, period: @period),
+                              class: "text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors" %>
+                </div>
+              </div>
             <% end %>
+          </div>
+        <% else %>
+          <div class="px-6 py-12 text-center">
+            <p class="text-sm font-medium text-gray-900"><%= t("ruby_cms.admin.analytics.no_data", default: "No data yet.") %></p>
+            <p class="mt-1 text-sm text-gray-500">Track some traffic to see page analytics.</p>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="rounded-lg border border-gray-200/80 bg-white shadow-sm">
+        <div class="flex items-center justify-between gap-4 px-6 py-4 border-b border-gray-100">
+          <div>
+            <p class="text-sm font-semibold text-gray-900"><%= t("ruby_cms.admin.analytics.top_visitors", default: "Top visitors") %></p>
+            <p class="text-sm text-gray-500">Most active IPs.</p>
+          </div>
+        </div>
+
+        <% if @top_visitors.present? %>
+          <div class="divide-y divide-gray-100">
+            <% @top_visitors.first(6).each_with_index do |(ip, count), idx| %>
+              <div class="flex items-center justify-between gap-4 px-6 py-4">
+                <p class="text-sm font-medium text-gray-900 tabular-nums truncate"><%= "#{idx + 1}. #{ip}" %></p>
+                <div class="flex items-center gap-3 flex-shrink-0">
+                  <span class="text-sm font-semibold tabular-nums text-gray-900"><%= number_with_delimiter(count) %></span>
+                  <%= link_to "Details",
+                              visitor_details_ruby_cms_admin_analytics_path(ip_address: ip, start_date: @start_date, end_date: @end_date, period: @period),
+                              class: "text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors" %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="px-6 py-12 text-center">
+            <p class="text-sm font-medium text-gray-900"><%= t("ruby_cms.admin.analytics.no_data", default: "No data yet.") %></p>
+            <p class="mt-1 text-sm text-gray-500">No visitors in selected range.</p>
           </div>
         <% end %>
       </div>
     </div>
+
+    <div class="grid grid-cols-3 gap-4">
+      <div class="rounded-lg border border-gray-200/80 bg-white shadow-sm">
+        <div class="px-6 py-4 border-b border-gray-100">
+          <p class="text-sm font-semibold text-gray-900"><%= t("ruby_cms.admin.analytics.suspicious_activity", default: "Suspicious activity") %></p>
+          <p class="text-sm text-gray-500">Potential bot-like traffic signals.</p>
+        </div>
+        <div class="px-6 py-4">
+          <% if @suspicious_activity.present? %>
+            <ul class="space-y-2">
+              <% @suspicious_activity.first(6).each do |item| %>
+                <li class="flex items-center justify-between gap-3">
+                  <span class="text-sm text-gray-700"><%= item[:description] %></span>
+                  <span class="text-sm font-semibold tabular-nums text-gray-900"><%= number_with_delimiter(item[:count]) %></span>
+                </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <p class="text-sm text-gray-500"><%= t("ruby_cms.admin.analytics.none_detected", default: "None detected in selected range.") %></p>
+          <% end %>
+        </div>
+      </div>
+
+      <%= render "ruby_cms/admin/analytics/partials/recent_activity" %>
+      <%= render "ruby_cms/admin/analytics/partials/top_referrers" %>
+      <%= render "ruby_cms/admin/analytics/partials/browser_device" %>
+    </div>
+
+    <% Array(@extra_cards).each do |card| %>
+      <div class="rounded-lg border border-gray-200/80 bg-white p-6 shadow-sm">
+        <p class="text-sm font-semibold text-gray-900"><%= card[:title].to_s %></p>
+        <p class="mt-2 text-2xl font-semibold tracking-tight text-gray-900"><%= card[:value].to_s %></p>
+        <% if card[:description].present? %>
+          <p class="mt-1 text-sm text-gray-500"><%= card[:description] %></p>
+        <% end %>
+      </div>
+    <% end %>
   </div>
 <% end %>
