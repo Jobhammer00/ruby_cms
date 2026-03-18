@@ -5,8 +5,8 @@ require_relative "lib/ruby_cms/version"
 Gem::Specification.new do |spec|
   spec.name = "ruby_cms"
   spec.version = RubyCms::VERSION
-  spec.authors = ["Job Hammer"]
-  spec.email = ["job.hammer@moneybird.com"]
+  spec.authors = ["Codebyjob"]
+  spec.email = ["codebyjob@gmail.com"]
 
   spec.summary = "Complete CMS engine for Rails with visual editor and content management"
   spec.description = <<~DESC
@@ -19,12 +19,12 @@ Gem::Specification.new do |spec|
     - User management
     - Page display (pages created programmatically)
   DESC
-  spec.homepage = "https://github.com/jobhammer/ruby_cms"
+  spec.homepage = "https://github.com/jobhammer00/ruby_cms"
   spec.required_ruby_version = ">= 3.2.0"
 
   spec.metadata["homepage_uri"] = spec.homepage
-  spec.metadata["source_code_uri"] = "https://github.com/jobhammer/ruby_cms"
-  spec.metadata["changelog_uri"] = "https://github.com/jobhammer/ruby_cms/blob/main/CHANGELOG.md"
+  spec.metadata["source_code_uri"] = "https://github.com/jobhammer00/ruby_cms"
+  spec.metadata["changelog_uri"] = "https://github.com/jobhammer00/ruby_cms/blob/main/CHANGELOG.md"
   spec.metadata['rubygems_mfa_required'] = 'true'
 
   # Specify which files should be added to the gem when it is released.
