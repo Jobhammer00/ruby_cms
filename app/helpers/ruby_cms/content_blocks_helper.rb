@@ -112,11 +112,31 @@ module RubyCms
     end
 
     def build_css_class(options)
-      ["ruby_cms-content-block", "content-block", options.delete(:class)].compact.join(" ")
+      user_class = options.delete(:class)
+      return user_class.to_s if user_class.present? && !visual_editor_preview_edit_mode?
+      return user_class.to_s if !visual_editor_preview_edit_mode?
+
+      ["ruby_cms-content-block", "content-block", user_class].compact.join(" ")
     end
 
     def build_data_attributes(key, options)
-      { content_key: key, block_id: key.to_s }.merge(options.delete(:data).to_h)
+      user_data = options.delete(:data).to_h
+      return user_data if !visual_editor_preview_edit_mode?
+
+      { content_key: key, block_id: key.to_s }.merge(user_data)
+    end
+
+    def visual_editor_preview_edit_mode?
+      return false unless respond_to?(:controller) && controller
+      return false unless controller.respond_to?(:controller_path)
+      return false unless controller.controller_path.to_s == "ruby_cms/admin/visual_editor"
+      return false unless controller.respond_to?(:action_name) && controller.action_name.to_s == "page_preview"
+
+      begin
+        defined?(@edit_mode) ? (@edit_mode ? true : false) : true
+      rescue StandardError
+        true
+      end
     end
 
     def content_for_block(block, default, fallback, key, translation_namespace, locale)

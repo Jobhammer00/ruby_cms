@@ -1,4 +1,4 @@
-<%= AdminPage(
+<%= admin_page(
   title: "User permissions",
   subtitle: (@user.try(:email_address) || @user.try(:email) || "User ##{@user.id}"),
   content_card: false

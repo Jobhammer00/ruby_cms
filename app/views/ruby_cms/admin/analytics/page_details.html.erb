@@ -3,7 +3,7 @@
   suspicious_ua = @page_views.any? { |e| e.visit&.user_agent.to_s.include?("bot") || e.visit&.user_agent.to_s.include?("crawler") }
   show_security = high_volume || suspicious_ua
 %>
-<%= AdminPage(
+<%= admin_page(
   title: t("ruby_cms.admin.analytics.page_details_title", default: "Page details"),
   subtitle: "#{@start_date} → #{@end_date}",
   content_card: false
