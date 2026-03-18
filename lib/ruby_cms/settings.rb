@@ -46,9 +46,7 @@ module RubyCms
 
         ensure_defaults!
 
-        if imported_from_initializer? && !force
-          return skipped_result("already imported")
-        end
+        return skipped_result("already imported") if imported_from_initializer? && !force
 
         config = ruby_cms_config
         return skipped_result("ruby_cms config unavailable") if config.nil?
@@ -92,7 +90,7 @@ module RubyCms
       end
 
       def ruby_cms_config
-        return nil unless defined?(Rails) && Rails.application&.config&.respond_to?(:ruby_cms)
+        return nil unless defined?(Rails) && Rails.application.config.respond_to?(:ruby_cms)
 
         Rails.application.config.ruby_cms
       rescue StandardError
@@ -113,7 +111,7 @@ module RubyCms
       def fetch_preference(key)
         return nil unless preference_table_available?
 
-        RubyCms::Preference.find_by(key: key)
+        RubyCms::Preference.find_by(key:)
       rescue StandardError
         nil
       end
@@ -135,7 +133,7 @@ module RubyCms
         when :boolean
           ActiveModel::Type::Boolean.new.cast(value)
         when :json
-          value.is_a?(String) ? JSON.parse(value) : value
+          value.kind_of?(String) ? JSON.parse(value) : value
         else
           value.to_s
         end

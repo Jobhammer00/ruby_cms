@@ -23,7 +23,8 @@ module RubyCms
       turbo_frame ||= self.class.pagination_turbo_frame
 
       page = sanitize_page_param(params[:page])
-      paginated, total_count, total_pages, offset = paginate_collection_internal(collection, page, per_page)
+      paginated, total_count, total_pages, offset = paginate_collection_internal(collection, page,
+                                                                                 per_page)
 
       @pagination = build_pagination_hash(page, per_page, total_count, total_pages, offset)
       @pagination_path = build_pagination_path_lambda
@@ -47,12 +48,14 @@ module RubyCms
 
     private
 
-    def calculate_per_page(per_page = nil)
+    def calculate_per_page(per_page=nil)
       per_page ||= self.class.pagination_per_page
       per_page = per_page.call if per_page.respond_to?(:call)
 
-      min = RubyCms::Settings.get(:pagination_min_per_page, default: self.class.pagination_min_per_page).to_i
-      max = RubyCms::Settings.get(:pagination_max_per_page, default: self.class.pagination_max_per_page).to_i
+      min = RubyCms::Settings.get(:pagination_min_per_page,
+                                  default: self.class.pagination_min_per_page).to_i
+      max = RubyCms::Settings.get(:pagination_max_per_page,
+                                  default: self.class.pagination_max_per_page).to_i
       max = [max, min].max
 
       per_page.to_i.clamp(min, max)

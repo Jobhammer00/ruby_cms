@@ -33,9 +33,7 @@ module RubyCms
         private
 
         def render_pagination_info
-          unless @pagination[:start_item] && @pagination[:end_item] && @pagination[:total_count]
-            return
-          end
+          return unless @pagination[:start_item] && @pagination[:end_item] && @pagination[:total_count]
 
           div(class: "text-sm text-gray-500") { pagination_info_text }
         end
@@ -77,11 +75,14 @@ module RubyCms
         end
 
         def pagination_button_classes
-          "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-900 shadow-sm hover:bg-gray-50 transition-colors"
+          "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 " \
+            "bg-white px-3 text-sm font-medium text-gray-900 shadow-sm hover:bg-gray-50 " \
+            "transition-colors"
         end
 
         def pagination_button_disabled_classes
-          "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-400 opacity-60 cursor-not-allowed"
+          "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 " \
+            "bg-white px-3 text-sm font-medium text-gray-400 opacity-60 cursor-not-allowed"
         end
 
         def render_next_button
@@ -143,7 +144,8 @@ module RubyCms
         end
 
         def current_page_classes
-          "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-gray-900 px-3 text-sm font-medium text-white shadow-sm"
+          "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 " \
+            "bg-gray-900 px-3 text-sm font-medium text-white shadow-sm"
         end
 
         def calculate_pages_to_show(current_page, total_pages)

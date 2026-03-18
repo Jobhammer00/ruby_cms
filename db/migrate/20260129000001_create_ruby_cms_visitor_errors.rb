@@ -12,7 +12,7 @@ class CreateRubyCmsVisitorErrors < ActiveRecord::Migration[7.1]
       t.text :backtrace
       t.text :request_params
       t.string :session_id
-      t.boolean :resolved, default: false
+      t.boolean :resolved, default: false, null: false
 
       t.timestamps
     end

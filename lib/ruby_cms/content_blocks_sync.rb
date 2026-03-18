@@ -250,25 +250,18 @@ module RubyCms
 
     def safe_yaml_load_file(path)
       # Locale YAML should deserialize to Hash/Array/String/etc. Avoid YAML.load_file (object deserialization).
-      if YAML.respond_to?(:safe_load_file)
-        YAML.safe_load_file(
-          path,
-          permitted_classes: [],
-          permitted_symbols: [],
-          aliases: true
-        )
-      else
-        YAML.safe_load(
-          File.read(path),
-          permitted_classes: [],
-          permitted_symbols: [],
-          aliases: true
-        )
-      end
+      opts = {
+        permitted_classes: [],
+        permitted_symbols: [],
+        aliases: true
+      }
+
+      return YAML.safe_load_file(path, **opts) if YAML.respond_to?(:safe_load_file)
+
+      YAML.safe_load_file(path, **opts)
     end
 
-    def assign_blocks_data_to_summary(summary, blocks_data, locale, create_missing:, # rubocop:disable Metrics/ParameterLists
-                                      update_existing:, published:)
+    def assign_blocks_data_to_summary(summary, blocks_data, locale, create_missing:, update_existing:, published:)
       blocks_data.each do |key, content|
         result = import_block(key, content, locale, create_missing:, update_existing:, published:)
         summary[result[:action]] += 1
@@ -277,7 +270,7 @@ module RubyCms
       summary
     end
 
-    def import_block(key, content, locale, create_missing:, update_existing:, published:) # rubocop:disable Metrics/ParameterLists
+    def import_block(key, content, locale, create_missing:, update_existing:, published:)
       block = RubyCms::ContentBlock.find_by(key: key, locale: locale.to_s)
       return import_new_block(key, content, locale, published) if block.nil? && create_missing
       return { action: :skipped, error: nil } if block.nil?

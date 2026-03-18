@@ -19,7 +19,8 @@ module RubyCms
         end
 
         def view_template
-          td(class: "w-12 px-6 py-3", data: { action: "click->#{@controller_name}#stopPropagation" }) do
+          td(class: "w-12 px-6 py-3",
+             data: { action: "click->#{@controller_name}#stopPropagation" }) do
             input(
               type: "checkbox",
               role: "checkbox",

@@ -12,6 +12,7 @@ gem "irb"
 gem "rake", "~> 13.0"
 
 gem "factory_bot_rails"
+gem "ostruct"
 gem "rspec", "~> 3.0"
 gem "rspec-rails", "~> 6.0"
 gem "shoulda-matchers"

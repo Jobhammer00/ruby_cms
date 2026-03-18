@@ -74,7 +74,8 @@ module RubyCms
         def render_close_button
           button(
             type: "button",
-            class: "inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors",
+            class: "inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-500 " \
+                   "hover:bg-gray-100 hover:text-gray-900 transition-colors",
             data: {
               action: "click->#{@controller_name}#closeDialog"
             },
@@ -147,7 +148,9 @@ module RubyCms
         def render_cancel_button
           button(
             type: "button",
-            class: "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-4 text-sm font-medium text-gray-900 shadow-sm hover:bg-gray-50 transition-colors",
+            class: "inline-flex h-9 items-center justify-center rounded-md border " \
+                   "border-gray-200 bg-white px-4 text-sm font-medium text-gray-900 " \
+                   "shadow-sm hover:bg-gray-50 transition-colors",
             data: {
               action: "click->#{@controller_name}#closeDialog"
             }
@@ -157,7 +160,8 @@ module RubyCms
         def render_confirm_button
           button(
             type: "button",
-            class: "inline-flex h-9 items-center justify-center rounded-md bg-rose-600 px-4 text-sm font-medium text-white shadow-sm hover:bg-rose-700 transition-colors",
+            class: "inline-flex h-9 items-center justify-center rounded-md bg-rose-600 px-4 " \
+                   "text-sm font-medium text-white shadow-sm hover:bg-rose-700 transition-colors",
             data: {
               "#{@controller_name}-target": "dialogConfirmButton",
               action: "click->#{@controller_name}#confirmAction"

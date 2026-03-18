@@ -40,7 +40,7 @@ module RubyCms
       #       <% end %>
       #     <% end %>
       #   <% end %>
-      def render_bulk_action_table( # rubocop:disable Metrics/ParameterLists
+      def render_bulk_action_table(
         headers:,
         turbo_frame: "admin_table_content",
         pagination: nil,
@@ -96,7 +96,7 @@ module RubyCms
       #       <!-- Content here -->
       #     </div>
       #   <% end %>
-      def render_admin_page( # rubocop:disable Metrics/ParameterLists
+      def render_admin_page(
         title:,
         subtitle: nil,
         actions: nil,
@@ -137,7 +137,7 @@ module RubyCms
       #     url: bulk_publish_path,
       #     confirm: "Are you sure?"
       #   )
-      def bulk_action_button( # rubocop:disable Metrics/ParameterLists
+      def bulk_action_button(
         name:,
         label:,
         url:,

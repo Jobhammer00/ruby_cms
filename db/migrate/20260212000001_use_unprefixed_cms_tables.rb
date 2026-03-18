@@ -61,7 +61,11 @@ class UseUnprefixedCmsTables < ActiveRecord::Migration[7.1]
     unless column_exists?(:content_blocks, :locale)
       add_column :content_blocks, :locale, :string, default: "en", null: false
       add_index :content_blocks, :locale
-      default_locale = (I18n.default_locale rescue "en").to_s
+      default_locale = begin
+        I18n.default_locale
+      rescue StandardError
+        "en"
+      end.to_s
       execute <<~SQL.squish
         UPDATE content_blocks SET locale = '#{default_locale}' WHERE locale IS NULL OR locale = ''
       SQL
@@ -78,7 +82,9 @@ class UseUnprefixedCmsTables < ActiveRecord::Migration[7.1]
       add_index :content_blocks, %i[key locale], unique: true
     end
 
-    add_index :content_blocks, %i[published content_type] unless index_exists?(:content_blocks, %i[published content_type])
+    return if index_exists?(:content_blocks, %i[published content_type])
+
+    add_index :content_blocks, %i[published content_type]
   end
 
   def create_permissions_if_missing
@@ -120,7 +126,7 @@ class UseUnprefixedCmsTables < ActiveRecord::Migration[7.1]
       t.string :session_id
       t.string :referer
       t.string :query_string
-      t.boolean :resolved, default: false
+      t.boolean :resolved, default: false, null: false
 
       t.timestamps
     end
@@ -133,6 +139,8 @@ class UseUnprefixedCmsTables < ActiveRecord::Migration[7.1]
     return unless table_exists?(:visitor_errors)
 
     add_column :visitor_errors, :referer, :string unless column_exists?(:visitor_errors, :referer)
-    add_column :visitor_errors, :query_string, :string unless column_exists?(:visitor_errors, :query_string)
+    return if column_exists?(:visitor_errors, :query_string)
+
+    add_column :visitor_errors, :query_string, :string
   end
 end

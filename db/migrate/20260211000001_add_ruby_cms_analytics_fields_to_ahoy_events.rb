@@ -13,7 +13,7 @@ class AddRubyCmsAnalyticsFieldsToAhoyEvents < ActiveRecord::Migration[7.1]
     add_index :ahoy_events, :page_name, if_not_exists: true
     add_index :ahoy_events, :request_path, if_not_exists: true
     add_index :ahoy_events, :ip_address, if_not_exists: true
-    add_index :ahoy_events, [:name, :page_name], if_not_exists: true
-    add_index :ahoy_events, [:name, :request_path], if_not_exists: true
+    add_index :ahoy_events, %i[name page_name], if_not_exists: true
+    add_index :ahoy_events, %i[name request_path], if_not_exists: true
   end
 end

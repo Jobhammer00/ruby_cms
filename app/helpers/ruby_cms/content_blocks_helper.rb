@@ -2,16 +2,17 @@
 
 module RubyCms
   module ContentBlocksHelper
-    # Renders a content block by key. Rendering uses the block's content_type from the DB (text, rich_text, image, link, list).
+    # Renders a content block by key. Rendering uses the block's content_type from the DB
+    # (text, rich_text, image, link, list).
     # Usage:
     #   content_block("hero_title")
     #   content_block("hero_title", "Welcome")          # key + default when block missing
     #   content_block("hero_title", default: "Welcome") # same via keyword
     # Wraps in a span with data-content-key, data-block-id, and .content-block for editor hooks.
-    def content_block(key, default_or_nil = nil, locale: nil, fallback: nil, default: nil, # rubocop:disable Metrics/ParameterLists,Metrics/MethodLength
+    def content_block(key, default_or_nil=nil, locale: nil, fallback: nil, default: nil,
                       translation_namespace: nil, **options)
       # Support content_block("key", "Default") and content_block("key", default: "Default")
-      default = default_or_nil.is_a?(Hash) ? default : (default_or_nil || default)
+      default = default_or_nil.kind_of?(Hash) ? default : (default_or_nil || default)
       cache_opts = options.delete(:cache)
       wrap = options.delete(:wrap)
       wrap = true if wrap.nil?
@@ -80,21 +81,28 @@ module RubyCms
         hash.values.find {|b| b.key == key.to_s }
     end
 
-    def render_content_block(key, locale, default, fallback, translation_namespace, options, # rubocop:disable Metrics/ParameterLists
+    def render_content_block(key, locale, default, fallback, translation_namespace, options,
                              wrap: true)
       locale = normalize_locale(locale)
       block = find_content_block(key, locale)
 
       if wrap
-        content = content_for_block(block, default, fallback, key, translation_namespace, locale)
-        options = options.dup
-        options[:tag] = :div if block&.content_type.to_s == "rich_text"
-        render_block_wrapper(content, key, options)
+        render_wrapped_content_block(block, key, locale, default, fallback, translation_namespace, options)
       else
-        content = content_for_block_text(block, default, fallback, key, translation_namespace,
-                                         locale)
-        strip_html_tags(content)
+        render_unwrapped_content_block(block, key, locale, default, fallback, translation_namespace)
       end
+    end
+
+    def render_wrapped_content_block(block, key, locale, default, fallback, translation_namespace, options)
+      content = content_for_block(block, default, fallback, key, translation_namespace, locale)
+      wrapper_options = options.dup
+      wrapper_options[:tag] = :div if block&.content_type.to_s == "rich_text"
+      render_block_wrapper(content, key, wrapper_options)
+    end
+
+    def render_unwrapped_content_block(block, key, locale, default, fallback, translation_namespace)
+      content = content_for_block_text(block, default, fallback, key, translation_namespace, locale)
+      strip_html_tags(content)
     end
 
     def render_block_wrapper(content, key, options)
@@ -111,7 +119,7 @@ module RubyCms
       { content_key: key, block_id: key.to_s }.merge(options.delete(:data).to_h)
     end
 
-    def content_for_block(block, default, fallback, key, translation_namespace, locale) # rubocop:disable Metrics/ParameterLists
+    def content_for_block(block, default, fallback, key, translation_namespace, locale)
       if block.present? && !block_effectively_blank?(block)
         render_content_by_type(block)
       else
@@ -120,7 +128,7 @@ module RubyCms
       end
     end
 
-    def content_for_block_text(block, default, fallback, key, translation_namespace, locale) # rubocop:disable Metrics/ParameterLists
+    def content_for_block_text(block, default, fallback, key, translation_namespace, locale)
       if block.present? && !block_effectively_blank?(block)
         render_text_content_by_type(block)
       else
@@ -238,19 +246,28 @@ module RubyCms
     # perfectly good I18n fallback (common during initial setup or partial edits).
     def block_effectively_blank?(block)
       case block.content_type.to_s
-      when "image"
-        block.respond_to?(:image) ? !block.image.attached? : block.content.to_s.blank?
-      when "rich_text"
-        if action_text_available?(block) && rich_content_body_present?(block)
-          rich_content_body_html_for_view(block).to_s.strip.blank?
-        else
-          block.content.to_s.strip.blank?
-        end
-      else
-        block.content.to_s.strip.blank? && block.title.to_s.strip.blank?
+      when "image" then image_block_blank?(block)
+      when "rich_text" then rich_text_block_blank?(block)
+      else other_block_blank?(block)
       end
     rescue StandardError
       false
+    end
+
+    def image_block_blank?(block)
+      return block.content.to_s.blank? unless block.respond_to?(:image)
+
+      !block.image.attached?
+    end
+
+    def rich_text_block_blank?(block)
+      return block.content.to_s.strip.blank? unless action_text_available?(block) && rich_content_body_present?(block)
+
+      rich_content_body_html_for_view(block).to_s.strip.blank?
+    end
+
+    def other_block_blank?(block)
+      block.content.to_s.strip.blank? && block.title.to_s.strip.blank?
     end
 
     def resolve_fallback(default, fallback, key, translation_namespace, locale)
@@ -271,7 +288,8 @@ module RubyCms
     end
 
     def translation_namespace_from_config
-      Rails.application.config.ruby_cms.content_blocks_translation_namespace.presence || "content_blocks"
+      Rails.application.config.ruby_cms.content_blocks_translation_namespace.presence ||
+        "content_blocks"
     rescue StandardError
       "content_blocks"
     end
@@ -320,16 +338,17 @@ module RubyCms
         data-content-target
       ]
 
-      # If we can introspect Rails' allowlists, extend them; otherwise fall back to Rails defaults.
-      if base_tags && base_attrs
-        sanitize(
-          str,
-          tags: base_tags,
-          attributes: (base_attrs + extra_attrs).uniq
-        )
-      else
-        sanitize(str)
-      end
+      sanitize_with_extra_attrs(str, base_tags, base_attrs, extra_attrs) || sanitize(str)
+    end
+
+    def sanitize_with_extra_attrs(str, base_tags, base_attrs, extra_attrs)
+      return nil unless base_tags && base_attrs
+
+      sanitize(
+        str,
+        tags: base_tags,
+        attributes: (base_attrs + extra_attrs).uniq
+      )
     end
 
     def rails_sanitizer_allowed(kind)

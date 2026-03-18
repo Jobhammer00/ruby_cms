@@ -66,7 +66,8 @@ RSpec.describe RubyCms::Analytics::Report, type: :model do
     travel_to(Time.zone.local(2026, 2, 1, 12, 0, 0)) { example.run }
   end
 
-  def create_visit(ip:, started_at: Time.current, visitor_token: SecureRandom.uuid, visit_token: SecureRandom.uuid)
+  def create_visit(ip:, started_at: Time.current, visitor_token: SecureRandom.uuid,
+                   visit_token: SecureRandom.uuid)
     Ahoy::Visit.create!(
       visit_token: visit_token,
       visitor_token: visitor_token,
@@ -112,9 +113,9 @@ RSpec.describe RubyCms::Analytics::Report, type: :model do
     RubyCms::Settings.set(:analytics_visitor_details_limit, 1)
 
     visit = create_visit(ip: "8.8.8.8")
-    create_page_view(visit: visit, page_name: "home", time: Time.current - 3.minutes)
-    create_page_view(visit: visit, page_name: "about", time: Time.current - 2.minutes)
-    create_page_view(visit: visit, page_name: "home", time: Time.current - 1.minute)
+    create_page_view(visit: visit, page_name: "home", time: 3.minutes.ago)
+    create_page_view(visit: visit, page_name: "about", time: 2.minutes.ago)
+    create_page_view(visit: visit, page_name: "home", time: 1.minute.ago)
 
     report = described_class.new(
       start_date: Date.current - 1.day,
@@ -149,7 +150,7 @@ RSpec.describe RubyCms::Analytics::Report, type: :model do
     )
 
     suspicious = report.dashboard_stats[:suspicious_activity]
-    types = suspicious.map { |item| item[:type] }
+    types = suspicious.map {|item| item[:type] }
 
     expect(types).to include("high_volume")
     expect(types).to include("rapid_requests")

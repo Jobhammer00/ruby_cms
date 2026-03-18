@@ -26,9 +26,7 @@ module RubyCms
     end
 
     def self.all_as_hash
-      all.each_with_object({}) do |pref, hash|
-        hash[pref.key.to_sym] = pref.typed_value
-      end
+      all.to_h {|pref| [pref.key.to_sym, pref.typed_value] }
     end
 
     def self.ensure_defaults!
@@ -55,17 +53,13 @@ module RubyCms
 
     def typed_value
       case value_type
-      when "integer"
-        value.to_i
-      when "boolean"
-        ActiveModel::Type::Boolean.new.cast(value)
-      when "json"
-        JSON.parse(value)
-      else
-        value
+      when "integer" then value.to_i
+      when "boolean" then boolean_cast(value)
+      when "json" then parse_json_value(value)
+      else value
       end
-    rescue JSON::ParserError, StandardError
-      value
+    rescue JSON::ParserError, TypeError
+      value.to_s
     end
 
     def assign_value(new_value)
@@ -89,6 +83,14 @@ module RubyCms
     end
 
     private
+
+    def boolean_cast(val)
+      ActiveModel::Type::Boolean.new.cast(val)
+    end
+
+    def parse_json_value(val)
+      JSON.parse(val.to_s)
+    end
 
     def detect_type(val)
       case val

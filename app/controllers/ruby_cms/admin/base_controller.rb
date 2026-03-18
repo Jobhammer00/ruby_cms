@@ -80,7 +80,9 @@ module RubyCms
       end
 
       def render_not_found
-        render "ruby_cms/errors/not_found", status: :not_found, layout: (Rails.application.config.ruby_cms.admin_layout.presence || "admin/admin")
+        render "ruby_cms/errors/not_found",
+               status: :not_found,
+               layout: Rails.application.config.ruby_cms.admin_layout.presence || "admin/admin"
       end
 
       def set_cms_locale

@@ -12,22 +12,9 @@ module RubyCms
     scope :today, -> { where(created_at: Date.current.beginning_of_day..) }
 
     def self.log_error(exception, request)
-      session_id = begin
-        request.session.id
-      rescue StandardError
-        nil
-      end
       create!(
-        error_class: exception.class.name,
-        error_message: exception.message,
-        request_path: request.path,
-        request_method: request.request_method,
-        ip_address: request.remote_ip,
-        user_agent: request.user_agent,
-        session_id: session_id,
-        referer: request.referer.presence&.truncate(500),
-        query_string: request.query_string.presence&.truncate(500),
-        backtrace: exception.backtrace&.first(10)&.join("\n"),
+        **base_request_attrs(request),
+        **exception_attrs(exception),
         request_params: sanitize_params(request.params)
       )
     rescue StandardError => e
@@ -40,21 +27,10 @@ module RubyCms
       return if Rails.env.development?
       return if request.path.start_with?("/admin")
 
-      session_id = begin
-        request.session.id
-      rescue StandardError
-        nil
-      end
       create!(
+        **base_request_attrs(request),
         error_class: "ActionController::RoutingError",
-        error_message: "No route matches [#{request.request_method}] \"#{request.path}\"",
-        request_path: request.path,
-        request_method: request.request_method,
-        ip_address: request.remote_ip,
-        user_agent: request.user_agent,
-        session_id: session_id,
-        referer: request.referer.presence&.truncate(500),
-        query_string: request.query_string.presence&.truncate(500),
+        error_message: routing_error_message(request),
         backtrace: nil,
         request_params: nil
       )
@@ -97,6 +73,36 @@ module RubyCms
         h = params.respond_to?(:to_unsafe_h) ? params.to_unsafe_h : params.to_h
         filtered = h.except("password", "password_confirmation", "authenticity_token")
         filtered.to_json.truncate(500)
+      end
+
+      def base_request_attrs(request)
+        {
+          request_path: request.path,
+          request_method: request.request_method,
+          ip_address: request.remote_ip,
+          user_agent: request.user_agent,
+          session_id: safe_session_id(request),
+          referer: request.referer.presence&.truncate(500),
+          query_string: request.query_string.presence&.truncate(500)
+        }
+      end
+
+      def exception_attrs(exception)
+        {
+          error_class: exception.class.name,
+          error_message: exception.message,
+          backtrace: exception.backtrace&.first(10)&.join("\n")
+        }
+      end
+
+      def routing_error_message(request)
+        "No route matches [#{request.request_method}] \"#{request.path}\""
+      end
+
+      def safe_session_id(request)
+        request.session.id
+      rescue StandardError
+        nil
       end
     end
   end

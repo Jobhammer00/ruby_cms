@@ -28,8 +28,8 @@ module RubyCms
       key = entry.key.to_s
 
       # Keep familiar labels for nav and pagination keys.
-      key = key.sub(/\Anav_show_/, "")
-      key = key.sub(/_per_page\z/, "")
+      key = key.delete_prefix("nav_show_")
+      key = key.delete_suffix("_per_page")
 
       key.tr("_", " ").humanize
     end
@@ -37,13 +37,13 @@ module RubyCms
     def render_setting_field(entry:, value:, tab:)
       case entry.type.to_sym
       when :integer
-        render_integer_setting_field(entry: entry, value: value, tab: tab)
+        render_integer_setting_field(entry:, value:, tab:)
       when :boolean
-        render_boolean_setting_field(entry: entry, value: value, tab: tab)
+        render_boolean_setting_field(entry:, value:, tab:)
       when :json
-        render_json_setting_field(entry: entry, value: value, tab: tab)
+        render_json_setting_field(entry:, value:, tab:)
       else
-        render_string_setting_field(entry: entry, value: value, tab: tab)
+        render_string_setting_field(entry:, value:, tab:)
       end
     end
 
@@ -103,7 +103,7 @@ module RubyCms
     end
 
     def render_json_setting_field(entry:, value:, tab:)
-      formatted = if value.is_a?(Hash) || value.is_a?(Array)
+      formatted = if value.kind_of?(Hash) || value.kind_of?(Array)
                     JSON.pretty_generate(value)
                   else
                     value.to_s

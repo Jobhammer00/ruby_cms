@@ -41,7 +41,9 @@ module RubyCms
         def render_table_headers
           Array(@headers).each do |header|
             if header.kind_of?(Hash)
-              th(class: build_classes(th_base_classes, header[:class])) { header[:text] || header[:label] }
+              th(class: build_classes(th_base_classes, header[:class])) do
+                header[:text] || header[:label]
+              end
             else
               th(class: th_base_classes) { header }
             end

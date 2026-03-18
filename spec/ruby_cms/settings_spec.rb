@@ -3,7 +3,12 @@
 require "rails_helper"
 
 RSpec.describe RubyCms::Settings do
-  before(:all) do
+  around do |example|
+    if ActiveRecord::Base.connected?
+      previous_db_config =
+        ActiveRecord::Base.connection_db_config&.configuration_hash
+    end
+
     ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
 
     ActiveRecord::Schema.define do
@@ -15,6 +20,16 @@ RSpec.describe RubyCms::Settings do
         t.string :category, default: "general"
         t.timestamps
       end
+    end
+
+    example.run
+  ensure
+    ActiveRecord::Base.clear_all_connections!
+
+    if previous_db_config
+      ActiveRecord::Base.establish_connection(previous_db_config)
+    else
+      ActiveRecord::Base.remove_connection
     end
   end
 

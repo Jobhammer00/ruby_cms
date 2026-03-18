@@ -2,8 +2,7 @@
 
 module RubyCms
   module ContentBlocksGrouping
-    Row = ::Struct.new(:key, :id, :locale, :title, :content_type, :published, :content_block,
-                       keyword_init: true) do
+    Row = ::Struct.new(:key, :id, :locale, :title, :content_type, :published, :content_block) do
       def published?
         published
       end

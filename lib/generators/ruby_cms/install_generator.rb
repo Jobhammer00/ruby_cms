@@ -171,14 +171,14 @@ module RubyCms
       def add_page_tracking_to_home_controller
         home_path = Rails.root.join("app/controllers/home_controller.rb")
         return unless home_path.exist?
-      
+
         content = File.read(home_path)
         return if content.include?("RubyCms::PageTracking")
-      
+
         inject_into_file home_path, after: /class HomeController.*\n/ do
           "  include RubyCms::PageTracking\n"
         end
-      
+
         say "✓ Page tracking: Added RubyCms::PageTracking to HomeController", :green
       rescue StandardError => e
         say "⚠ Page tracking: Could not add to HomeController: #{e.message}. " \
@@ -240,7 +240,8 @@ module RubyCms
 
       def install_ahoy
         if ahoy_already_installed?
-          say "ℹ Task ahoy: Existing Ahoy setup detected (tables or migrations). Skipping ahoy:install.", :cyan
+          say "ℹ Task ahoy: Existing Ahoy setup detected (tables or migrations). Skipping ahoy:install.",
+              :cyan
           configure_ahoy_server_side_only
           return
         end
@@ -296,11 +297,10 @@ module RubyCms
 
         def add_ahoy_security_fields_migration
           run "bin/rails generate migration AddRubyCmsFieldsToAhoyEvents"
-          migration_file = Dir.glob(Rails.root.join("db/migrate/*add_ruby_cms*fields*.rb")).max_by do |f|
-            File.basename(f)
-          end
+          migration_file = Rails.root.glob("db/migrate/*add_ruby_cms*fields*.rb").max_by(&:basename)
           return unless migration_file
 
+          migration_file = migration_file.to_s
           content = <<~RUBY
             class AddRubyCmsFieldsToAhoyEvents < ActiveRecord::Migration[#{ActiveRecord::VERSION::MAJOR}.#{ActiveRecord::VERSION::MINOR}]
               def change
@@ -335,9 +335,7 @@ module RubyCms
 
           # Ensure Ahoy is loaded before any references (fixes NameError when
           # ahoy_matey loads after initializers)
-          unless content.include?('require "ahoy_matey"')
-            content = %(require "ahoy_matey"\n\n) + content
-          end
+          content = %(require "ahoy_matey"\n\n#{content}) unless content.include?('require "ahoy_matey"')
 
           # Ensure a default Ahoy store class exists.
           unless content.match?(/class\s+Ahoy::Store\s*<\s*Ahoy::DatabaseStore/)
@@ -354,7 +352,7 @@ module RubyCms
           end
 
           append = "\n\n# RubyCMS: server-side tracking only (no JavaScript)\nAhoy.api = false\nAhoy.geocode = false\n"
-          File.write(ahoy_path, content + append)
+          File.write(ahoy_path, "#{content}#{append}")
         end
 
         def action_text_already_installed?(migrate_dir)
@@ -549,7 +547,6 @@ module RubyCms
           {}
         end
 
-        # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
         def scan_for_templates(dir_path, pages, views_base, relative_path="")
           # Find all template files in this directory
           Dir.glob(File.join(dir_path, "*.{html.erb,html.haml,html.slim}")).each do |template_file|
@@ -812,7 +809,7 @@ module RubyCms
         end
 
         # Tailwind v3 support (tailwind.config.js content array)
-        def add_ruby_cms_tailwind_content_paths
+        def add_ruby_cms_tailwind_content_paths # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
           config_path = Rails.root.join("config/tailwind.config.js")
           return unless File.exist?(config_path)
 
@@ -820,7 +817,7 @@ module RubyCms
           patterns = ruby_cms_tailwind_content_patterns
           return if patterns.all? {|p| content.include?(p) }
 
-          inject = patterns.map {|p| "    \"#{p}\"," }.join("\n") + "\n"
+          inject = "#{patterns.map {|p| "    \"#{p}\"," }.join("\n")}\n"
 
           # Insert inside `content: [` if present; otherwise no-op.
           inserted = false
@@ -849,8 +846,11 @@ module RubyCms
 
         def build_gem_source_lines(tailwind_css_path)
           css_dir = Pathname.new(tailwind_css_path).dirname
-          gem_views = path_relative_to_css_or_absolute(RubyCms::Engine.root.join("app/views"), css_dir)
-          gem_components = path_relative_to_css_or_absolute(RubyCms::Engine.root.join("app/components"), css_dir)
+          gem_views = path_relative_to_css_or_absolute(RubyCms::Engine.root.join("app/views"),
+                                                       css_dir)
+          gem_components = path_relative_to_css_or_absolute(
+            RubyCms::Engine.root.join("app/components"), css_dir
+          )
           [
             %(@source "#{gem_views}/**/*.erb";),
             %(@source "#{gem_components}/**/*.rb";)
@@ -1022,7 +1022,7 @@ module RubyCms
               :yellow
         end
 
-        def user_with_admin_permissions_exists?
+        def user_with_admin_permissions_exists? # rubocop:disable Metrics/MethodLength
           return false unless defined?(::User)
 
           begin

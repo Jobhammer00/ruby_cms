@@ -7,8 +7,7 @@ module RubyCms
       :type,
       :default,
       :category,
-      :description,
-      keyword_init: true
+      :description
     )
 
     mattr_accessor :entries, default: {}
@@ -29,20 +28,23 @@ module RubyCms
         entries[key.to_s]
       end
 
-      def each(&block)
-        entries.each_value(&block)
+      def each(&)
+        entries.each_value(&)
       end
 
       def defaults_hash
         seed_defaults! if entries.empty?
 
-        entries.values.each_with_object({}) do |entry, hash|
-          hash[entry.key.to_sym] = {
-            value: entry.default,
-            type: value_type_for(entry.type),
-            description: entry.description,
-            category: entry.category
-          }
+        entries.values.to_h do |entry|
+          [
+            entry.key.to_sym,
+            {
+              value: entry.default,
+              type: value_type_for(entry.type),
+              description: entry.description,
+              category: entry.category
+            }
+          ]
         end
       end
 

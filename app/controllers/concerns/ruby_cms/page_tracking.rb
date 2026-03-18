@@ -23,7 +23,7 @@ module RubyCms
     private
 
     def set_page_name
-      @page_name ||= controller_name
+      @page_name = controller_name if @page_name.blank?
     end
 
     def track_page_view

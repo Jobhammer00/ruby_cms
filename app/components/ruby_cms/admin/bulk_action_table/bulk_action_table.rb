@@ -15,7 +15,7 @@ module RubyCms
       # @param controller_name [String] Stimulus controller identifier
       #   (default: "ruby-cms--bulk-action-table")
       class BulkActionTable < BaseComponent
-        def initialize(**options) # rubocop:disable Metrics/AbcSize, Metrics/MethodLength
+        def initialize(**options)
           super()
           @turbo_frame = options[:turbo_frame]
           @pagination = options[:pagination]
@@ -58,7 +58,8 @@ module RubyCms
         def render_table_content(&block)
           div(
             class: build_classes(
-              "rounded-lg border border-gray-200/80 bg-white shadow-sm overflow-hidden flex flex-col",
+              "rounded-lg border border-gray-200/80 bg-white shadow-sm overflow-hidden " \
+              "flex flex-col",
               @user_attrs[:class]
             ),
             **table_data_attributes.except(:class)
@@ -72,7 +73,7 @@ module RubyCms
           end
         end
 
-        def render_header # rubocop:disable Metrics/MethodLength, Metrics/PerceivedComplexity
+        def render_header
           if @header_title.present? || @header_action_icons.any? || @header_search_url.present?
             render BulkActionTableHeaderBar.new(
               title: @header_title,
@@ -131,9 +132,7 @@ module RubyCms
             }
           }
 
-          if @bulk_actions_url.present?
-            attrs[:data]["#{@controller_name}-bulk-action-url-value"] = @bulk_actions_url
-          end
+          attrs[:data]["#{@controller_name}-bulk-action-url-value"] = @bulk_actions_url if @bulk_actions_url.present?
 
           attrs.merge(@user_attrs)
         end

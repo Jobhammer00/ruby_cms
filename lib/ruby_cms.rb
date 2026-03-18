@@ -24,14 +24,14 @@ module RubyCms
   ANALYTICS_ICON_PATH = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
                         'd="M3 3v18h18"></path>' \
                         '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
-                        'd="M7 13l3-3 3 2 4-5"></path>'.freeze
+                        'd="M7 13l3-3 3 2 4-5"></path>'
 
   def self.configure
     yield(Rails.application.config.ruby_cms)
   end
 
   def self.setting(key, default: nil)
-    RubyCms::Settings.get(key, default: default)
+    RubyCms::Settings.get(key, default:)
   end
 
   # Register a link for admin navigation.
@@ -47,7 +47,7 @@ module RubyCms
   # - permission: optional permission key (e.g., :manage_analytics)
   # - default_visible: optional Boolean (default true)
   # - if: optional callable for custom visibility gate
-  def self.nav_register(key:, label:, path:, icon: nil, section: nil, order: nil, permission: nil, default_visible: true, **options) # rubocop:disable Metrics/ParameterLists
+  def self.nav_register(key:, label:, path:, icon: nil, section: nil, order: nil, permission: nil, default_visible: true, **options)
     normalized_key = key.to_sym
     normalized_section = section.presence || NAV_SECTION_MAIN
     entry = {
@@ -58,11 +58,11 @@ module RubyCms
       section: normalized_section,
       order: order,
       permission: permission&.to_s,
-      default_visible: !!default_visible,
+      default_visible: default_visible ? true : false,
       if: options[:if]
     }
 
-    self.nav_registry = nav_registry.reject { |e| e[:key] == normalized_key }
+    self.nav_registry = nav_registry.reject {|e| e[:key] == normalized_key }
     self.nav_registry += [entry]
 
     register_navigation_setting!(entry)
@@ -74,26 +74,25 @@ module RubyCms
   # sorted by saved nav_order (Settings → Navigation drag-and-drop) when set, else by section + order.
   def self.visible_nav_registry(view_context: nil, user: nil)
     list = nav_registry
-           .select { |item| nav_entry_visible?(item, view_context: view_context, user: user) }
-           .sort_by { |item| nav_sort_tuple(item) }
-    list = apply_nav_order(list)
-    list
+           .select {|item| nav_entry_visible?(item, view_context:, user:) }
+           .sort_by {|item| nav_sort_tuple(item) }
+    apply_nav_order(list)
   rescue StandardError => e
     Rails.logger.error("[RubyCMS] Error filtering navigation: #{e.message}") if defined?(Rails.logger)
     nav_registry
   end
 
   module Nav
-    def self.register(key:, label:, path:, icon: nil, section: nil, order: nil, permission: nil, default_visible: true, **) # rubocop:disable Metrics/ParameterLists
+    def self.register(key:, label:, path:, icon: nil, section: nil, order: nil, permission: nil, default_visible: true, **)
       RubyCms.nav_register(
-        key: key,
-        label: label,
-        path: path,
-        icon: icon,
-        section: section,
-        order: order,
-        permission: permission,
-        default_visible: default_visible,
+        key:,
+        label:,
+        path:,
+        icon:,
+        section:,
+        order:,
+        permission:,
+        default_visible:,
         **
       )
     end
@@ -118,18 +117,18 @@ module RubyCms
       return list unless pref&.value_type == "json" && pref.value.present?
 
       saved = JSON.parse(pref.value)
-      return list unless saved.is_a?(Array) && saved.any?
+      return list unless saved.kind_of?(Array) && saved.any?
 
-      order_map = saved.each_with_index.to_h { |k, i| [k.to_s, i] }
-      list.sort_by { |item| order_map.fetch(item[:key].to_s, 9999) }
-    rescue JSON::ParserError, StandardError
+      order_map = saved.each_with_index.to_h {|k, i| [k.to_s, i] }
+      list.sort_by {|item| order_map.fetch(item[:key].to_s, 9999) }
+    rescue StandardError
       list
     end
 
     def nav_entry_visible?(item, view_context:, user:)
       return false unless setting_enabled_for_nav_item?(item)
-      return false unless permission_allows_nav_item?(item, view_context: view_context, user: user)
-      return false unless condition_allows_nav_item?(item, view_context: view_context)
+      return false unless permission_allows_nav_item?(item, view_context:, user:)
+      return false unless condition_allows_nav_item?(item, view_context:)
 
       true
     end

@@ -74,13 +74,9 @@ module RubyCms
 
     initializer "ruby_cms.assets", before: :load_config_initializers do |app|
       # Add JavaScript controllers to asset pipeline (before importmap resolves)
-      if app.config.respond_to?(:assets)
-        app.config.assets.paths.unshift(config.root.join("app/javascript"))
-      end
+      app.config.assets.paths.unshift(config.root.join("app/javascript")) if app.config.respond_to?(:assets)
       # Add stylesheets to asset pipeline
-      if app.config.respond_to?(:assets)
-        app.config.assets.paths << config.root.join("app/assets/stylesheets")
-      end
+      app.config.assets.paths << config.root.join("app/assets/stylesheets") if app.config.respond_to?(:assets)
     end
 
     initializer "ruby_cms.importmap", before: "importmap" do |app|
@@ -420,7 +416,10 @@ module RubyCms
 
     def self.grant_manage_admin_permission(user, email)
       RubyCms::Permission.ensure_defaults!
-      %w[manage_admin manage_permissions manage_content_blocks manage_visitor_errors manage_analytics].each do |key|
+      %w[
+        manage_admin manage_permissions manage_content_blocks manage_visitor_errors
+        manage_analytics
+      ].each do |key|
         perm = RubyCms::Permission.find_by!(key:)
         RubyCms::UserPermission.find_or_create_by!(user: user, permission: perm)
       end

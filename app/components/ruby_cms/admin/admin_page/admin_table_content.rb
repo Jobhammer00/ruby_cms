@@ -30,4 +30,3 @@ module RubyCms
     end
   end
 end
-

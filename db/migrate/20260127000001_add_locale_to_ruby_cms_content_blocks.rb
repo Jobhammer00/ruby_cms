@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class AddLocaleToRubyCmsContentBlocks < ActiveRecord::Migration[7.1]
-  def change # rubocop:disable Metrics/MethodLength
+  def change
     add_column :ruby_cms_content_blocks, :locale, :string, default: "en", null: false
 
     # Remove old unique index on key

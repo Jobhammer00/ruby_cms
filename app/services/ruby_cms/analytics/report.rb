@@ -18,7 +18,8 @@ module RubyCms
       def initialize(start_date:, end_date:, period: nil)
         @start_date = start_date.to_date.beginning_of_day
         @end_date = end_date.to_date.end_of_day
-        @period = period.presence || RubyCms::Settings.get(:analytics_default_period, default: "week").to_s
+        @period = period.presence || RubyCms::Settings.get(:analytics_default_period,
+                                                           default: "week").to_s
         @range = @start_date..@end_date
       end
 
@@ -47,7 +48,7 @@ module RubyCms
       end
 
       def page_stats(page_name)
-        scoped = page_view_events.where(page_name: page_name)
+        scoped = page_view_events.where(page_name:)
 
         {
           page_views: scoped.order(time: :desc).limit(page_details_limit),
@@ -124,7 +125,8 @@ module RubyCms
       end
 
       def popular_pages_data
-        limit = RubyCms::Settings.get(:analytics_max_popular_pages, default: DEFAULT_MAX_POPULAR_PAGES).to_i
+        limit = RubyCms::Settings.get(:analytics_max_popular_pages,
+                                      default: DEFAULT_MAX_POPULAR_PAGES).to_i
 
         page_view_events
           .where.not(page_name: [nil, ""])
@@ -135,7 +137,8 @@ module RubyCms
       end
 
       def top_visitors_data
-        limit = RubyCms::Settings.get(:analytics_max_top_visitors, default: DEFAULT_MAX_TOP_VISITORS).to_i
+        limit = RubyCms::Settings.get(:analytics_max_top_visitors,
+                                      default: DEFAULT_MAX_TOP_VISITORS).to_i
         visits.group(:ip).order(Arel.sql("COUNT(*) DESC")).limit(limit).count
       end
 
@@ -144,7 +147,7 @@ module RubyCms
         raw = page_view_events.pluck(:time).each_with_object(Hash.new(0)) do |t, acc|
           acc[t.utc.strftime("%H")] += 1
         end
-        ("00".."23").to_h { |h| [h, raw[h] || 0] }.sort.to_h
+        ("00".."23").index_with {|h| raw[h] || 0 }.sort.to_h
       end
 
       def daily_activity_data
@@ -197,8 +200,11 @@ module RubyCms
       end
 
       def group_visitors_by_date
-        h = visits.pluck(:visitor_token, :started_at).each_with_object(Hash.new { |hash, k| hash[k] = Set.new }) do |(vt, st), acc|
+        h = visits.pluck(:visitor_token, :started_at).each_with_object(Hash.new do |hash, k|
+          hash[k] = Set.new
+        end) do |(vt, st), acc|
           next if st.blank?
+
           key = st.respond_to?(:strftime) ? st.strftime("%Y-%m-%d") : st.to_s[0, 10]
           acc[key] << vt
         end
@@ -206,8 +212,11 @@ module RubyCms
       end
 
       def group_visitors_by_month
-        h = visits.pluck(:visitor_token, :started_at).each_with_object(Hash.new { |hash, k| hash[k] = Set.new }) do |(vt, st), acc|
+        h = visits.pluck(:visitor_token, :started_at).each_with_object(Hash.new do |hash, k|
+          hash[k] = Set.new
+        end) do |(vt, st), acc|
           next if st.blank?
+
           key = st.respond_to?(:strftime) ? st.strftime("%Y-%m") : st.to_s[0, 7]
           acc[key] << vt
         end
@@ -217,6 +226,8 @@ module RubyCms
 
       def referrer_data
         limit = RubyCms::Settings.get(:analytics_max_referrers, default: DEFAULT_MAX_REFERRERS).to_i
+        return {} unless Ahoy::Visit.column_names.include?("referrer")
+
         visits.where.not(referrer: [nil, ""])
               .group(:referrer)
               .order(Arel.sql("COUNT(*) DESC"))
@@ -225,8 +236,10 @@ module RubyCms
       end
 
       def landing_pages_data
-        limit = RubyCms::Settings.get(:analytics_max_landing_pages, default: DEFAULT_MAX_LANDING_PAGES).to_i
+        limit = RubyCms::Settings.get(:analytics_max_landing_pages,
+                                      default: DEFAULT_MAX_LANDING_PAGES).to_i
         return {} unless Ahoy::Visit.column_names.include?("landing_page")
+
         visits.where.not(landing_page: [nil, ""])
               .group(:landing_page)
               .order(Arel.sql("COUNT(*) DESC"))
@@ -235,14 +248,18 @@ module RubyCms
       end
 
       def utm_sources_data
-        limit = RubyCms::Settings.get(:analytics_max_utm_sources, default: DEFAULT_MAX_UTM_SOURCES).to_i
+        limit = RubyCms::Settings.get(:analytics_max_utm_sources,
+                                      default: DEFAULT_MAX_UTM_SOURCES).to_i
         return {} unless Ahoy::Visit.column_names.include?("utm_source")
+
         raw = visits.where.not(utm_source: [nil, ""])
-                   .group(:utm_source, :utm_medium)
-                   .order(Arel.sql("COUNT(*) DESC"))
-                   .limit(limit)
-                   .count
-        raw.transform_keys { |(source, medium)| "#{source}#{medium.present? ? " / #{medium}" : ""}" }
+                    .group(:utm_source, :utm_medium)
+                    .order(Arel.sql("COUNT(*) DESC"))
+                    .limit(limit)
+                    .count
+        raw.transform_keys do |(source, medium)|
+          "#{source}#{" / #{medium}" if medium.present?}"
+        end
       end
 
       def suspicious_activity_data
@@ -277,7 +294,13 @@ module RubyCms
         per_ip_per_minute = Hash.new(0)
         visits.pluck(:ip, :started_at).each do |ip, started_at|
           next if started_at.blank?
-          minute_key = started_at.respond_to?(:strftime) ? started_at.strftime("%Y-%m-%d %H:%M") : started_at.to_s[0, 16]
+
+          minute_key = if started_at.respond_to?(:strftime)
+                         started_at.strftime("%Y-%m-%d %H:%M")
+                       else
+                         started_at.to_s[0,
+                                         16]
+                       end
           per_ip_per_minute[[ip, minute_key]] += 1
         end
 
@@ -321,15 +344,18 @@ module RubyCms
       end
 
       def recent_page_views_limit
-        RubyCms::Settings.get(:analytics_recent_page_views_limit, default: DEFAULT_RECENT_PAGE_VIEWS_LIMIT).to_i
+        RubyCms::Settings.get(:analytics_recent_page_views_limit,
+                              default: DEFAULT_RECENT_PAGE_VIEWS_LIMIT).to_i
       end
 
       def page_details_limit
-        RubyCms::Settings.get(:analytics_page_details_limit, default: DEFAULT_PAGE_DETAILS_LIMIT).to_i
+        RubyCms::Settings.get(:analytics_page_details_limit,
+                              default: DEFAULT_PAGE_DETAILS_LIMIT).to_i
       end
 
       def visitor_details_limit
-        RubyCms::Settings.get(:analytics_visitor_details_limit, default: DEFAULT_VISITOR_DETAILS_LIMIT).to_i
+        RubyCms::Settings.get(:analytics_visitor_details_limit,
+                              default: DEFAULT_VISITOR_DETAILS_LIMIT).to_i
       end
     end
   end

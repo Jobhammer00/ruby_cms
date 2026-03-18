@@ -13,7 +13,7 @@ module RubyCms
       # @param search_param [String] Query param name (default: "q")
       # @param turbo_frame [String, nil] Turbo Frame ID for search/filter updates
       class BulkActionTableHeaderBar < BaseComponent
-        def initialize( # rubocop:disable Metrics/ParameterLists
+        def initialize(
           title: nil,
           header_filter: nil,
           action_icons: [],
@@ -66,31 +66,9 @@ module RubyCms
           icon_path = config[:icon] || "M12 4.5v15m7.5-7.5h-15"
           data_attrs = config[:data] || {}
 
-          color_classes = {
-            "blue" => "text-blue-600 hover:bg-blue-50",
-            "green" => "text-emerald-600 hover:bg-emerald-50",
-            "red" => "text-rose-600 hover:bg-rose-50",
-            "purple" => "text-violet-600 hover:bg-violet-50",
-            "gray" => "text-gray-700 hover:bg-gray-50",
-            "teal" => "text-teal-600 hover:bg-teal-50"
-          }
-          color_class = color_classes[color.to_s] || color_classes["blue"]
+          color_class = icon_color_class(color)
 
-          a(
-            href: url,
-            class: build_classes(
-              "inline-flex items-center justify-center h-9 w-9 rounded-md border border-gray-200 bg-white shadow-sm transition-colors",
-              color_class
-            ),
-            title: title,
-            data: data_attrs
-          ) do
-            svg(class: "h-4 w-4", fill: "none", stroke: "currentColor",
-                viewBox: "0 0 24 24") do |s|
-              s.path(stroke_linecap: "round", stroke_linejoin: "round", stroke_width: "2",
-                     d: icon_path)
-            end
-          end
+          a(**icon_link_attrs(url, title, data_attrs, color_class)) { render_icon_svg(icon_path) }
         end
 
         def render_search_form
@@ -112,14 +90,14 @@ module RubyCms
         def render_search_icon
           span(class: "absolute left-3 text-gray-400 pointer-events-none") do
             svg(class: "h-4 w-4", fill: "none", stroke: "currentColor",
-              viewBox: "0 0 24 24") do |s|
-            s.path(
-              stroke_linecap: "round",
-              stroke_linejoin: "round",
-              stroke_width: "2",
-              d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            )
-          end
+                viewBox: "0 0 24 24") do |s|
+              s.path(
+                stroke_linecap: "round",
+                stroke_linejoin: "round",
+                stroke_width: "2",
+                d: "M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              )
+            end
           end
         end
 
@@ -128,7 +106,8 @@ module RubyCms
             type: "search",
             name: @search_param,
             placeholder: "Search",
-            class: "h-9 w-full sm:w-72 rounded-md border border-gray-200 bg-white pl-9 pr-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200",
+            class: "h-9 w-full sm:w-72 rounded-md border border-gray-200 bg-white pl-9 " \
+                   "pr-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200",
             value: search_value,
             data: { action: "input->turbo-frame#submit" }
           )
@@ -136,6 +115,43 @@ module RubyCms
 
         def search_value
           helpers.params[@search_param.to_sym] if helpers.respond_to?(:params)
+        end
+
+        def icon_color_class(color)
+          icon_color_class_map.fetch(color.to_s, icon_color_class_map["blue"])
+        end
+
+        def icon_color_class_map
+          {
+            "blue" => "text-blue-600 hover:bg-blue-50",
+            "green" => "text-emerald-600 hover:bg-emerald-50",
+            "red" => "text-rose-600 hover:bg-rose-50",
+            "purple" => "text-violet-600 hover:bg-violet-50",
+            "gray" => "text-gray-700 hover:bg-gray-50",
+            "teal" => "text-teal-600 hover:bg-teal-50"
+          }
+        end
+
+        def icon_button_base_classes
+          "inline-flex items-center justify-center h-9 w-9 rounded-md border border-gray-200 " \
+            "bg-white shadow-sm transition-colors"
+        end
+
+        def icon_link_attrs(url, title, data_attrs, color_class)
+          {
+            href: url,
+            class: build_classes(icon_button_base_classes, color_class),
+            title: title,
+            data: data_attrs
+          }
+        end
+
+        def render_icon_svg(icon_path)
+          svg(class: "h-4 w-4", fill: "none", stroke: "currentColor",
+              viewBox: "0 0 24 24") do |s|
+            s.path(stroke_linecap: "round", stroke_linejoin: "round", stroke_width: "2",
+                   d: icon_path)
+          end
         end
       end
     end

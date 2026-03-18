@@ -13,7 +13,7 @@ module RubyCms
       # @param controller_name [String] Stimulus controller identifier
       # @param class [String, nil] Additional CSS classes
       class BulkActionTableRow < BaseComponent
-        def initialize( # rubocop:disable Metrics/ParameterLists
+        def initialize(
           click_url: nil,
           data: {},
           cells: nil,

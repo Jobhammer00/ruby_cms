@@ -7,12 +7,8 @@ module RubyCms
     class BaseComponent < (defined?(RubyUI) && RubyUI.const_defined?(:Base) ? RubyUI::Base : Phlex::HTML)
       # Include Rails helpers if Phlex::HTML is used directly
       if defined?(Phlex::Rails::Helpers)
-        if defined?(Phlex::Rails::Helpers::FormAuthenticityToken)
-          include Phlex::Rails::Helpers::FormAuthenticityToken
-        end
-        if defined?(Phlex::Rails::Helpers::TurboFrameTag)
-          include Phlex::Rails::Helpers::TurboFrameTag
-        end
+        include Phlex::Rails::Helpers::FormAuthenticityToken if defined?(Phlex::Rails::Helpers::FormAuthenticityToken)
+        include Phlex::Rails::Helpers::TurboFrameTag if defined?(Phlex::Rails::Helpers::TurboFrameTag)
         include Phlex::Rails::Helpers::Sanitize if defined?(Phlex::Rails::Helpers::Sanitize)
         include Phlex::Rails::Helpers::LinkTo if defined?(Phlex::Rails::Helpers::LinkTo)
         include Phlex::Rails::Helpers::ButtonTo if defined?(Phlex::Rails::Helpers::ButtonTo)

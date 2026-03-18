@@ -85,8 +85,16 @@ module RubyCms
 
       def json_index_blocks(collection)
         scope = collection.limit(100)
-        scope = scope.includes(:rich_content) if scope.respond_to?(:includes) && ::ContentBlock.respond_to?(:reflect_on_association) && ::ContentBlock.reflect_on_association(:rich_content)
+        scope = include_rich_content(scope)
         { content_blocks: serialize_content_blocks(scope) }
+      end
+
+      def include_rich_content(scope)
+        return scope unless scope.respond_to?(:includes)
+        return scope unless ::ContentBlock.respond_to?(:reflect_on_association)
+        return scope unless ::ContentBlock.reflect_on_association(:rich_content)
+
+        scope.includes(:rich_content)
       end
 
       def bulk_action(action)
@@ -318,26 +326,30 @@ module RubyCms
         return "" unless block.respond_to?(:rich_content)
         return "" unless block.content_type.to_s == "rich_text"
 
-        html = rich_content_body_html(block)
-        html = html.to_s.strip
+        html = rich_content_body_html(block).to_s.strip
         return ensure_rich_content_html(html) if html.present?
 
         # Fallback: content column (seeded or synced plain text)
         return "<p>#{ERB::Util.html_escape(block.content)}</p>" if block.content.present?
 
         # Fallback: plain text from Action Text when body HTML is blank
-        if block.rich_content.respond_to?(:to_plain_text)
-          text = block.rich_content.to_plain_text.to_s.strip
-          return "<p>#{ERB::Util.html_escape(text)}</p>" if text.present?
-        end
+        fallback_text = rich_content_plain_text(block)
+        return "<p>#{ERB::Util.html_escape(fallback_text)}</p>" if fallback_text.present?
 
         ""
+      end
+
+      def rich_content_plain_text(block)
+        return "" unless block.rich_content.respond_to?(:to_plain_text)
+
+        block.rich_content.to_plain_text.to_s.strip
       end
 
       # Trix expects HTML. If we have plain text (no tags), wrap in <p>.
       def ensure_rich_content_html(str)
         return "" if str.blank?
         return str if str.strip.start_with?("<")
+
         "<p>#{ERB::Util.html_escape(str)}</p>"
       end
 

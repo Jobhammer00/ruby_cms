@@ -391,6 +391,7 @@ DEPENDENCIES
   factory_bot_rails
   irb
   nokogiri (>= 1.19.1)
+  ostruct
   pronto
   pronto-annotations_formatter
   pronto-erb_lint

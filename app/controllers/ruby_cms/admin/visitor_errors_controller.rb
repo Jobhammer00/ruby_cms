@@ -38,7 +38,7 @@ module RubyCms
 
       def bulk_mark_as_resolved
         ids = Array(params[:item_ids]).filter_map(&:to_i)
-        count = RubyCms::VisitorError.where(id: ids).update_all(resolved: true)
+        count = mark_visitor_errors_resolved(ids)
         redirect_to ruby_cms_admin_visitor_errors_path,
                     notice: t("ruby_cms.admin.visitor_errors.bulk_resolved", count:)
       end
@@ -65,6 +65,16 @@ module RubyCms
 
       def sanitize_search_term(term)
         term.to_s.strip.gsub(/[%_\\]/, "").truncate(100)
+      end
+
+      def mark_visitor_errors_resolved(ids)
+        scope = RubyCms::VisitorError.where(id: ids)
+        count = 0
+        scope.find_each do |record|
+          record.update!(resolved: true)
+          count += 1
+        end
+        count
       end
 
       def render_index

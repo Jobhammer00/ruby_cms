@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class CreateRubyCmsContentBlocks < ActiveRecord::Migration[7.1]
-  def change # rubocop:disable Metrics/MethodLength
+  def change
     create_table :ruby_cms_content_blocks do |t|
       t.string :key, null: false
       t.string :title

@@ -31,7 +31,10 @@ module RubyCms
               "#{@controller_name}-target": "bulkBar"
             }
           ) do
-            div(class: "flex items-center justify-between gap-3 rounded-lg border border-gray-200/80 bg-white px-4 py-3 shadow-sm") do
+            div(
+              class: "flex items-center justify-between gap-3 rounded-lg border " \
+                     "border-gray-200/80 bg-white px-4 py-3 shadow-sm"
+            ) do
               render_selection_info
               render_action_buttons
             end
@@ -50,7 +53,8 @@ module RubyCms
             ) { "0 #{@item_name}s selected:" }
             button(
               type: "button",
-              class: "text-sm font-medium text-gray-600 hover:text-gray-900 hover:underline transition-colors",
+              class: "text-sm font-medium text-gray-600 hover:text-gray-900 hover:underline " \
+                     "transition-colors",
               data: {
                 "#{@controller_name}-target": "selectAllButton",
                 action: "click->#{@controller_name}#selectAll"
@@ -58,7 +62,8 @@ module RubyCms
             ) { "Select all" }
             button(
               type: "button",
-              class: "text-sm font-medium text-gray-600 hover:text-gray-900 hover:underline transition-colors",
+              class: "text-sm font-medium text-gray-600 hover:text-gray-900 hover:underline " \
+                     "transition-colors",
               data: {
                 action: "click->#{@controller_name}#clearSelection"
               }
@@ -88,7 +93,9 @@ module RubyCms
         end
 
         def build_button_class(config)
-          base = "inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm hover:bg-gray-50 transition-colors"
+          base = "inline-flex items-center justify-center rounded-md border border-gray-200 " \
+                 "bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm " \
+                 "hover:bg-gray-50 transition-colors"
           config[:class].present? ? "#{base} #{config[:class]}" : base
         end
 
@@ -111,7 +118,9 @@ module RubyCms
         def render_delete_button
           button(
             type: "button",
-            class: "inline-flex items-center justify-center rounded-md border border-rose-200 bg-white px-3 py-2 text-sm font-medium text-rose-700 shadow-sm hover:bg-rose-50 transition-colors",
+            class: "inline-flex items-center justify-center rounded-md border border-rose-200 " \
+                   "bg-white px-3 py-2 text-sm font-medium text-rose-700 shadow-sm " \
+                   "hover:bg-rose-50 transition-colors",
             data: {
               action: "click->#{@controller_name}#showActionDialog",
               action_name: "delete",

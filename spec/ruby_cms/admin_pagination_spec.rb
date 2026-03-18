@@ -3,29 +3,37 @@
 require "rails_helper"
 
 RSpec.describe RubyCms::AdminPagination do
-  class PaginationDummy
-    include RubyCms::AdminPagination
+  let(:pagination_dummy_class) do
+    Class.new do
+      include RubyCms::AdminPagination
 
-    paginates per_page: -> { RubyCms.setting(:content_blocks_per_page, default: 50) }
+      paginates per_page: -> { RubyCms.setting(:content_blocks_per_page, default: 50) }
 
-    attr_reader :params, :request
+      attr_reader :params, :request
 
-    def initialize(params: {}, query: {}, path: "/admin/content_blocks")
-      @params = params.with_indifferent_access
-      @request = Struct.new(:query_parameters, :path).new(query.with_indifferent_access, path)
+      def initialize(params: {}, query: {}, path: "/admin/content_blocks")
+        @params = params.with_indifferent_access
+        @request = Struct.new(:query_parameters, :path).new(query.with_indifferent_access, path)
+      end
     end
+  end
+
+  before do
+    stub_const("PaginationDummy", pagination_dummy_class)
   end
 
   it "clamps per_page to settings max" do
     allow(RubyCms).to receive(:setting).and_wrap_original do |orig, key, default: nil|
       case key.to_sym
       when :content_blocks_per_page then 500
-      else orig.call(key, default: default)
+      else orig.call(key, default:)
       end
     end
     allow(RubyCms::Settings).to receive(:get).and_call_original
-    allow(RubyCms::Settings).to receive(:get).with(:pagination_min_per_page, default: 5).and_return(10)
-    allow(RubyCms::Settings).to receive(:get).with(:pagination_max_per_page, default: 200).and_return(25)
+    allow(RubyCms::Settings).to receive(:get).with(:pagination_min_per_page,
+                                                   default: 5).and_return(10)
+    allow(RubyCms::Settings).to receive(:get).with(:pagination_max_per_page,
+                                                   default: 200).and_return(25)
 
     dummy = PaginationDummy.new(params: { page: 1 })
     result = dummy.paginate_collection((1..100).to_a)
@@ -39,12 +47,14 @@ RSpec.describe RubyCms::AdminPagination do
     allow(RubyCms).to receive(:setting).and_wrap_original do |orig, key, default: nil|
       case key.to_sym
       when :content_blocks_per_page then 1
-      else orig.call(key, default: default)
+      else orig.call(key, default:)
       end
     end
     allow(RubyCms::Settings).to receive(:get).and_call_original
-    allow(RubyCms::Settings).to receive(:get).with(:pagination_min_per_page, default: 5).and_return(10)
-    allow(RubyCms::Settings).to receive(:get).with(:pagination_max_per_page, default: 200).and_return(200)
+    allow(RubyCms::Settings).to receive(:get).with(:pagination_min_per_page,
+                                                   default: 5).and_return(10)
+    allow(RubyCms::Settings).to receive(:get).with(:pagination_max_per_page,
+                                                   default: 200).and_return(200)
 
     dummy = PaginationDummy.new(params: { page: 1 })
     result = dummy.paginate_collection((1..100).to_a)

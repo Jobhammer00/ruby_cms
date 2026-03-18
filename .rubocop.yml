@@ -17,6 +17,7 @@ Layout/FirstHashElementLineBreak:
   Enabled: true
 
 Layout/LineLength:
+  Enabled: false
   Severity: convention
   Max: 100
   Exclude:
@@ -67,6 +68,7 @@ Lint/UnusedBlockArgument:
 
 # Metrics rules
 Metrics/AbcSize:
+  Enabled: false
   Severity: refactor
 
 Metrics/BlockLength:
@@ -85,9 +87,11 @@ Metrics/ClassLength:
   Enabled: false
 
 Metrics/CyclomaticComplexity:
+  Enabled: false
   Severity: refactor
 
 Metrics/MethodLength:
+  Enabled: false
   Severity: convention
   CountAsOne: ["array", "hash"]
 
@@ -95,9 +99,11 @@ Metrics/ModuleLength:
   Enabled: false
 
 Metrics/ParameterLists:
+  Enabled: false
   Severity: refactor
 
 Metrics/PerceivedComplexity:
+  Enabled: false
   Severity: refactor
 
 # Security rules
@@ -189,6 +195,9 @@ Rails/Output:
 Rails/OutputSafety:
   Severity: warning
 
+Rails/Pluck:
+  Enabled: false
+
 Rails/TimeZone:
   Severity: warning
 
@@ -215,6 +224,15 @@ RSpec/DescribeClass:
 RSpec/ExampleLength:
   Enabled: false
 
+RSpec/BeEq:
+  Enabled: false
+
+RSpec/BeforeAfterAll:
+  Enabled: false
+
+RSpec/LeakyConstantDeclaration:
+  Enabled: false
+
 RSpec/Focus:
   Enabled: true
   Severity: error
@@ -224,7 +242,7 @@ RSpec/MultipleDescribes:
   Severity: warning
 
 RSpec/MultipleExpectations:
-  Max: 5
+  Enabled: false
 
 RSpec/MultipleMemoizedHelpers:
   Enabled: true

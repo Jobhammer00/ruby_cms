@@ -49,7 +49,7 @@ class ContentBlock < ApplicationRecord
   scope :for_current_locale, -> { where(locale: I18n.locale.to_s) }
   scope :preloaded, -> { includes(:updated_by) }
 
-  scope :indexed_by, lambda { |index|
+  scope :indexed_by, lambda {|index|
     case index.to_s
     when "published" then published
     when "unpublished" then unpublished
@@ -57,7 +57,7 @@ class ContentBlock < ApplicationRecord
     end
   }
 
-  scope :sorted_by, lambda { |sort|
+  scope :sorted_by, lambda {|sort|
     case sort.to_s
     when "latest" then reverse_chronologically
     when "oldest" then chronologically
@@ -112,7 +112,8 @@ class ContentBlock < ApplicationRecord
   private
 
   def key_not_reserved
-    prefixes = Array(RubyCms::Settings.get(:reserved_key_prefixes, default: ["admin_"])).map(&:to_s)
+    prefixes =
+      Array(RubyCms::Settings.get(:reserved_key_prefixes, default: ["admin_"])).map(&:to_s)
     return unless key.to_s.start_with?(*prefixes)
 
     errors.add(:key, :reserved)
@@ -123,18 +124,22 @@ class ContentBlock < ApplicationRecord
   def image_content_type
     return unless respond_to?(:image) && image.attached?
 
-    allowed = Array(
+    return if image.content_type.in?(allowed_image_content_types)
+
+    errors.add(:image, :content_type_invalid)
+  rescue StandardError
+    errors.add(:image, :content_type_invalid)
+  end
+
+  def allowed_image_content_types
+    Array(
       RubyCms::Settings.get(
         :image_content_types,
         default: ["image/png", "image/jpeg", "image/gif", "image/webp"]
       )
     ).map(&:to_s)
-
-    return if image.content_type.in?(allowed)
-
-    errors.add(:image, :content_type_invalid)
   rescue StandardError
-    errors.add(:image, :content_type_invalid)
+    ["image/png", "image/jpeg", "image/gif", "image/webp"]
   end
 
   def image_size

@@ -13,7 +13,7 @@ module RubyCms
       # @param turbo_frame [String, nil] Turbo Frame ID for updates
       # @param controller_name [String] Stimulus controller identifier
       class BulkActionTableActions < BaseComponent
-        def initialize( # rubocop:disable Metrics/ParameterLists
+        def initialize(
           delete_path:,
           item_id:,
           edit_path: nil,
@@ -45,7 +45,8 @@ module RubyCms
         def render_edit_button
           link_options = {
             href: @edit_path,
-            class: "inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+            class: "inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-500 " \
+                   "hover:bg-gray-100 hover:text-gray-900 transition-colors"
           }
           link_options[:data] = { turbo_frame: @turbo_frame } if @turbo_frame
 
@@ -70,7 +71,8 @@ module RubyCms
           item_id = @item_id || extract_item_id_from_path
           button(
             type: "button",
-            class: "inline-flex h-8 w-8 items-center justify-center rounded-md text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors",
+            class: "inline-flex h-8 w-8 items-center justify-center rounded-md text-rose-600 " \
+                   "hover:bg-rose-50 hover:text-rose-700 transition-colors",
             data: {
               action: "click->#{@controller_name}#showIndividualDeleteDialog",
               "#{@controller_name}-item-id-param": item_id,

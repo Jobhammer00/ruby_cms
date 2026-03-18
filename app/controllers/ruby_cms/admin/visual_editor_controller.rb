@@ -38,7 +38,7 @@ module RubyCms
       end
 
       private
-      
+
       def apply_visual_editor_locale
         requested = params[:locale].presence
         return if requested.blank?
@@ -167,7 +167,8 @@ module RubyCms
         return nil unless block.respond_to?(:rich_content)
         return nil unless block.rich_content.respond_to?(:body) && block.rich_content.body.present?
 
-        block.rich_content.body.respond_to?(:to_html) ? block.rich_content.body.to_html : block.rich_content.body.to_s
+        body = block.rich_content.body
+        body.respond_to?(:to_html) ? body.to_html : body.to_s
       end
 
       def formatted_updated_at(block)
@@ -310,7 +311,7 @@ module RubyCms
         return unless data_proc.respond_to?(:call)
 
         data = data_proc.call(page_key, view_context)
-        return unless data.is_a?(Hash)
+        return unless data.kind_of?(Hash)
 
         data.each do |k, v|
           instance_variable_set(:"@#{k}", v)

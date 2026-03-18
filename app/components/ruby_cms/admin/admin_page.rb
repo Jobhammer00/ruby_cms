@@ -8,20 +8,12 @@ module RubyCms
     # `RubyCms::Admin::AdminPage` as a CLASS (not a module inferred from the
     # `admin_page/` directory).
     class AdminPage < BaseComponent
-      def initialize(title: nil, footer: nil, **options) # rubocop:disable Metrics/MethodLength
+      def initialize(title: nil, footer: nil, **options)
         super()
         @title = title
-        @subtitle = options[:subtitle]
-        @actions = options[:actions] || []
-        @action_icons = options[:action_icons] || []
-        @search = options[:search]
-        @breadcrumbs = options[:breadcrumbs]
-        @padding = options.fetch(:padding, false)
-        @overflow = options.fetch(:overflow, true)
-        @content_card = options.fetch(:content_card, true)
-        @turbo_frame = options[:turbo_frame]
-        @turbo_frame_options = options[:turbo_frame_options]
         @footer = footer
+
+        assign_options(options)
         @user_attrs = extract_user_attrs(options)
       end
 
@@ -107,15 +99,18 @@ module RubyCms
       def render_header
         return unless @title || @action_icons.any? || @actions.any? || @search
 
-        div(class: "flex flex-col gap-3") do
-          div(class: "flex flex-wrap items-start justify-between gap-4") do
-            render_header_title_group
-            render_header_actions_icons
-          end
-          div(class: "flex flex-wrap items-center justify-between gap-3") do
-            render_search if @search
-            div(class: "flex items-center gap-2 flex-wrap") { render_header_action_buttons }
-          end
+        div(class: "flex flex-col gap-3") { render_header_rows }
+      end
+
+      def render_header_rows
+        div(class: "flex flex-wrap items-start justify-between gap-4") do
+          render_header_title_group
+          render_header_actions_icons
+        end
+
+        div(class: "flex flex-wrap items-center justify-between gap-3") do
+          render_search if @search
+          div(class: "flex items-center gap-2 flex-wrap") { render_header_action_buttons }
         end
       end
 
@@ -160,23 +155,9 @@ module RubyCms
       end
 
       def icon_attrs(action)
-        color = (action[:color] || "blue").to_s
-        color_classes = {
-          "blue" => "text-blue-600 hover:bg-blue-50",
-          "green" => "text-green-600 hover:bg-green-50",
-          "red" => "text-red-600 hover:bg-red-50",
-          "purple" => "text-purple-600 hover:bg-purple-50",
-          "gray" => "text-gray-700 hover:bg-gray-50",
-          "teal" => "text-teal-600 hover:bg-teal-50"
-        }
-        color_class = color_classes[color] || color_classes["blue"]
-
-        attrs = {
-          class: build_classes("inline-flex items-center justify-center w-9 h-9 rounded-lg", color_class),
-          title: action[:title] || action[:label] || "",
-          aria_label: action[:title] || action[:label] || ""
-        }
-        attrs[:data] = action[:data] if action[:data]
+        attrs = base_icon_attrs(action)
+        data = action[:data]
+        attrs[:data] = data if data
         attrs
       end
 
@@ -235,9 +216,10 @@ module RubyCms
       end
 
       def build_action_attributes(action)
-        base = "inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition"
+        base = "inline-flex items-center justify-center rounded-lg px-3 py-2 " \
+               "text-sm font-medium transition"
         secondary = "bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50"
-        variant = action_primary?(action) ? "bg-teal-600 text-white hover:bg-teal-700" : secondary
+        variant = action_primary?(action) ? primary_action_classes : secondary
         attrs = { class: build_classes(base, variant, action[:class]) }
         attrs[:data] = action[:data] if action[:data]
         attrs
@@ -272,8 +254,8 @@ module RubyCms
               class: "bg-white rounded-lg border border-gray-200/80 shadow-sm " \
                      "p-5 sm:p-6 flex-1 flex flex-col min-h-0"
             ) { yield if block_given? }
-          else
-            yield if block_given?
+          elsif block_given?
+            yield
           end
         end
       end
@@ -298,8 +280,11 @@ module RubyCms
               svg_icon_path("M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z")
             end
             input(
-              type: "search", name: opts[:name] || "q", placeholder: opts[:placeholder] || "Search",
-              class: "w-full sm:w-72 pl-10 pr-3 py-2 text-sm rounded-lg bg-white ring-1 ring-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-200",
+              type: "search",
+              name: opts[:name] || "q",
+              placeholder: opts[:placeholder] || "Search",
+              class: "w-full sm:w-72 pl-10 pr-3 py-2 text-sm rounded-lg bg-white ring-1 " \
+                     "ring-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-200",
               value: opts[:value],
               data: { action: "input->turbo-frame#submit" }
             )
@@ -309,6 +294,51 @@ module RubyCms
 
       def get_method?(method)
         [:get, "get"].include?(method)
+      end
+
+      def assign_options(options)
+        @subtitle = options[:subtitle]
+        @actions = options[:actions] || []
+        @action_icons = options[:action_icons] || []
+        @search = options[:search]
+        @breadcrumbs = options[:breadcrumbs]
+        @padding = options.fetch(:padding, false)
+        @overflow = options.fetch(:overflow, true)
+        @content_card = options.fetch(:content_card, true)
+        @turbo_frame = options[:turbo_frame]
+        @turbo_frame_options = options[:turbo_frame_options]
+      end
+
+      def base_icon_attrs(action)
+        label = action[:title] || action[:label] || ""
+        {
+          class: build_classes(icon_base_classes, icon_color_classes(action[:color])),
+          title: label,
+          aria_label: label
+        }
+      end
+
+      def icon_color_classes(color)
+        icon_color_class_map.fetch((color || "blue").to_s, icon_color_class_map["blue"])
+      end
+
+      def icon_color_class_map
+        {
+          "blue" => "text-blue-600 hover:bg-blue-50",
+          "green" => "text-green-600 hover:bg-green-50",
+          "red" => "text-red-600 hover:bg-red-50",
+          "purple" => "text-purple-600 hover:bg-purple-50",
+          "gray" => "text-gray-700 hover:bg-gray-50",
+          "teal" => "text-teal-600 hover:bg-teal-50"
+        }
+      end
+
+      def icon_base_classes
+        "inline-flex items-center justify-center w-9 h-9 rounded-lg"
+      end
+
+      def primary_action_classes
+        "bg-teal-600 text-white hover:bg-teal-700"
       end
     end
   end
