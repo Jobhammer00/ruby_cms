@@ -30,6 +30,7 @@ module RubyCms
     private
 
     def render_inline_404
+      escaped_path = ERB::Util.html_escape(request.path.to_s)
       render inline: <<~HTML, status: :not_found, layout: false
         <!DOCTYPE html>
         <html>
@@ -101,7 +102,7 @@ module RubyCms
             <h1>404</h1>
             <h2>Page Not Found</h2>
             <p>The page you are looking for doesn't exist or has been moved.</p>
-            <div class="path">#{request.path}</div>
+            <div class="path">#{escaped_path}</div>
             <a href="/">Go to Homepage</a>
           </div>
         </body>

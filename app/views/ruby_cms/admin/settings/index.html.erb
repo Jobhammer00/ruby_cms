@@ -33,7 +33,7 @@
               class: "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors no-underline #{active ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}",
               data: { turbo_frame: "_top" } do %>
             <span class="inline-flex h-7 w-7 items-center justify-center rounded-md border text-sm #{active ? 'border-gray-200 bg-white text-gray-900' : 'border-transparent bg-gray-50 text-gray-600 group-hover:bg-white group-hover:border-gray-200'}" aria-hidden="true">
-              <%= cfg[:icon] %>
+              <%= ruby_cms_safe_svg_fragment(cfg[:icon]) %>
             </span>
             <span class="flex-1"><%= settings_tab_label(category_s) %></span>
             <% if active %>

@@ -949,11 +949,12 @@ module RubyCms
         end
 
         def open3_seed_permissions_process
-          Open3.popen3(seed_permissions_command, chdir: Rails.root.to_s)
+          Open3.popen3(*seed_permissions_command, chdir: Rails.root.to_s)
         end
 
         def seed_permissions_command
-          "bin/rails ruby_cms:seed_permissions ruby_cms:import_initializer_settings"
+          # Use argv form to avoid invoking a shell.
+          %w[bin/rails ruby_cms:seed_permissions ruby_cms:import_initializer_settings]
         end
 
         def stream_seed_permissions_stderr(stderr)

@@ -28,7 +28,7 @@ RSpec.describe RubyCms::Analytics::Report, type: :model do
         t.string :request_path
       end
 
-      create_table :ruby_cms_preferences, force: true do |t|
+      create_table :preferences, force: true do |t|
         t.string :key, null: false
         t.text :value
         t.string :value_type, default: "string", null: false

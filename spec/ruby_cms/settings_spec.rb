@@ -7,7 +7,7 @@ RSpec.describe RubyCms::Settings do
     ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
 
     ActiveRecord::Schema.define do
-      create_table :ruby_cms_preferences, force: true do |t|
+      create_table :preferences, force: true do |t|
         t.string :key, null: false
         t.text :value
         t.string :value_type, default: "string", null: false

@@ -104,7 +104,7 @@ module RubyCms
     def load_existing_locale_data(locale_file)
       return {} unless locale_file.exist?
 
-      YAML.load_file(locale_file) || {}
+      safe_yaml_load_file(locale_file) || {}
     end
 
     def ensure_locale_root(existing_data, locale)
@@ -239,13 +239,32 @@ module RubyCms
       locale_file = @locales_dir.join("#{loc}.yml")
       return unless locale_file.exist?
 
-      locale_data = YAML.load_file(locale_file)
+      locale_data = safe_yaml_load_file(locale_file)
       blocks_data = extract_blocks_from_locale(locale_data, loc)
 
       assign_blocks_data_to_summary(summary, blocks_data, loc, create_missing:, update_existing:,
                                                                published:)
     rescue StandardError => e
       summary[:errors] << "Error processing #{loc}: #{e.message}"
+    end
+
+    def safe_yaml_load_file(path)
+      # Locale YAML should deserialize to Hash/Array/String/etc. Avoid YAML.load_file (object deserialization).
+      if YAML.respond_to?(:safe_load_file)
+        YAML.safe_load_file(
+          path,
+          permitted_classes: [],
+          permitted_symbols: [],
+          aliases: true
+        )
+      else
+        YAML.safe_load(
+          File.read(path),
+          permitted_classes: [],
+          permitted_symbols: [],
+          aliases: true
+        )
+      end
     end
 
     def assign_blocks_data_to_summary(summary, blocks_data, locale, create_missing:, # rubocop:disable Metrics/ParameterLists

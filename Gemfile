@@ -5,6 +5,9 @@ source "https://rubygems.org"
 # Specify your gem's dependencies in ruby_cms.gemspec
 gemspec
 
+gem "nokogiri", ">= 1.19.1"
+gem "rack", ">= 3.2.5"
+
 gem "irb"
 gem "rake", "~> 13.0"
 

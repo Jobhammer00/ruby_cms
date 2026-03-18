@@ -24,5 +24,18 @@ module RubyCms
         user: (current_user_cms if respond_to?(:current_user_cms))
       )
     end
+
+    # Render an SVG fragment (typically <path ...>) safely.
+    # Used for nav icons which may come from host app configuration.
+    def ruby_cms_safe_svg_fragment(fragment)
+      sanitize(
+        fragment.to_s,
+        tags: %w[svg path g circle rect line polygon polyline ellipse],
+        attributes: %w[
+          fill stroke stroke-linecap stroke-linejoin stroke-width d
+          class viewBox cx cy r x y points x1 y1 x2 y2 aria-hidden aria-label focusable
+        ]
+      )
+    end
   end
 end
