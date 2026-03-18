@@ -5,30 +5,20 @@
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between gap-4">
       <h1 class="text-lg font-semibold tracking-tight text-gray-900">Visual Editor</h1>
-      <div class="flex items-center gap-2"
-           data-controller="ruby-cms--visual-editor-header"
-           data-ruby-cms--visual-editor-header-current-page-value="<%= @current_page.to_s %>">
+      <%= form_with url: ruby_cms_admin_visual_editor_path, method: :get, class: "flex items-center gap-2", data: { turbo: false } do %>
+        <%= hidden_field_tag :edit_mode, @edit_mode %>
+
         <% if @available_pages && @available_pages.size > 1 %>
-          <%= select_tag('page-selector',
+          <%= select_tag(
+            :page,
             options_for_select(@available_pages.map { |k, v| [v[:name], k] }, @current_page),
             class: "h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200",
-            data: {
-              ruby_cms__visual_editor_header_target: "pageSelector",
-              action: "change->ruby-cms--visual-editor-header#changePage"
-            }
+            onchange: "this.form.requestSubmit()"
           ) %>
+        <% else %>
+          <%= hidden_field_tag :page, @current_page %>
         <% end %>
-
-        <button
-          type="button"
-          class="inline-flex items-center justify-center h-9 w-9 rounded-md border border-gray-200 bg-white text-emerald-600 shadow-sm hover:bg-emerald-50 transition-colors"
-          title="Refresh"
-          data-action="click->ruby-cms--visual-editor-header#refresh">
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
-          </svg>
-        </button>
-      </div>
+      <% end %>
     </div>
 
     <!-- Visual Editor -->

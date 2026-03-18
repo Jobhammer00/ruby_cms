@@ -2,7 +2,6 @@
 // This file exports all controllers for registration in the host application
 
 import VisualEditorController from "ruby_cms/visual_editor_controller";
-import VisualEditorHeaderController from "ruby_cms/visual_editor_header_controller";
 import PagePreviewController from "ruby_cms/page_preview_controller";
 import MobileMenuController from "ruby_cms/mobile_menu_controller";
 import FlashMessagesController from "ruby_cms/flash_messages_controller";
@@ -15,7 +14,6 @@ import NavOrderSortableController from "ruby_cms/nav_order_sortable_controller";
 
 export {
   VisualEditorController,
-  VisualEditorHeaderController,
   PagePreviewController,
   MobileMenuController,
   FlashMessagesController,
@@ -30,10 +28,6 @@ export {
 // Helper function to register all RubyCms controllers with a Stimulus application
 export function registerRubyCmsControllers(application) {
   application.register("ruby-cms--visual-editor", VisualEditorController);
-  application.register(
-    "ruby-cms--visual-editor-header",
-    VisualEditorHeaderController,
-  );
   application.register("ruby-cms--page-preview", PagePreviewController);
   application.register("ruby-cms--mobile-menu", MobileMenuController);
   application.register("ruby-cms--flash-messages", FlashMessagesController);

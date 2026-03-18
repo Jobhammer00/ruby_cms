@@ -4,6 +4,7 @@ module RubyCms
   module Admin
     class VisualEditorController < BaseController
       before_action { require_permission!(:manage_content_blocks) }
+      before_action :apply_visual_editor_locale
 
       def index
         @available_pages = available_pages
@@ -37,6 +38,23 @@ module RubyCms
       end
 
       private
+      
+      def apply_visual_editor_locale
+        requested = params[:locale].presence
+        return if requested.blank?
+
+        locale = requested.to_s
+        return unless available_locales.include?(locale)
+
+        session[:ruby_cms_locale] = locale
+        I18n.locale = locale.to_sym
+      end
+
+      def available_locales
+        I18n.available_locales.map(&:to_s)
+      rescue StandardError
+        [I18n.default_locale.to_s]
+      end
 
       def determine_current_page
         requested = params[:page].presence
@@ -206,7 +224,7 @@ module RubyCms
       end
 
       def current_locale
-        params[:locale] || session[:ruby_cms_locale] || I18n.locale.to_s
+        (params[:locale] || session[:ruby_cms_locale] || I18n.locale.to_s).to_s
       end
 
       def default_locale

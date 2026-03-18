@@ -29,7 +29,8 @@ export default class extends Controller {
     this.editMode = false
 
     // Listen for messages from iframe
-    window.addEventListener("message", this.handleMessage.bind(this))
+    this.boundHandleMessage = this.handleMessage.bind(this)
+    window.addEventListener("message", this.boundHandleMessage)
     
     // Listen for Escape key globally when modal is open
     this.boundHandleEscape = this.handleEscape.bind(this)
@@ -41,13 +42,15 @@ export default class extends Controller {
   }
 
   disconnect() {
-    window.removeEventListener("message", this.handleMessage.bind(this))
+    if (this.boundHandleMessage) {
+      window.removeEventListener("message", this.boundHandleMessage)
+    }
     document.removeEventListener("keydown", this.boundHandleEscape)
   }
 
   handleMessage(event) {
-    // In production, validate event.origin
-    // if (event.origin !== window.location.origin) return
+    // Only accept same-origin messages (iframe preview is same app)
+    if (event.origin !== window.location.origin) return
     
     const { type, blockId, blockIndex, page } = event.data
     
@@ -288,7 +291,7 @@ export default class extends Controller {
   sendMessageToPreview(message) {
     const iframe = this.previewFrameTarget
     if (iframe && iframe.contentWindow) {
-      iframe.contentWindow.postMessage(message, "*")
+      iframe.contentWindow.postMessage(message, window.location.origin)
     }
   }
 

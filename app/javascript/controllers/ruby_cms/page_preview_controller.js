@@ -21,11 +21,14 @@ export default class extends Controller {
   }
 
   enableEditMode() {
-    this.element.addEventListener("click", this.handleBlockClick.bind(this));
+    this.boundHandleBlockClick = this.handleBlockClick.bind(this);
+    this.element.addEventListener("click", this.boundHandleBlockClick);
   }
 
   disableEditMode() {
-    this.element.removeEventListener("click", this.handleBlockClick.bind(this));
+    if (this.boundHandleBlockClick) {
+      this.element.removeEventListener("click", this.boundHandleBlockClick);
+    }
   }
 
   handleBlockClick(event) {
@@ -59,12 +62,13 @@ export default class extends Controller {
           blockIndex,
           page: this.getCurrentPage(),
         },
-        "*",
+        window.location.origin,
       );
     }
   }
 
   handleMessage(event) {
+    if (event.origin !== window.location.origin) return;
     const { type, blockId, blockIndex = 0 } = event.data;
 
     if (type === "HIGHLIGHT_BLOCK") {

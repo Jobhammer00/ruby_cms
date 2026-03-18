@@ -76,14 +76,27 @@
 
   <div class="px-3 py-3 flex-shrink-0 bg-[#FAF9F5]" data-ruby-cms--mobile-menu-target="sidebarContent">
     <div class="mb-2">
-      <%= form_with url: ruby_cms_admin_locale_path, method: :patch, data: { turbo: true } do |form| %>
-        <%= form.select :locale,
-            options_for_select(I18n.available_locales.map { |loc| [loc.to_s.upcase, loc.to_s] }, I18n.locale.to_s),
-            {},
-            {
-              class: "w-full h-10 px-10 border-0 rounded-md text-sm font-medium bg-transparent text-teal-700 cursor-pointer appearance-none focus:outline-none focus:bg-teal-50 hover:bg-teal-50 transition-colors",
-              onchange: "this.form.requestSubmit()"
-            } %>
+      <%= form_with url: ruby_cms_admin_locale_path, method: :patch, scope: nil, data: { turbo: true } do |form| %>
+        <div class="relative">
+          <div class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-gray-600 rounded-md no-underline transition-colors hover:bg-blue-500 hover:text-white">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 100-18 9 9 0 000 18zM3.6 9h16.8M3.6 15h16.8M11 3c-2.2 2.2-3.5 5.2-3.5 9s1.3 6.8 3.5 9m2 0c2.2-2.2 3.5-5.2 3.5-9S15.2 5.2 13 3"/>
+            </svg>
+            <span class="flex-1 text-left"><%= ruby_cms_locale_display_name(I18n.locale) %></span>
+            <svg class="w-4 h-4 flex-shrink-0 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4-4 4 4M16 14l-4 4-4-4"/>
+            </svg>
+          </div>
+
+          <%= form.select :locale,
+              options_for_select(I18n.available_locales.map { |loc| [ruby_cms_locale_display_name(loc), loc.to_s] }, I18n.locale.to_s),
+              {},
+              {
+                class: "absolute inset-0 w-full h-full opacity-0 cursor-pointer",
+                aria: { label: "Locale" },
+                onchange: "this.form.requestSubmit()"
+              } %>
+        </div>
       <% end %>
     </div>
 
