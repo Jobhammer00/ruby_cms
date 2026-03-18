@@ -29,6 +29,10 @@ module RubyCms
 
       def new
         @content_block = ::ContentBlock.new(new_block_params)
+        # Most users expect newly created blocks to show on the site immediately.
+        # The public helper renders only `published` blocks, while the visual editor
+        # preview can show unpublished ones, which is confusing.
+        @content_block.published = true if @content_block.published.nil?
       end
 
       def edit
@@ -38,6 +42,7 @@ module RubyCms
       def create
         @content_block = ::ContentBlock.new(content_block_params)
         @content_block.record_update_by(current_user_cms)
+        @content_block.published = true if @content_block.published.nil?
         save_and_respond(@content_block, :new)
       end
 

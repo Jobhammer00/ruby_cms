@@ -112,7 +112,7 @@ module RubyCms
     end
 
     def content_for_block(block, default, fallback, key, translation_namespace, locale) # rubocop:disable Metrics/ParameterLists
-      if block.present?
+      if block.present? && !block_effectively_blank?(block)
         render_content_by_type(block)
       else
         resolve_fallback(default, fallback, key,
@@ -121,7 +121,7 @@ module RubyCms
     end
 
     def content_for_block_text(block, default, fallback, key, translation_namespace, locale) # rubocop:disable Metrics/ParameterLists
-      if block.present?
+      if block.present? && !block_effectively_blank?(block)
         render_text_content_by_type(block)
       else
         resolve_fallback(default, fallback,
@@ -155,7 +155,7 @@ module RubyCms
       return block.content.to_s if block.content.present? && !rich_content_body_present?(block)
 
       html = rich_content_body_html_for_view(block)
-      sanitize(html.presence || block.content.to_s)
+      sanitize_rich_text_html(html.presence || block.content.to_s)
     end
 
     def rich_content_body_html_for_view(block)
@@ -233,6 +233,26 @@ module RubyCms
       block.title.presence || block.content.to_s
     end
 
+    # Treat "blank" blocks like missing blocks so we can fall back to defaults/translations.
+    # This avoids confusing situations where an empty/unpublished DB record overrides a
+    # perfectly good I18n fallback (common during initial setup or partial edits).
+    def block_effectively_blank?(block)
+      case block.content_type.to_s
+      when "image"
+        block.respond_to?(:image) ? !block.image.attached? : block.content.to_s.blank?
+      when "rich_text"
+        if action_text_available?(block) && rich_content_body_present?(block)
+          rich_content_body_html_for_view(block).to_s.strip.blank?
+        else
+          block.content.to_s.strip.blank?
+        end
+      else
+        block.content.to_s.strip.blank? && block.title.to_s.strip.blank?
+      end
+    rescue StandardError
+      false
+    end
+
     def resolve_fallback(default, fallback, key, translation_namespace, locale)
       return fallback.to_s if fallback.present?
       return default.to_s if default.present?
@@ -251,9 +271,9 @@ module RubyCms
     end
 
     def translation_namespace_from_config
-      Rails.application.config.ruby_cms.content_blocks_translation_namespace
+      Rails.application.config.ruby_cms.content_blocks_translation_namespace.presence || "content_blocks"
     rescue StandardError
-      nil
+      "content_blocks"
     end
 
     def try_namespaced_translation(namespace, key)
@@ -283,6 +303,46 @@ module RubyCms
       else
         content.to_s.gsub(/<[^>]*>/, "").strip
       end
+    end
+
+    # Allow nested content blocks inside rich text to stay selectable in the visual editor
+    # by preserving the data attributes the preview click handler relies on.
+    def sanitize_rich_text_html(html)
+      str = html.to_s
+      return "" if str.blank?
+
+      base_tags = rails_sanitizer_allowed(:tags)
+      base_attrs = rails_sanitizer_allowed(:attributes)
+
+      extra_attrs = %w[
+        data-content-key
+        data-block-id
+        data-content-target
+      ]
+
+      # If we can introspect Rails' allowlists, extend them; otherwise fall back to Rails defaults.
+      if base_tags && base_attrs
+        sanitize(
+          str,
+          tags: base_tags,
+          attributes: (base_attrs + extra_attrs).uniq
+        )
+      else
+        sanitize(str)
+      end
+    end
+
+    def rails_sanitizer_allowed(kind)
+      return nil unless defined?(Rails::Html::SafeListSanitizer)
+
+      sanitizer = Rails::Html::SafeListSanitizer
+      if kind == :tags && sanitizer.respond_to?(:allowed_tags)
+        sanitizer.allowed_tags.to_a
+      elsif kind == :attributes && sanitizer.respond_to?(:allowed_attributes)
+        sanitizer.allowed_attributes.to_a
+      end
+    rescue StandardError
+      nil
     end
 
     def cache_key_for_content_block(key, cache_opts)

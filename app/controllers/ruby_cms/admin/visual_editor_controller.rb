@@ -21,8 +21,7 @@ module RubyCms
         return render_invalid_page unless template
 
         load_preview_data(@page_key)
-        # Full site layout so preview shows header, nav, footer; edit mode still works via page-preview controller
-        render template: template, layout: "application"
+        render template: template, layout: "ruby_cms/minimal"
       end
 
       def quick_update

@@ -96,7 +96,7 @@ export default class extends Controller {
         this.lastUpdatedTarget.textContent = block.updated_at || "Never"
         this.updateCharCount()
 
-        this.modalTarget.classList.add("ruby_cms-visual-editor-modal--visible")
+        this.modalTarget.classList.remove("hidden")
         document.addEventListener("keydown", this.boundHandleEscape)
 
         const tryLoadHTML = (attempt = 0) => {
@@ -116,7 +116,7 @@ export default class extends Controller {
         this.contentInputTarget.value = block.content || ""
         this.lastUpdatedTarget.textContent = block.updated_at || "Never"
         this.updateCharCount()
-        this.modalTarget.classList.add("ruby_cms-visual-editor-modal--visible")
+        this.modalTarget.classList.remove("hidden")
         document.addEventListener("keydown", this.boundHandleEscape)
         setTimeout(() => this.contentInputTarget.focus(), 50)
       }
@@ -133,7 +133,7 @@ export default class extends Controller {
   }
 
   closeModal() {
-    this.modalTarget.classList.remove("ruby_cms-visual-editor-modal--visible")
+    this.modalTarget.classList.add("hidden")
     this.currentContentBlockKey = null
     this.currentContentBlockLocale = null
     this.currentBlockIndex = 0
@@ -144,7 +144,7 @@ export default class extends Controller {
   
   handleEscape(event) {
     // Only handle Escape if modal is visible
-    if (event.key === "Escape" && this.modalTarget.classList.contains("ruby_cms-visual-editor-modal--visible")) {
+    if (event.key === "Escape" && !this.modalTarget.classList.contains("hidden")) {
       event.preventDefault()
       event.stopPropagation()
       this.closeModal()
@@ -294,10 +294,10 @@ export default class extends Controller {
 
   showToast(message) {
     this.toastMessageTarget.textContent = message
-    this.toastTarget.classList.add("ruby_cms-visual-editor-toast--visible")
+    this.toastTarget.classList.remove("hidden")
     
     setTimeout(() => {
-      this.toastTarget.classList.remove("ruby_cms-visual-editor-toast--visible")
+      this.toastTarget.classList.add("hidden")
     }, 3000)
   }
 

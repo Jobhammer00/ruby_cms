@@ -38,7 +38,22 @@
         min-width: 1em;
       }
       
+      .ruby_cms-preview-page--edit-mode .content-block {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        display: inline-block;
+        min-height: 1em;
+        min-width: 1em;
+      }
+      
       .ruby_cms-preview-page--edit-mode .ruby_cms-content-block:hover {
+        outline: 2px dashed rgb(59 130 246);
+        outline-offset: 2px;
+        background-color: rgba(59, 130, 246, 0.05);
+      }
+      
+      .ruby_cms-preview-page--edit-mode .content-block:hover {
         outline: 2px dashed rgb(59 130 246);
         outline-offset: 2px;
         background-color: rgba(59, 130, 246, 0.05);
@@ -50,14 +65,45 @@
         background-color: rgba(34, 197, 94, 0.1);
       }
       
+      .content-block.editing {
+        outline: 2px solid rgb(34 197 94);
+        outline-offset: 2px;
+        background-color: rgba(34, 197, 94, 0.1);
+      }
+      
       /* Make block-level content blocks more visible */
-      .ruby_cms-preview-page--edit-mode .ruby_cms-content-block[data-block-id] {
+      .ruby_cms-preview-page--edit-mode .ruby_cms-content-block[data-block-id],
+      .ruby_cms-preview-page--edit-mode .ruby_cms-content-block[data-content-key] {
         display: block;
         padding: 0.25rem;
         margin: 0.125rem 0;
       }
       
-      .ruby_cms-preview-page--edit-mode .ruby_cms-content-block[data-block-id]:hover::before {
+      .ruby_cms-preview-page--edit-mode .content-block[data-block-id],
+      .ruby_cms-preview-page--edit-mode .content-block[data-content-key] {
+        display: block;
+        padding: 0.25rem;
+        margin: 0.125rem 0;
+      }
+      
+      .ruby_cms-preview-page--edit-mode .ruby_cms-content-block[data-block-id]:hover::before,
+      .ruby_cms-preview-page--edit-mode .ruby_cms-content-block[data-content-key]:hover::before {
+        content: "✎ Edit";
+        position: absolute;
+        top: -1.5rem;
+        left: 0;
+        font-size: 0.75rem;
+        color: rgb(59 130 246);
+        background: white;
+        padding: 0.125rem 0.25rem;
+        border-radius: 0.25rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        pointer-events: none;
+        z-index: 10;
+      }
+      
+      .ruby_cms-preview-page--edit-mode .content-block[data-block-id]:hover::before,
+      .ruby_cms-preview-page--edit-mode .content-block[data-content-key]:hover::before {
         content: "✎ Edit";
         position: absolute;
         top: -1.5rem;
