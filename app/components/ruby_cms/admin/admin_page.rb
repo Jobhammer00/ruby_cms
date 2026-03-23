@@ -68,8 +68,8 @@ module RubyCms
       end
 
       def render_breadcrumbs
-        nav(class: "text-sm text-gray-500", aria_label: "Breadcrumb") do
-          ol(class: "flex items-center flex-wrap gap-x-2 gap-y-1") do
+        nav(class: "text-sm text-muted-foreground", aria_label: "Breadcrumb") do
+          ol(class: "flex items-center flex-wrap gap-y-1") do
             @breadcrumbs.each_with_index do |crumb, index|
               render_breadcrumb_item(crumb, index == @breadcrumbs.size - 1)
             end
@@ -84,15 +84,15 @@ module RubyCms
       end
 
       def render_breadcrumb_current(crumb)
-        span(class: "font-medium text-gray-900", aria_current: "page") do
+        span(class: "font-medium text-foreground", aria_current: "page") do
           crumb[:label] || crumb[:text]
         end
       end
 
       def render_breadcrumb_link(crumb)
-        a(href: crumb[:url] || crumb[:path], class: "hover:text-gray-700") do
+        a(href: crumb[:url] || crumb[:path], class: "hover:text-foreground transition-colors") do
           span { crumb[:label] || crumb[:text] }
-          span(class: "px-2 text-gray-300") { "/" }
+          span(class: "mx-1.5 text-muted-foreground/40 select-none") { "/" }
         end
       end
 
@@ -118,8 +118,8 @@ module RubyCms
         return unless @title || @subtitle
 
         div(class: "min-w-0") do
-          h1(class: "text-lg font-semibold text-gray-900 truncate") { @title } if @title
-          p(class: "text-sm text-gray-500 mt-0.5") { @subtitle } if @subtitle
+          h1(class: "text-lg font-semibold tracking-tight text-foreground truncate") { @title } if @title
+          p(class: "text-sm text-muted-foreground mt-0.5") { @subtitle } if @subtitle
         end
       end
 
@@ -217,8 +217,8 @@ module RubyCms
 
       def build_action_attributes(action)
         base = "inline-flex items-center justify-center rounded-lg px-3 py-2 " \
-               "text-sm font-medium transition"
-        secondary = "bg-white text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50"
+               "text-sm font-medium transition-colors"
+        secondary = "bg-white text-foreground border border-border shadow-sm hover:bg-muted"
         variant = action_primary?(action) ? primary_action_classes : secondary
         attrs = { class: build_classes(base, variant, action[:class]) }
         attrs[:data] = action[:data] if action[:data]
@@ -251,7 +251,7 @@ module RubyCms
         div(class: "flex-1 flex flex-col min-h-0") do
           if @content_card
             div(
-              class: "bg-white rounded-lg border border-gray-200/80 shadow-sm " \
+              class: "bg-white rounded-xl border border-border/60 shadow-sm ring-1 ring-black/[0.03] " \
                      "p-5 sm:p-6 flex-1 flex flex-col min-h-0"
             ) { yield if block_given? }
           elsif block_given?
@@ -276,15 +276,15 @@ module RubyCms
         form_with(url: opts[:url] || "#", method: :get, class: "w-full sm:w-auto",
                   data: { turbo_frame: opts[:turbo_frame] || "admin_table_content" }) do
           div(class: "relative flex items-center") do
-            span(class: "absolute left-3 text-gray-400 pointer-events-none") do
+            span(class: "absolute left-3 text-muted-foreground pointer-events-none") do
               svg_icon_path("M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z")
             end
             input(
               type: "search",
               name: opts[:name] || "q",
               placeholder: opts[:placeholder] || "Search",
-              class: "w-full sm:w-72 pl-10 pr-3 py-2 text-sm rounded-lg bg-white ring-1 " \
-                     "ring-gray-200 focus:outline-none focus:ring-2 focus:ring-teal-200",
+              class: "h-9 w-full sm:w-72 pl-10 pr-3 text-sm rounded-lg bg-white border border-border " \
+                     "shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20",
               value: opts[:value],
               data: { action: "input->turbo-frame#submit" }
             )
@@ -325,20 +325,20 @@ module RubyCms
       def icon_color_class_map
         {
           "blue" => "text-blue-600 hover:bg-blue-50",
-          "green" => "text-green-600 hover:bg-green-50",
-          "red" => "text-red-600 hover:bg-red-50",
-          "purple" => "text-purple-600 hover:bg-purple-50",
-          "gray" => "text-gray-700 hover:bg-gray-50",
+          "green" => "text-emerald-600 hover:bg-emerald-50",
+          "red" => "text-destructive hover:bg-destructive/10",
+          "purple" => "text-violet-600 hover:bg-violet-50",
+          "gray" => "text-muted-foreground hover:bg-muted",
           "teal" => "text-teal-600 hover:bg-teal-50"
         }
       end
 
       def icon_base_classes
-        "inline-flex items-center justify-center w-9 h-9 rounded-lg"
+        "inline-flex items-center justify-center size-9 rounded-md transition-colors"
       end
 
       def primary_action_classes
-        "bg-teal-600 text-white hover:bg-teal-700"
+        "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm"
       end
     end
   end

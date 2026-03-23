@@ -22,7 +22,7 @@ module RubyCms
         end
 
         def view_template
-          thead(class: "bg-gray-50") do
+          thead(class: "sticky top-0 z-20 bg-muted/40 [&_tr]:border-b [&_tr]:border-border/60") do
             tr do
               render_bulk_checkbox_header
               render_table_headers
@@ -51,7 +51,7 @@ module RubyCms
         end
 
         def th_base_classes
-          "px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500"
+          "px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground"
         end
       end
     end

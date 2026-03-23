@@ -29,18 +29,7 @@
   end
 %>
 
-  <% locale_filter_url = ruby_cms_admin_content_blocks_path %>
-  <% locale_filter_html = capture do %>
-    <%= tag.div class: "flex items-center gap-1" do %>
-      <%= tag.span "Locale:", class: "text-xs font-medium text-gray-500 mr-1" %>
-      <% ([nil] + I18n.available_locales.to_a).each do |loc| %>
-        <% is_active = (params[:locale].blank? && loc.nil?) || (loc && params[:locale].to_s == loc.to_s) %>
-        <%= link_to (loc ? ruby_cms_locale_display_name(loc) : "All"), (loc ? "#{locale_filter_url}?locale=#{loc}" : locale_filter_url), class: "inline-flex items-center rounded-md px-2.5 py-1 text-xs font-medium transition-colors no-underline #{is_active ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'}", data: { turbo_frame: "admin_table_content" } %>
-      <% end %>
-    <% end %>
-  <% end %>
   <%= render partial: "ruby_cms/admin/shared/bulk_action_table_index", locals: {
-    header_filter: locale_filter_html,
     title: "Content blocks",
     collection: @content_blocks || [],
     headers: ["Key", "Locale", "Title", "Type", "Published", { text: "Actions", class: "text-right" }],

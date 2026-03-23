@@ -23,7 +23,7 @@ module RubyCms
       end
 
       def show
-        @blocks_by_locale = load_blocks_by_locale_for_show
+        @blocks_by_locale = load_blocks_by_locale_for_edit
         respond_with_block(@content_block)
       end
 
@@ -37,6 +37,7 @@ module RubyCms
 
       def edit
         @blocks_by_locale = load_blocks_by_locale_for_edit
+        render :show
       end
 
       def create
@@ -135,12 +136,12 @@ module RubyCms
       def handle_locale_update_errors(errors)
         @content_block.errors.add(:base, errors.join("; "))
         @blocks_by_locale = load_blocks_by_locale_for_edit
-        render :edit, status: :unprocessable_content
+        render :show, status: :unprocessable_content
       end
 
       def update_single_block
         @content_block.record_update_by(current_user_cms)
-        save_and_respond(@content_block, :edit)
+        save_and_respond(@content_block, :show)
       end
 
       def save_and_respond(block, failure_view)

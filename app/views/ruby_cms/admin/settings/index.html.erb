@@ -1,220 +1,259 @@
 <%
   nav_main_section = "main"
-  nav_bottom_section = "Settings"
   nav_entries = ruby_cms_nav_entries
   nav_main_entries = nav_entries.select { |e| (e[:section].to_s.presence || nav_main_section) == nav_main_section }
   nav_bottom_entries = nav_entries.select { |e| (e[:section].to_s.presence || nav_main_section) != nav_main_section }
-  nav_item_entries = @active_tab == "navigation" ? @entries_for_tab.reject { |e| e.key == "nav_order" } : []
+  nav_item_entries = @active_tab == "navigation" ? @entries_for_tab.reject { |e| e.key.to_s == "nav_order" } : []
   nav_sub = params[:nav_sub].to_s.presence || "order"
   entries_for_grid = @active_tab == "navigation" ? [] : @entries_for_tab
   is_navigation = @active_tab == "navigation"
   settings_url = ruby_cms_admin_settings_path
   nav_order_url = ruby_cms_admin_settings_nav_order_path
 %>
-<%= admin_page(
+
+<%= render RubyCms::Admin::AdminPageHeader.new(
   title: t("ruby_cms.admin.settings.title", default: "Settings"),
-  subtitle: t("ruby_cms.admin.settings.subtitle", default: "Configure your admin interface preferences."),
-  content_card: false
-) do %>
-  <div class="grid gap-6 lg:grid-cols-[240px_1fr]">
-    <%# Left nav %>
-    <aside class="rounded-lg border border-gray-200/80 bg-white shadow-sm overflow-hidden">
-      <div class="px-4 py-3 border-b border-gray-100 bg-white">
-        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">
-          <%= t("ruby_cms.admin.settings.categories_title", default: "Categories") %>
+  subtitle: t("ruby_cms.admin.settings.subtitle", default: "Preferences for your workspace."),
+  breadcrumbs: [
+    { label: t("ruby_cms.admin.breadcrumb.admin", default: "Admin"), url: ruby_cms_admin_root_path },
+    { label: t("ruby_cms.admin.settings.title", default: "Settings") }
+  ]
+) %>
+
+<%# Single card: category rail | separator | content (Todoist-like) %>
+<div class="rounded-2xl border border-border bg-card shadow-sm ring-1 ring-black/[0.03] overflow-hidden">
+  <div class="flex flex-col lg:flex-row lg:min-h-[min(100vh-12rem,52rem)]">
+    <%# Left: sections (icons from TAB_CONFIG) %>
+    <aside class="shrink-0 border-b border-border lg:w-56 lg:border-b-0 lg:border-r bg-muted/25">
+      <div class="p-3 sm:p-4">
+        <p class="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          <%= t("ruby_cms.admin.settings.categories_title", default: "Sections") %>
         </p>
-      </div>
-      <nav class="p-2 space-y-1" aria-label="Settings categories">
-        <% @categories.each do |category| %>
-          <% cfg = settings_tab_config(category) %>
-          <% category_s = category.to_s %>
-          <% active = (@active_tab.to_s == category_s) %>
-          <%= link_to ruby_cms_admin_settings_path(tab: category_s),
-              class: "group flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors no-underline #{active ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}",
-              data: { turbo_frame: "_top" } do %>
-            <span class="inline-flex h-7 w-7 items-center justify-center rounded-md border text-sm #{active ? 'border-gray-200 bg-white text-gray-900' : 'border-transparent bg-gray-50 text-gray-600 group-hover:bg-white group-hover:border-gray-200'}" aria-hidden="true">
-              <%= ruby_cms_safe_svg_fragment(cfg[:icon]) %>
-            </span>
-            <span class="flex-1"><%= settings_tab_label(category_s) %></span>
-            <% if active %>
-              <span class="h-2 w-2 rounded-full bg-gray-900" aria-hidden="true"></span>
+        <nav class="space-y-0.5" aria-label="Settings categories">
+          <% @categories.each do |category| %>
+            <% cfg = settings_tab_config(category) %>
+            <% category_s = category.to_s %>
+            <% active = (@active_tab.to_s == category_s) %>
+            <%= link_to ruby_cms_admin_settings_path(tab: category_s),
+                class: [
+                  "group flex items-center gap-3 rounded-xl px-2.5 py-2 text-[15px] leading-snug transition-colors no-underline",
+                  active ? "bg-background text-foreground font-medium shadow-sm ring-1 ring-border" : "text-muted-foreground hover:bg-background/80 hover:text-foreground"
+                ].join(" ") do %>
+              <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-lg leading-none #{active ? 'bg-muted' : 'bg-muted/60 group-hover:bg-muted'}">
+                <%= cfg[:icon] %>
+              </span>
+              <span class="min-w-0 flex-1"><%= settings_tab_label(category_s) %></span>
             <% end %>
           <% end %>
-        <% end %>
-      </nav>
+        </nav>
+      </div>
     </aside>
 
-    <%# Right content %>
-    <div class="space-y-6">
-      <%= turbo_frame_tag "settings_content" do %>
-        <% tab_description = settings_tab_description(@active_tab) %>
+    <%# Right: active section %>
+    <div class="flex min-w-0 flex-1 flex-col bg-background">
+      <% tab_description = settings_tab_description(@active_tab) %>
+
+      <div class="border-b border-border/80 px-5 py-4 sm:px-6 sm:py-5">
         <% if tab_description.present? %>
-          <p class="text-sm text-gray-500"><%= tab_description %></p>
+          <p class="text-sm leading-relaxed text-muted-foreground"><%= tab_description %></p>
         <% end %>
 
         <% if is_navigation %>
-          <div class="rounded-lg border border-gray-200/80 bg-white shadow-sm overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-100">
-              <div class="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 class="text-base font-semibold text-gray-900"><%= t("ruby_cms.admin.settings.navigation_title", default: "Navigation") %></h2>
-                  <p class="mt-1 text-sm text-gray-500"><%= t("ruby_cms.admin.settings.navigation_hint", default: "Control sidebar order and visibility.") %></p>
-                </div>
-                <div class="inline-flex items-center rounded-md border border-gray-200 bg-white p-1 shadow-sm">
-                  <%= link_to ruby_cms_admin_settings_path(tab: "navigation", nav_sub: "order"),
-                      class: "px-3 py-1.5 rounded text-sm font-medium transition-colors no-underline #{nav_sub == 'order' ? 'bg-gray-900 text-white shadow-sm' : 'text-gray-700 hover:bg-gray-50'}",
-                      data: { turbo_frame: "settings_content" } do %>
-                    <%= t("ruby_cms.admin.settings.nav_order_tab", default: "Order") %>
-                  <% end %>
-                  <%= link_to ruby_cms_admin_settings_path(tab: "navigation", nav_sub: "items"),
-                      class: "px-3 py-1.5 rounded text-sm font-medium transition-colors no-underline #{nav_sub == 'items' ? 'bg-gray-900 text-white shadow-sm' : 'text-gray-700 hover:bg-gray-50'}",
-                      data: { turbo_frame: "settings_content" } do %>
-                    <%= t("ruby_cms.admin.settings.nav_items_tab", default: "Items") %>
-                  <% end %>
-                </div>
-              </div>
+          <div class="mt-4 flex flex-col gap-3 sm:mt-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 class="text-base font-semibold tracking-tight text-foreground">
+                <%= t("ruby_cms.admin.settings.navigation_title", default: "Navigation") %>
+              </h2>
+              <p class="mt-0.5 text-sm text-muted-foreground">
+                <%= t("ruby_cms.admin.settings.navigation_hint", default: "Reorder items or choose what appears in the sidebar.") %>
+              </p>
             </div>
-
-            <div class="p-6 space-y-6">
-              <% if nav_sub == "order" %>
-                <%# Order tab: two sortable lists, auto-saved on drag %>
-                <%= form_with url: settings_url, method: :patch, local: true, html: { id: "nav_order_form", class: "space-y-6", data: { turbo: false } } do %>
-                  <%= hidden_field_tag :tab, "navigation" %>
-                  <div class="grid gap-6 sm:grid-cols-2">
-                    <div>
-                      <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500"><%= t("ruby_cms.nav.main", default: "Main") %></h3>
-                        <span class="text-xs text-gray-400"><%= t("ruby_cms.admin.settings.drag_hint", default: "Drag to reorder") %></span>
-                      </div>
-                      <ul class="rounded-lg border border-gray-200 bg-white divide-y divide-gray-100"
-                          data-list-type="main"
-                          data-controller="ruby-cms--nav-order-sortable"
-                          data-ruby-cms--nav-order-sortable-settings-url-value="<%= nav_order_url %>">
-                        <% nav_main_entries.each do |entry| %>
-                          <li class="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 transition-colors" data-key="<%= entry[:key] %>" draggable="true">
-                            <span class="cursor-grab text-gray-400 select-none text-sm" aria-hidden="true">⋮⋮</span>
-                            <span class="flex-1 text-sm font-medium text-gray-900"><%= entry[:label] %></span>
-                            <%= hidden_field_tag "nav_order_main[]", entry[:key], id: nil %>
-                          </li>
-                        <% end %>
-                      </ul>
-                    </div>
-
-                    <div>
-                      <div class="flex items-center justify-between mb-2">
-                        <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500"><%= t("ruby_cms.nav.settings", default: "Settings") %></h3>
-                        <span class="text-xs text-gray-400"><%= t("ruby_cms.admin.settings.drag_hint", default: "Drag to reorder") %></span>
-                      </div>
-                      <ul class="rounded-lg border border-gray-200 bg-white divide-y divide-gray-100"
-                          data-list-type="bottom"
-                          data-controller="ruby-cms--nav-order-sortable"
-                          data-ruby-cms--nav-order-sortable-settings-url-value="<%= nav_order_url %>">
-                        <% nav_bottom_entries.each do |entry| %>
-                          <li class="flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 transition-colors" data-key="<%= entry[:key] %>" draggable="true">
-                            <span class="cursor-grab text-gray-400 select-none text-sm" aria-hidden="true">⋮⋮</span>
-                            <span class="flex-1 text-sm font-medium text-gray-900"><%= entry[:label] %></span>
-                            <%= hidden_field_tag "nav_order_bottom[]", entry[:key], id: nil %>
-                          </li>
-                        <% end %>
-                      </ul>
-                    </div>
-                  </div>
-
-                  <div class="rounded-md border border-gray-200 bg-gray-50 px-4 py-3">
-                    <p class="text-sm text-gray-700">
-                      <%= t("ruby_cms.admin.settings.nav_order_hint", default: "Drag items to reorder. Changes save automatically.") %>
-                    </p>
-                  </div>
-                <% end %>
-              <% else %>
-                <%# Items tab: Show in sidebar — list of toggles %>
-                <div>
-                  <h3 class="text-sm font-semibold text-gray-900"><%= t("ruby_cms.admin.settings.show_in_sidebar", default: "Show in sidebar") %></h3>
-                  <p class="mt-1 text-sm text-gray-500"><%= t("ruby_cms.admin.settings.show_in_sidebar_hint", default: "Choose which sections appear in your sidebar.") %></p>
-
-                  <% if nav_item_entries.any? %>
-                    <ul class="mt-4 divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white">
-                      <% nav_item_entries.each do |entry| %>
-                        <li class="flex items-center justify-between gap-4 px-4 py-3 hover:bg-gray-50 transition-colors">
-                          <div class="min-w-0 flex-1">
-                            <span class="block text-sm font-medium text-gray-900"><%= setting_label(entry) %></span>
-                            <% if entry.description.present? %>
-                              <span class="mt-0.5 block text-xs text-gray-500"><%= entry.description %></span>
-                            <% else %>
-                              <span class="mt-0.5 block text-xs text-gray-500"><%= t("ruby_cms.admin.settings.show_in_nav", default: "Show in navigation") %></span>
-                            <% end %>
-                          </div>
-                          <div class="flex-shrink-0">
-                            <%= render_setting_field(entry: entry, value: @values[entry.key], tab: @active_tab) %>
-                          </div>
-                        </li>
-                      <% end %>
-                    </ul>
-                  <% else %>
-                    <p class="py-8 text-center text-sm text-gray-500"><%= t("ruby_cms.admin.settings.no_nav_items", default: "No item toggles in this category.") %></p>
-                  <% end %>
-                </div>
+            <%# Full page links — avoids broken turbo-frame partial loads %>
+            <div class="inline-flex shrink-0 rounded-xl bg-muted/60 p-1 ring-1 ring-border/50">
+              <%= link_to ruby_cms_admin_settings_path(tab: "navigation", nav_sub: "order"),
+                  class: "rounded-lg px-4 py-2 text-sm font-medium no-underline transition-all #{nav_sub == 'order' ? 'bg-background text-foreground shadow-sm ring-1 ring-black/[0.06]' : 'text-muted-foreground hover:text-foreground'}" do %>
+                <%= t("ruby_cms.admin.settings.nav_order_tab", default: "Order") %>
+              <% end %>
+              <%= link_to ruby_cms_admin_settings_path(tab: "navigation", nav_sub: "items"),
+                  class: "rounded-lg px-4 py-2 text-sm font-medium no-underline transition-all #{nav_sub == 'items' ? 'bg-background text-foreground shadow-sm ring-1 ring-black/[0.06]' : 'text-muted-foreground hover:text-foreground'}" do %>
+                <%= t("ruby_cms.admin.settings.nav_items_tab", default: "Visibility") %>
               <% end %>
             </div>
           </div>
-        <% else %>
-          <% if entries_for_grid.any? %>
-            <div class="rounded-lg border border-gray-200/80 bg-white shadow-sm overflow-hidden">
-              <div class="px-6 py-4 border-b border-gray-100">
-                <h2 class="text-base font-semibold text-gray-900"><%= settings_tab_label(@active_tab) %></h2>
-                <p class="mt-1 text-sm text-gray-500"><%= t("ruby_cms.admin.settings.form_hint", default: "Changes are saved when you click Save Changes, or automatically when toggles change.") %></p>
+        <% elsif entries_for_grid.any? %>
+          <h2 class="text-base font-semibold tracking-tight text-foreground"><%= settings_tab_label(@active_tab) %></h2>
+          <p class="mt-1 text-sm text-muted-foreground">
+            <%= t("ruby_cms.admin.settings.form_hint", default: "Toggles save immediately; other fields use Save below.") %>
+          </p>
+        <% end %>
+      </div>
+
+      <div class="flex flex-1 flex-col px-5 py-5 sm:px-6 sm:py-6">
+        <% if is_navigation %>
+          <% if nav_sub == "order" %>
+            <%= form_with url: settings_url, method: :patch, local: true, html: { id: "nav_order_form", class: "flex flex-1 flex-col space-y-6", data: { turbo: false } } do %>
+              <%= hidden_field_tag :tab, "navigation" %>
+              <div class="grid flex-1 gap-6 lg:grid-cols-2">
+                <div>
+                  <div class="mb-2 flex items-baseline justify-between gap-2">
+                    <h3 class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <%= t("ruby_cms.nav.main", default: "Main") %>
+                    </h3>
+                    <span class="text-xs text-muted-foreground"><%= t("ruby_cms.admin.settings.drag_hint", default: "Drag to reorder") %></span>
+                  </div>
+                  <ul class="divide-y divide-border rounded-xl border border-border bg-muted/10"
+                      data-list-type="main"
+                      data-controller="ruby-cms--nav-order-sortable"
+                      data-ruby-cms--nav-order-sortable-settings-url-value="<%= nav_order_url %>">
+                    <% nav_main_entries.each do |entry| %>
+                      <li class="flex items-center gap-3 px-3 py-3 transition-colors hover:bg-muted/30" data-key="<%= entry[:key] %>" draggable="true">
+                        <span class="cursor-grab select-none text-muted-foreground/80" aria-hidden="true">⋮⋮</span>
+                        <% if entry[:icon].present? %>
+                          <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border/80 bg-background text-muted-foreground">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                              <%= ruby_cms_safe_svg_fragment(entry[:icon]) %>
+                            </svg>
+                          </span>
+                        <% end %>
+                        <span class="min-w-0 flex-1 text-sm font-medium text-foreground"><%= entry[:label] %></span>
+                        <%= hidden_field_tag "nav_order_main[]", entry[:key], id: nil %>
+                      </li>
+                    <% end %>
+                  </ul>
+                </div>
+
+                <div>
+                  <div class="mb-2 flex items-baseline justify-between gap-2">
+                    <h3 class="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <%= t("ruby_cms.nav.settings", default: "Settings") %>
+                    </h3>
+                    <span class="text-xs text-muted-foreground"><%= t("ruby_cms.admin.settings.drag_hint", default: "Drag to reorder") %></span>
+                  </div>
+                  <ul class="divide-y divide-border rounded-xl border border-border bg-muted/10"
+                      data-list-type="bottom"
+                      data-controller="ruby-cms--nav-order-sortable"
+                      data-ruby-cms--nav-order-sortable-settings-url-value="<%= nav_order_url %>">
+                    <% nav_bottom_entries.each do |entry| %>
+                      <li class="flex items-center gap-3 px-3 py-3 transition-colors hover:bg-muted/30" data-key="<%= entry[:key] %>" draggable="true">
+                        <span class="cursor-grab select-none text-muted-foreground/80" aria-hidden="true">⋮⋮</span>
+                        <% if entry[:icon].present? %>
+                          <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border/80 bg-background text-muted-foreground">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                              <%= ruby_cms_safe_svg_fragment(entry[:icon]) %>
+                            </svg>
+                          </span>
+                        <% end %>
+                        <span class="min-w-0 flex-1 text-sm font-medium text-foreground"><%= entry[:label] %></span>
+                        <%= hidden_field_tag "nav_order_bottom[]", entry[:key], id: nil %>
+                      </li>
+                    <% end %>
+                  </ul>
+                </div>
               </div>
 
-              <%= form_with url: settings_url, method: :patch, local: true, data: { turbo: false } do %>
-                <%= hidden_field_tag :tab, @active_tab %>
-                <div class="p-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  <% entries_for_grid.each do |entry| %>
-                    <div class="space-y-2">
-                      <%= label_tag "pref_#{entry.key}", setting_label(entry), class: "block text-sm font-medium text-gray-700" %>
-                      <% if entry.description.present? %>
-                        <p class="text-xs text-gray-500"><%= entry.description %></p>
-                      <% end %>
-                      <%= render_setting_field(entry: entry, value: @values[entry.key], tab: @active_tab) %>
-                    </div>
-                  <% end %>
-                </div>
-
-                <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex flex-wrap items-center justify-between gap-3">
-                  <p class="text-xs text-gray-500">
-                    <%= t("ruby_cms.admin.settings.save_hint", default: "Tip: toggles autosave, other fields save on submit.") %>
-                  </p>
-                  <%= submit_tag t("ruby_cms.admin.settings.save_changes", default: "Save Changes"),
-                      class: "inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 text-sm font-medium text-white shadow-sm hover:bg-gray-800 transition-colors" %>
-                </div>
-              <% end %>
-            </div>
+              <p class="rounded-lg border border-dashed border-border bg-muted/20 px-3 py-2.5 text-sm text-muted-foreground">
+                <%= t("ruby_cms.admin.settings.nav_order_hint", default: "Changes save automatically when you move an item.") %>
+              </p>
+            <% end %>
           <% else %>
-            <div class="rounded-lg border border-dashed border-gray-200 bg-white p-10 text-center shadow-sm">
-              <p class="text-sm text-gray-500"><%= t("ruby_cms.admin.settings.no_settings", default: "No settings in this category") %></p>
+            <%# Visibility: same icons as main sidebar %>
+            <div class="space-y-4">
+              <div>
+                <h3 class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.settings.show_in_sidebar", default: "Show in sidebar") %></h3>
+                <p class="mt-1 text-sm text-muted-foreground">
+                  <%= t("ruby_cms.admin.settings.show_in_sidebar_hint", default: "Turn sections on or off. Changes save when you toggle.") %>
+                </p>
+              </div>
+
+              <% if nav_item_entries.any? %>
+                <ul class="divide-y divide-border overflow-hidden rounded-xl border border-border">
+                  <% nav_item_entries.each do |entry| %>
+                    <% icon_frag = settings_nav_visibility_icon(entry) %>
+                    <li class="flex items-center gap-3 px-3 py-3.5 transition-colors hover:bg-muted/25 sm:gap-4 sm:px-4">
+                      <% if icon_frag.present? %>
+                        <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/30 text-muted-foreground">
+                          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <%= ruby_cms_safe_svg_fragment(icon_frag) %>
+                          </svg>
+                        </span>
+                      <% else %>
+                        <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-dashed border-border bg-muted/20 text-xs font-semibold uppercase text-muted-foreground">
+                          <%= setting_label(entry).to_s.first(2) %>
+                        </span>
+                      <% end %>
+                      <div class="min-w-0 flex-1">
+                        <span class="block text-sm font-medium text-foreground"><%= setting_label(entry) %></span>
+                        <% if entry.description.present? %>
+                          <span class="mt-0.5 block text-xs leading-relaxed text-muted-foreground"><%= entry.description %></span>
+                        <% end %>
+                      </div>
+                      <div class="shrink-0">
+                        <%= render_setting_field(entry: entry, value: @values[entry.key], tab: @active_tab) %>
+                      </div>
+                    </li>
+                  <% end %>
+                </ul>
+              <% else %>
+                <p class="rounded-xl border border-dashed border-border bg-muted/15 py-10 text-center text-sm text-muted-foreground">
+                  <%= t("ruby_cms.admin.settings.no_nav_items", default: "No items to configure here.") %>
+                </p>
+              <% end %>
             </div>
           <% end %>
-        <% end %>
 
-        <%# Danger zone %>
-        <div class="rounded-lg border border-rose-200 bg-rose-50 shadow-sm overflow-hidden">
-          <div class="px-6 py-4 border-b border-rose-200/60">
-            <h3 class="text-base font-semibold text-rose-900"><%= t("ruby_cms.admin.settings.danger_zone", default: "Danger zone") %></h3>
-            <p class="mt-1 text-sm text-rose-800/80"><%= t("ruby_cms.admin.settings.reset_description", default: "Reset this category’s settings back to their default values.") %></p>
-          </div>
-          <div class="px-6 py-4 flex flex-wrap items-center justify-between gap-3">
-            <p class="text-xs text-rose-800/80">
-              <%= t("ruby_cms.admin.settings.reset_confirm_hint", default: "This can’t be undone.") %>
-            </p>
-            <%= form_with url: ruby_cms_admin_settings_reset_defaults_path(tab: @active_tab),
-                method: :post,
-                local: true,
-                data: { turbo: false, turbo_confirm: t("ruby_cms.admin.settings.reset_confirm", default: "Reset all settings to default values?") } do %>
-              <%= submit_tag t("ruby_cms.admin.settings.reset_defaults", default: "Reset to Defaults"),
-                  class: "inline-flex h-9 items-center justify-center rounded-md border border-rose-300 bg-white px-4 text-sm font-medium text-rose-700 shadow-sm hover:bg-rose-100 transition-colors" %>
+        <% elsif entries_for_grid.any? %>
+          <%= form_with url: settings_url, method: :patch, local: true, data: { turbo: false }, class: "flex flex-1 flex-col" do %>
+            <%= hidden_field_tag :tab, @active_tab %>
+            <div class="grid flex-1 gap-x-6 gap-y-6 sm:grid-cols-2 xl:grid-cols-3">
+              <% entries_for_grid.each do |entry| %>
+                <div class="min-w-0 space-y-2">
+                  <%= label_tag "pref_#{entry.key}", setting_label(entry), class: "block text-sm font-medium text-foreground" %>
+                  <% if entry.description.present? %>
+                    <p class="text-xs leading-relaxed text-muted-foreground"><%= entry.description %></p>
+                  <% end %>
+                  <%= render_setting_field(entry: entry, value: @values[entry.key], tab: @active_tab) %>
+                </div>
+              <% end %>
+            </div>
+
+            <div class="mt-8 flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+              <p class="text-xs text-muted-foreground">
+                <%= t("ruby_cms.admin.settings.save_hint", default: "Toggles autosave; text fields need Save.") %>
+              </p>
+              <%= submit_tag t("ruby_cms.admin.settings.save_changes", default: "Save changes"),
+                  class: "inline-flex h-10 cursor-pointer items-center justify-center rounded-xl bg-primary px-5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90" %>
+            </div>
+          <% end %>
+
+        <% else %>
+          <p class="flex-1 rounded-xl border border-dashed border-border bg-muted/15 py-12 text-center text-sm text-muted-foreground">
+            <%= t("ruby_cms.admin.settings.no_settings", default: "Nothing to configure in this section yet.") %>
+          </p>
+        <% end %>
+      </div>
+
+      <%# Subtle reset row (same card, not a separate “danger zone”) %>
+      <%
+        reset_path_opts = { tab: @active_tab }
+        reset_path_opts[:nav_sub] = params[:nav_sub].presence if @active_tab.to_s == "navigation"
+      %>
+      <div class="mt-auto border-t border-border bg-muted/10 px-5 py-3 sm:px-6">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <p class="text-xs text-muted-foreground">
+            <%= t("ruby_cms.admin.settings.reset_inline_hint", default: "Restore factory defaults (all sections).") %>
+          </p>
+          <%= form_with url: ruby_cms_admin_settings_reset_defaults_path(reset_path_opts),
+              method: :post,
+              local: true,
+              data: { turbo: false, turbo_confirm: t("ruby_cms.admin.settings.reset_confirm", default: "Reset all settings to default values?") },
+              class: "shrink-0" do %>
+            <%= button_tag type: :submit,
+                class: "w-full cursor-pointer rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:w-auto" do %>
+              <%= t("ruby_cms.admin.settings.reset_defaults_short", default: "Reset defaults") %>
             <% end %>
-          </div>
+          <% end %>
         </div>
-      <% end %>
+      </div>
     </div>
   </div>
-<% end %>
+</div>

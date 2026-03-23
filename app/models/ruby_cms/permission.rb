@@ -9,19 +9,48 @@ module RubyCms
 
     validates :key, presence: true, uniqueness: true
 
-    DEFAULT_KEYS = %w[
-      manage_admin
-      manage_permissions
-      manage_content_blocks
-      manage_visitor_errors
-      manage_analytics
-    ].freeze
+    DEFAULT_KEYS = RubyCms::DEFAULT_PERMISSION_KEYS
 
     class << self
       def ensure_defaults!
-        DEFAULT_KEYS.each do |k|
-          find_or_create_by!(key: k) {|p| p.name = k.humanize }
+        all_keys.each do |k|
+          find_or_create_by!(key: k) {|p| p.name = k.titleize }
         end
+      end
+
+      def all_keys
+        (DEFAULT_KEYS + RubyCms.extra_permission_keys.map(&:to_s)).uniq.freeze
+      end
+
+      def templates
+        RubyCms.permission_templates
+      end
+
+      def register_keys(*keys)
+        RubyCms.register_permission_keys(*keys)
+      end
+
+      def register_template(name, label:, keys:, description: nil)
+        RubyCms.register_permission_template(name, label:, keys:, description:)
+      end
+
+      def apply_template!(user, template_name)
+        tmpl = templates[template_name.to_sym]
+        raise ArgumentError, "Unknown template: #{template_name}" unless tmpl
+
+        ensure_defaults!
+        perms = where(key: tmpl[:keys])
+        perms.each do |perm|
+          RubyCms::UserPermission.find_or_create_by!(user: user, permission: perm)
+        end
+      end
+
+      def matching_templates(user)
+        user_keys = RubyCms::UserPermission.where(user: user)
+                                           .joins(:permission)
+                                           .pluck("permissions.key")
+        templates.select {|_, tmpl| (tmpl[:keys] - user_keys).empty? }
+                 .keys
       end
     end
   end

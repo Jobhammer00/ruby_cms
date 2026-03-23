@@ -17,14 +17,11 @@ module RubyCms
       end
 
       def create
-        permission = RubyCms::Permission.find(params[:permission_id])
-        if RubyCms::UserPermission.find_or_create_by!(user: @user, permission: permission)
-          redirect_to ruby_cms_admin_user_permissions_path(@user),
-                      notice: t("ruby_cms.admin.user_permissions.granted")
+        if params[:template].present?
+          apply_template
+        else
+          grant_individual_permission
         end
-      rescue ActiveRecord::RecordInvalid
-        redirect_to ruby_cms_admin_user_permissions_path(@user),
-                    alert: t("ruby_cms.admin.user_permissions.could_not_grant")
       end
 
       def destroy
@@ -53,6 +50,27 @@ module RubyCms
 
       def user_class
         Object.const_get(Rails.application.config.ruby_cms.user_class_name.presence || "User")
+      end
+
+      def apply_template
+        template_key = params[:template].to_sym
+        RubyCms::UserPermission.where(user: @user).destroy_all
+        RubyCms::Permission.apply_template!(@user, template_key)
+        @user.make_admin! if @user.respond_to?(:make_admin!) && !@user.admin?
+        redirect_to ruby_cms_admin_user_permissions_path(@user),
+                    notice: "Applied #{RubyCms::Permission.templates.dig(template_key, :label)} template."
+      rescue ArgumentError => e
+        redirect_to ruby_cms_admin_user_permissions_path(@user), alert: e.message
+      end
+
+      def grant_individual_permission
+        permission = RubyCms::Permission.find(params[:permission_id])
+        RubyCms::UserPermission.find_or_create_by!(user: @user, permission: permission)
+        redirect_to ruby_cms_admin_user_permissions_path(@user),
+                    notice: t("ruby_cms.admin.user_permissions.granted")
+      rescue ActiveRecord::RecordInvalid
+        redirect_to ruby_cms_admin_user_permissions_path(@user),
+                    alert: t("ruby_cms.admin.user_permissions.could_not_grant")
       end
     end
   end

@@ -15,6 +15,30 @@ module RubyCms
   mattr_accessor :nav_registry
   self.nav_registry = []
 
+  # Permission configuration (available at boot, before models load)
+  DEFAULT_PERMISSION_KEYS = %w[
+    manage_admin
+    manage_permissions
+    manage_content_blocks
+    manage_visitor_errors
+    manage_analytics
+  ].freeze
+
+  mattr_accessor :extra_permission_keys, default: []
+  mattr_accessor :permission_templates, default: {}
+
+  def self.register_permission_keys(*keys)
+    self.extra_permission_keys = (extra_permission_keys + keys.flatten.map(&:to_s)).uniq
+  end
+
+  def self.register_permission_template(name, label:, keys:, description: nil)
+    permission_templates[name.to_sym] = {
+      label: label,
+      keys: keys.map(&:to_s),
+      description: description
+    }
+  end
+
   # Navigation section keys. Order in sidebar: main, then Settings (bottom).
   # User can add items to either via nav_register with section: NAV_SECTION_MAIN (order 10+)
   # or section: NAV_SECTION_BOTTOM (order 10+).

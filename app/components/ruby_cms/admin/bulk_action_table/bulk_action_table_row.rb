@@ -73,7 +73,7 @@ module RubyCms
         end
 
         def build_row_classes
-          classes = ["hover:bg-gray-50 transition-colors"]
+          classes = ["border-b border-border/40 hover:bg-muted/50 transition-colors"]
           classes << @row_class if @row_class
           classes << "cursor-pointer" if @click_url
           build_classes(classes)
@@ -84,9 +84,8 @@ module RubyCms
           attrs[:item_id] = @data[:item_id] if @data[:item_id]
 
           if @click_url
-            attrs[:controller] = "clickable-row"
-            attrs[:clickable_row_click_url_value] = @click_url
-            attrs[:action] = "click->clickable-row#navigate"
+            attrs[:click_url] = @click_url
+            attrs[:action] = "click->#{@controller_name}#rowClick"
           end
 
           attrs

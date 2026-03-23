@@ -34,6 +34,16 @@ module RubyCms
       key.tr("_", " ").humanize
     end
 
+    # SVG path fragment for a nav item (matches sidebar), or nil.
+    def settings_nav_visibility_icon(entry)
+      key_str = entry.key.to_s
+      return nil unless key_str.start_with?("nav_show_")
+
+      nav_key = key_str.delete_prefix("nav_show_")
+      item = RubyCms.nav_registry.find { |e| e[:key].to_s == nav_key }
+      item&.dig(:icon)
+    end
+
     def render_setting_field(entry:, value:, tab:)
       case entry.type.to_sym
       when :integer
@@ -50,13 +60,13 @@ module RubyCms
     private
 
     def input_base_classes
-      "w-full h-9 rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-900 " \
-        "shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200"
+      "w-full h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground " \
+        "shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
     end
 
     def textarea_base_classes
-      "w-full rounded-md border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 " \
-        "shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200"
+      "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground " \
+        "shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
     end
 
     def render_integer_setting_field(entry:, value:, tab:)
@@ -88,18 +98,18 @@ module RubyCms
         :label,
         "",
         for: setting_input_id(entry),
-        class: "relative inline-flex h-6 w-11 cursor-pointer items-center rounded-full " \
-               "bg-gray-200 transition-colors peer-checked:bg-teal-600"
+        class: "relative inline-flex h-7 w-12 cursor-pointer items-center rounded-full " \
+               "border border-border bg-muted transition-colors peer-checked:bg-primary peer-checked:border-primary"
       ) do
         content_tag(
           :span,
           "",
-          class: "inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition " \
-                 "translate-x-0.5 peer-checked:translate-x-5"
+          class: "inline-block h-5 w-5 transform rounded-full bg-background shadow-sm ring-1 ring-border transition " \
+                 "translate-x-1 peer-checked:translate-x-6"
         )
       end
 
-      content_tag(:div, class: "inline-flex items-center") { hidden + checkbox + label }
+      content_tag(:div, class: "inline-flex items-center shrink-0") { hidden + checkbox + label }
     end
 
     def render_json_setting_field(entry:, value:, tab:)

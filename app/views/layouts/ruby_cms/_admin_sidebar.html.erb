@@ -76,7 +76,7 @@
 
   <div class="px-3 py-3 flex-shrink-0 bg-[#FAF9F5]" data-ruby-cms--mobile-menu-target="sidebarContent">
     <div class="mb-2">
-      <%= form_with url: ruby_cms_admin_locale_path, method: :patch, scope: nil, data: { turbo: true } do |form| %>
+      <%= form_with url: ruby_cms_admin_locale_path, method: :patch, scope: nil, data: { turbo: false } do |form| %>
         <div class="relative">
           <div class="flex items-center gap-3 w-full px-3 py-2.5 text-sm font-medium text-gray-600 rounded-md no-underline transition-colors hover:bg-blue-500 hover:text-white">
             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -94,7 +94,7 @@
               {
                 class: "absolute inset-0 w-full h-full opacity-0 cursor-pointer",
                 aria: { label: "Locale" },
-                onchange: "this.form.requestSubmit()"
+                onchange: "this.form.submit()"
               } %>
         </div>
       <% end %>

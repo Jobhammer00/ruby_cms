@@ -86,10 +86,16 @@ module RubyCms
       end
 
       def set_cms_locale
-        if session[:ruby_cms_locale].present? &&
-           I18n.available_locales.include?(session[:ruby_cms_locale].to_sym)
-          I18n.locale = session[:ruby_cms_locale].to_sym
-        end
+        locale = session[:ruby_cms_locale].presence || session[:admin_locale].presence
+        return if locale.blank?
+
+        locale = locale.to_sym
+        return unless I18n.available_locales.include?(locale)
+
+        # Keep both session keys in sync for host app + engine controllers.
+        session[:ruby_cms_locale] = locale
+        session[:admin_locale] = locale
+        I18n.locale = locale
       end
 
       # Resolve parameter key for model params

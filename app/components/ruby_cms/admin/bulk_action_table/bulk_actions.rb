@@ -26,15 +26,12 @@ module RubyCms
 
         def view_template
           div(
-            class: "hidden px-6 py-3",
+            class: "hidden bg-primary/5 border-t border-border/60 px-5 py-3 backdrop-blur-sm",
             data: {
               "#{@controller_name}-target": "bulkBar"
             }
           ) do
-            div(
-              class: "flex items-center justify-between gap-3 rounded-lg border " \
-                     "border-gray-200/80 bg-white px-4 py-3 shadow-sm"
-            ) do
+            div(class: "flex items-center justify-between gap-4 max-w-full") do
               render_selection_info
               render_action_buttons
             end
@@ -44,17 +41,22 @@ module RubyCms
         private
 
         def render_selection_info
-          div(class: "flex items-center gap-3 flex-wrap") do
-            span(
-              class: "text-sm font-medium text-gray-700",
-              data: {
-                "#{@controller_name}-target": "selectedCount"
-              }
-            ) { "0 #{@item_name}s selected:" }
+          div(class: "flex items-center gap-3") do
+            div(class: "flex items-center gap-2") do
+              div(class: "size-6 rounded-full bg-primary/10 flex items-center justify-center") do
+                span(
+                  class: "text-xs font-bold text-primary tabular-nums",
+                  data: {
+                    "#{@controller_name}-target": "selectedCount"
+                  }
+                ) { "0" }
+              end
+              span(class: "text-sm font-medium text-foreground") { "selected" }
+            end
+            div(class: "h-4 w-px bg-border/60")
             button(
               type: "button",
-              class: "text-sm font-medium text-gray-600 hover:text-gray-900 hover:underline " \
-                     "transition-colors",
+              class: "text-xs font-medium text-muted-foreground hover:text-foreground transition-colors",
               data: {
                 "#{@controller_name}-target": "selectAllButton",
                 action: "click->#{@controller_name}#selectAll"
@@ -62,17 +64,16 @@ module RubyCms
             ) { "Select all" }
             button(
               type: "button",
-              class: "text-sm font-medium text-gray-600 hover:text-gray-900 hover:underline " \
-                     "transition-colors",
+              class: "text-xs font-medium text-muted-foreground hover:text-foreground transition-colors",
               data: {
                 action: "click->#{@controller_name}#clearSelection"
               }
-            ) { "Clear selection" }
+            ) { "Clear" }
           end
         end
 
         def render_action_buttons
-          div(class: "flex items-center gap-2 flex-wrap") do
+          div(class: "flex items-center gap-2") do
             @bulk_action_buttons.each do |button_config|
               render_custom_action_button(button_config)
             end
@@ -93,9 +94,9 @@ module RubyCms
         end
 
         def build_button_class(config)
-          base = "inline-flex items-center justify-center rounded-md border border-gray-200 " \
-                 "bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm " \
-                 "hover:bg-gray-50 transition-colors"
+          base = "inline-flex items-center justify-center rounded-md border border-border " \
+                 "bg-white px-3 py-1.5 text-sm font-medium text-foreground shadow-sm " \
+                 "hover:bg-muted transition-colors"
           config[:class].present? ? "#{base} #{config[:class]}" : base
         end
 
@@ -118,9 +119,9 @@ module RubyCms
         def render_delete_button
           button(
             type: "button",
-            class: "inline-flex items-center justify-center rounded-md border border-rose-200 " \
-                   "bg-white px-3 py-2 text-sm font-medium text-rose-700 shadow-sm " \
-                   "hover:bg-rose-50 transition-colors",
+            class: "inline-flex items-center justify-center rounded-md border border-destructive/30 " \
+                   "bg-white px-3 py-1.5 text-sm font-medium text-destructive shadow-sm " \
+                   "hover:bg-destructive/10 transition-colors",
             data: {
               action: "click->#{@controller_name}#showActionDialog",
               action_name: "delete",

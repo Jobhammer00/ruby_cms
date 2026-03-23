@@ -16,6 +16,8 @@ en:
     nav:
       settings: "Settings"
     admin:
+      breadcrumb:
+        admin: "Admin"
       base:
         authentication_required: "Authentication required."
         not_authorized: "Not authorized."
@@ -38,6 +40,8 @@ en:
         updated: "Setting '%{key}' updated successfully."
         defaults_reset: "All settings have been reset to default values."
         reset_defaults: "Reset to Defaults"
+        reset_defaults_short: "Reset defaults"
+        reset_inline_hint: "Restore factory defaults for the entire admin (all sections)."
         reset_confirm: "Reset all settings to default values?"
         no_settings: "No settings in this category"
       analytics:

@@ -58,7 +58,7 @@ module RubyCms
         def render_table_content(&block)
           div(
             class: build_classes(
-              "rounded-lg border border-gray-200/80 bg-white shadow-sm overflow-hidden " \
+              "rounded-xl border border-border/60 bg-white shadow-sm ring-1 ring-black/[0.03] overflow-hidden " \
               "flex flex-col",
               @user_attrs[:class]
             ),
@@ -66,7 +66,7 @@ module RubyCms
           ) do
             render_header
             render_table_wrapper(&block)
-            div(class: "border-t border-gray-200/80 bg-white") do
+            div(class: "border-t border-border/60 bg-white") do
               render_bulk_actions if @has_bulk_actions
               render_pagination if @pagination && @pagination_path
             end
@@ -84,7 +84,7 @@ module RubyCms
               turbo_frame: @turbo_frame
             )
           elsif @header
-            div(class: "px-6 py-4 border-b border-gray-200/80 bg-white") do
+            div(class: "px-6 py-4 border-b border-border/60 bg-white") do
               if @header.respond_to?(:call)
                 raw(@header.call) # rubocop:disable Rails/OutputSafety -- legacy capture support
               elsif @header.kind_of?(String)
@@ -96,7 +96,7 @@ module RubyCms
 
         def render_table_wrapper(&)
           div(class: "w-full overflow-x-auto") do
-            table(class: "min-w-full text-sm") do
+            table(class: "min-w-full text-sm caption-bottom") do
               yield if block_given?
             end
           end

@@ -98,6 +98,14 @@ module RubyCms
       RubyCms::Settings.import_initializer_values!
     end
 
+    # After host initializers (e.g. register_permission_keys), ensure Permission rows exist
+    # so can?(:manage_backups) and other keys do not fail on Permission.exists? checks.
+    initializer "ruby_cms.ensure_permission_rows", after: :load_config_initializers do
+      RubyCms::Permission.ensure_defaults!
+    rescue StandardError => e
+      Rails.logger.warn("[RubyCMS] Permission.ensure_defaults! skipped: #{e.message}")
+    end
+
     def self.register_main_nav_items
       RubyCms.nav_register(
         key: :dashboard,
@@ -105,6 +113,7 @@ module RubyCms
         path: lambda(&:ruby_cms_admin_root_path),
         icon: dashboard_icon_path,
         section: RubyCms::NAV_SECTION_MAIN,
+        permission: :manage_admin,
         order: 1
       )
       RubyCms.nav_register(
@@ -113,6 +122,7 @@ module RubyCms
         path: lambda(&:ruby_cms_admin_visual_editor_path),
         icon: visual_editor_icon_path,
         section: RubyCms::NAV_SECTION_MAIN,
+        permission: :manage_content_blocks,
         order: 2
       )
       RubyCms.nav_register(
@@ -121,6 +131,7 @@ module RubyCms
         path: lambda(&:ruby_cms_admin_content_blocks_path),
         icon: content_blocks_icon_path,
         section: RubyCms::NAV_SECTION_MAIN,
+        permission: :manage_content_blocks,
         order: 3
       )
     end
@@ -163,6 +174,7 @@ module RubyCms
         path: lambda(&:ruby_cms_admin_permissions_path),
         section: RubyCms::NAV_SECTION_BOTTOM,
         icon: permissions_icon_path,
+        permission: :manage_permissions,
         order: 2
       )
       RubyCms.nav_register(
@@ -171,6 +183,7 @@ module RubyCms
         path: lambda(&:ruby_cms_admin_visitor_errors_path),
         section: RubyCms::NAV_SECTION_BOTTOM,
         icon: visitor_errors_icon_path,
+        permission: :manage_visitor_errors,
         order: 3
       )
       RubyCms.nav_register(
@@ -179,6 +192,7 @@ module RubyCms
         path: lambda(&:ruby_cms_admin_users_path),
         section: RubyCms::NAV_SECTION_BOTTOM,
         icon: users_icon_path,
+        permission: :manage_permissions,
         order: 4
       )
       RubyCms.nav_register(
@@ -187,6 +201,7 @@ module RubyCms
         path: lambda(&:ruby_cms_admin_settings_path),
         section: RubyCms::NAV_SECTION_BOTTOM,
         icon: settings_icon_path,
+        permission: :manage_admin,
         order: 5
       )
     end
@@ -358,13 +373,7 @@ module RubyCms
     def self.grant_admin_permissions_to_admin_users
       return unless defined?(::User) && User.column_names.include?("admin")
 
-      permission_keys = %w[
-        manage_admin
-        manage_permissions
-        manage_content_blocks
-        manage_visitor_errors
-        manage_analytics
-      ]
+      permission_keys = RubyCms::Permission.all_keys
       permissions = RubyCms::Permission.where(key: permission_keys).index_by(&:key)
       User.where(admin: true).find_each do |u|
         permission_keys.each do |key|
@@ -416,11 +425,10 @@ module RubyCms
 
     def self.grant_manage_admin_permission(user, email)
       RubyCms::Permission.ensure_defaults!
-      %w[
-        manage_admin manage_permissions manage_content_blocks manage_visitor_errors
-        manage_analytics
-      ].each do |key|
-        perm = RubyCms::Permission.find_by!(key:)
+      RubyCms::Permission.all_keys.each do |key|
+        perm = RubyCms::Permission.find_by(key:)
+        next unless perm
+
         RubyCms::UserPermission.find_or_create_by!(user: user, permission: perm)
       end
       puts "Granted full admin permissions to #{email}" # rubocop:disable Rails/Output

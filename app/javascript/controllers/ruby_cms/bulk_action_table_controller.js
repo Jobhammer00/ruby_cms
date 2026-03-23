@@ -112,8 +112,7 @@ export default class extends Controller {
 
     if (count > 0) {
       bulkBar.classList.remove("hidden");
-      const itemName = this.itemNameValue || "item";
-      selectedCount.textContent = `${count} ${itemName}${count === 1 ? "" : "s"} selected:`;
+      selectedCount.textContent = `${count}`;
     } else {
       bulkBar.classList.add("hidden");
     }
@@ -143,10 +142,14 @@ export default class extends Controller {
       const itemId = String(row.getAttribute("data-item-id") || "");
       if (selectedIdsStr.includes(itemId)) {
         row.setAttribute("data-state", "selected");
-        row.classList.add("bg-gray-50");
+        row.classList.add("bg-primary/5");
+        row.classList.remove("hover:bg-muted/50");
       } else {
         row.removeAttribute("data-state");
-        row.classList.remove("bg-gray-50");
+        row.classList.remove("bg-primary/5");
+        if (!row.classList.contains("hover:bg-muted/50")) {
+          row.classList.add("hover:bg-muted/50");
+        }
       }
     });
   }
@@ -300,6 +303,41 @@ export default class extends Controller {
     this.currentAction = null;
     this.currentItemId = null;
     this.isProcessing = false;
+  }
+
+  rowClick(event) {
+    const row = event.currentTarget;
+    const target = event.target;
+
+    if (
+      target.closest('input[type="checkbox"]') ||
+      target.closest("button") ||
+      target.closest("a") ||
+      target.closest("[data-action*='stopPropagation']")
+    ) {
+      return;
+    }
+
+    if (event.ctrlKey || event.metaKey) {
+      event.preventDefault();
+      const checkbox = row.querySelector(
+        'input[type="checkbox"][data-item-id]',
+      );
+      if (checkbox) {
+        checkbox.checked = !checkbox.checked;
+        this.updateBulkBar();
+      }
+      return;
+    }
+
+    const clickUrl = row.dataset.clickUrl;
+    if (clickUrl) {
+      if (window.Turbo) {
+        window.Turbo.visit(clickUrl);
+      } else {
+        window.location.href = clickUrl;
+      }
+    }
   }
 
   stopPropagation(event) {
@@ -517,20 +555,23 @@ export default class extends Controller {
 
   showNotification(message, type = "info") {
     const toast = document.createElement("div");
-    toast.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded-md shadow-lg text-white max-w-sm ${
-      type === "success"
-        ? "bg-green-600"
-        : type === "error"
-          ? "bg-red-600"
-          : "bg-blue-600"
+    const colorMap = {
+      success: "bg-emerald-600",
+      error: "bg-destructive",
+      info: "bg-primary",
+    };
+    toast.className = `fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-white text-sm max-w-sm animate-in slide-in-from-top-2 ${
+      colorMap[type] || colorMap.info
     }`;
     toast.textContent = message;
 
     document.body.appendChild(toast);
 
     setTimeout(() => {
-      toast.remove();
-    }, 5000);
+      toast.style.opacity = "0";
+      toast.style.transition = "opacity 200ms ease-out";
+      setTimeout(() => toast.remove(), 200);
+    }, 4000);
   }
 
   clearItemIdsFromUrl() {

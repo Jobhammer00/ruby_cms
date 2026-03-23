@@ -24,7 +24,7 @@ module RubyCms
         def view_template
           return unless @pagination[:total_pages] && @pagination[:total_pages] > 1
 
-          div(class: "px-6 py-3 flex items-center justify-between gap-4") do
+          div(class: "px-5 py-3 flex items-center justify-between gap-4 bg-muted/30") do
             render_pagination_info
             render_pagination_controls
           end
@@ -35,7 +35,7 @@ module RubyCms
         def render_pagination_info
           return unless @pagination[:start_item] && @pagination[:end_item] && @pagination[:total_count]
 
-          div(class: "text-sm text-gray-500") { pagination_info_text }
+          div(class: "text-xs text-muted-foreground tabular-nums") { pagination_info_text }
         end
 
         def pagination_info_text
@@ -75,14 +75,14 @@ module RubyCms
         end
 
         def pagination_button_classes
-          "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 " \
-            "bg-white px-3 text-sm font-medium text-gray-900 shadow-sm hover:bg-gray-50 " \
+          "inline-flex h-8 items-center justify-center rounded-md border border-border " \
+            "bg-white px-3 text-xs font-medium text-foreground shadow-sm hover:bg-muted " \
             "transition-colors"
         end
 
         def pagination_button_disabled_classes
-          "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 " \
-            "bg-white px-3 text-sm font-medium text-gray-400 opacity-60 cursor-not-allowed"
+          "inline-flex h-8 items-center justify-center rounded-md border border-border " \
+            "bg-white px-3 text-xs font-medium text-muted-foreground opacity-50 cursor-not-allowed"
         end
 
         def render_next_button
@@ -127,7 +127,7 @@ module RubyCms
         end
 
         def render_ellipsis
-          span(class: "px-2 text-sm text-gray-500") { "…" }
+          span(class: "px-2 py-1.5 text-xs font-medium text-muted-foreground select-none") { "…" }
         end
 
         def render_current_page(page_num)
@@ -144,8 +144,8 @@ module RubyCms
         end
 
         def current_page_classes
-          "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 " \
-            "bg-gray-900 px-3 text-sm font-medium text-white shadow-sm"
+          "inline-flex h-8 items-center justify-center rounded-md border border-primary " \
+            "bg-primary px-3 text-xs font-medium text-primary-foreground shadow-sm pointer-events-none"
         end
 
         def calculate_pages_to_show(current_page, total_pages)

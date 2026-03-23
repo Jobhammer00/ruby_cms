@@ -31,7 +31,7 @@ module RubyCms
         end
 
         def view_template
-          div(class: "px-6 py-4 border-b border-gray-200/80 bg-white") do
+          div(class: "px-5 py-3 border-b border-border/60 bg-white") do
             div(class: "flex flex-wrap items-center justify-between gap-4") do
               render_title_group if @title.present?
               div(class: "flex items-center gap-2 flex-wrap") do
@@ -47,7 +47,7 @@ module RubyCms
 
         def render_title_group
           div(class: "min-w-0") do
-            h2(class: "text-sm font-semibold text-gray-900") { @title }
+            h2(class: "text-sm font-semibold text-foreground") { @title }
           end
         end
 
@@ -88,7 +88,7 @@ module RubyCms
         end
 
         def render_search_icon
-          span(class: "absolute left-3 text-gray-400 pointer-events-none") do
+          span(class: "absolute left-3 text-muted-foreground pointer-events-none") do
             svg(class: "h-4 w-4", fill: "none", stroke: "currentColor",
                 viewBox: "0 0 24 24") do |s|
               s.path(
@@ -106,8 +106,8 @@ module RubyCms
             type: "search",
             name: @search_param,
             placeholder: "Search",
-            class: "h-9 w-full sm:w-72 rounded-md border border-gray-200 bg-white pl-9 " \
-                   "pr-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200",
+            class: "h-9 w-full sm:w-72 rounded-md border border-border bg-white pl-9 " \
+                   "pr-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20",
             value: search_value,
             data: { action: "input->turbo-frame#submit" }
           )
@@ -125,15 +125,15 @@ module RubyCms
           {
             "blue" => "text-blue-600 hover:bg-blue-50",
             "green" => "text-emerald-600 hover:bg-emerald-50",
-            "red" => "text-rose-600 hover:bg-rose-50",
+            "red" => "text-destructive hover:bg-destructive/10",
             "purple" => "text-violet-600 hover:bg-violet-50",
-            "gray" => "text-gray-700 hover:bg-gray-50",
+            "gray" => "text-muted-foreground hover:bg-muted",
             "teal" => "text-teal-600 hover:bg-teal-50"
           }
         end
 
         def icon_button_base_classes
-          "inline-flex items-center justify-center h-9 w-9 rounded-md border border-gray-200 " \
+          "inline-flex items-center justify-center size-9 rounded-md border border-border " \
             "bg-white shadow-sm transition-colors"
         end
 

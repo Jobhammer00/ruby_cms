@@ -12,9 +12,7 @@ module RubyCms
       k = permission_key.to_s
       return false unless RubyCms::Permission.exists?(key: k)
 
-      # Treat manage_admin as a super-permission for admin features.
       cms_permission_keys_cached.include?(k) ||
-        cms_permission_keys_cached.include?("manage_admin") ||
         record&.can_edit?(self)
     end
 

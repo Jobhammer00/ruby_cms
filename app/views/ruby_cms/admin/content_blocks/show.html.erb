@@ -1,110 +1,229 @@
-<div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-  <h1 class="text-lg font-semibold tracking-tight text-gray-900">Content block</h1>
-  <div class="flex items-center gap-2">
-    <%= link_to "Edit",
-                edit_ruby_cms_admin_content_block_path(@content_block),
-                class: "inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 text-sm font-medium text-white shadow-sm hover:bg-gray-800 transition-colors no-underline" %>
-    <%= link_to "Back",
-                ruby_cms_admin_content_blocks_path,
-                class: "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors no-underline" %>
-  </div>
-</div>
+<%= render RubyCms::Admin::AdminPageHeader.new(
+  title: @content_block.key,
+  subtitle: ruby_cms_locale_display_name(@content_block.locale),
+  breadcrumbs: [
+    { label: t("ruby_cms.admin.nav.admin", default: "Admin"), url: ruby_cms_admin_root_path },
+    { label: t("ruby_cms.admin.nav.content_blocks", default: "Content Blocks"), url: ruby_cms_admin_content_blocks_path },
+    { label: @content_block.key }
+  ]
+) do %>
+  <% if @content_block.published? %>
+    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full border bg-emerald-100 text-emerald-700 border-emerald-200">Published</span>
+  <% else %>
+    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full border bg-muted text-muted-foreground border-border/60">Draft</span>
+  <% end %>
 
-<div class="rounded-lg border border-gray-200/80 bg-white shadow-sm overflow-hidden">
+  <%= link_to ruby_cms_admin_content_block_path(@content_block),
+      data: { turbo_method: :delete, turbo_confirm: t("ruby_cms.admin.content_blocks.confirm_delete", default: "Are you sure?") },
+      class: "inline-flex items-center justify-center size-8 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" do %>
+    <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+    </svg>
+  <% end %>
+<% end %>
 
-  <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 p-6 border-b border-gray-100">
-    <div>
-      <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">ID</div>
-      <div class="text-sm text-gray-900"><%= @content_block.id %></div>
-    </div>
+<%= form_with model: @content_block,
+              url: ruby_cms_admin_content_block_path(@content_block),
+              method: :patch,
+              id: "content-block-form",
+              data: { turbo: false } do |f| %>
+  <div class="<%= RubyCms::Admin::AdminResourceCard::CARD_CLASS %>">
+    <div class="<%= RubyCms::Admin::AdminResourceCard::GRID_CLASS %>">
+      <%# ── Form Fields (Left 2/3) ── %>
+      <div class="<%= RubyCms::Admin::AdminResourceCard::MAIN_CLASS %>">
+        <% if @content_block.errors.any? %>
+          <div class="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+            <div class="flex gap-3">
+              <svg class="size-5 text-destructive shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+              </svg>
+              <div>
+                <p class="text-sm font-medium text-destructive"><%= t("ruby_cms.admin.content_blocks.errors_title", default: "Please fix the following errors:") %></p>
+                <ul class="mt-1.5 text-sm text-destructive/80 list-disc list-inside">
+                  <% @content_block.errors.full_messages.each do |message| %>
+                    <li><%= message %></li>
+                  <% end %>
+                </ul>
+              </div>
+            </div>
+          </div>
+        <% end %>
 
-    <div>
-      <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Key</div>
-      <div class="text-sm font-mono text-gray-900"><%= @content_block.key %></div>
-    </div>
+        <%# ── Key & Content Type ── %>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label class="<%= RubyCms::Admin::AdminResourceCard::LABEL_CLASS %>"><%= t("ruby_cms.admin.content_blocks.key", default: "Key") %></label>
+            <span class="block text-sm font-mono text-foreground py-2"><%= @content_block.key %></span>
+            <%= f.hidden_field :key, name: nil, value: @content_block.key %>
+          </div>
 
-    <div>
-      <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Locale</div>
-      <div class="text-sm text-gray-900"><%= ruby_cms_locale_display_name(@content_block.locale) %></div>
-    </div>
+          <div>
+            <label class="<%= RubyCms::Admin::AdminResourceCard::LABEL_CLASS %>"><%= t("ruby_cms.admin.content_blocks.content_type", default: "Content Type") %></label>
+            <%= select_tag "content_block[content_type]",
+                options_for_select(::ContentBlock::CONTENT_TYPES, @content_block.content_type),
+                class: RubyCms::Admin::AdminResourceCard::INPUT_CLASS %>
+          </div>
+        </div>
 
-    <div>
-      <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Type</div>
-      <div class="text-sm text-gray-900"><%= @content_block.content_type %></div>
-    </div>
+        <%# ── Published checkbox ── %>
+        <% if @blocks_by_locale.present? %>
+          <label class="inline-flex items-center gap-3 cursor-pointer">
+            <%= hidden_field_tag "content_block[published]", "0" %>
+            <%= check_box_tag "content_block[published]", "1",
+                  @blocks_by_locale.values.any?(&:published?),
+                  class: "size-4 rounded border-border text-primary focus:ring-primary/30 cursor-pointer" %>
+            <span class="text-sm font-medium text-foreground"><%= t("ruby_cms.admin.content_blocks.published", default: "Published") %> (all translations)</span>
+          </label>
+        <% end %>
 
-    <div>
-      <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Published</div>
-      <div class="text-sm text-gray-900">
-        <% if @content_block.published? %>
-          <span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">Published</span>
-        <% else %>
-          <span class="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-200">Draft</span>
+        <%# ── Locale Tabs ── %>
+        <% if @blocks_by_locale.present? %>
+          <div class="rounded-xl border border-border/60 overflow-hidden" data-controller="ruby-cms--locale-tabs">
+            <div class="flex gap-1 p-2 bg-muted/30 border-b border-border/60" role="tablist">
+              <% @blocks_by_locale.each_with_index do |(locale_s, _), idx| %>
+                <button type="button"
+                        role="tab"
+                        aria-selected="<%= idx == 0 %>"
+                        aria-controls="locale-panel-<%= locale_s %>"
+                        id="locale-tab-<%= locale_s %>"
+                        data-ruby-cms--locale-tabs-target="tab"
+                        data-panel-id="locale-panel-<%= locale_s %>"
+                        data-action="click->ruby-cms--locale-tabs#switchTab"
+                        class="px-3 py-1.5 rounded-md text-xs font-medium border-none cursor-pointer transition-colors <%= idx == 0 ? 'bg-background text-primary shadow-sm ring-1 ring-border/60' : 'bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground' %>">
+                  <%= ruby_cms_locale_display_name(locale_s) %>
+                </button>
+              <% end %>
+            </div>
+
+            <% @blocks_by_locale.each_with_index do |(locale_s, block), idx| %>
+              <div id="locale-panel-<%= locale_s %>"
+                   role="tabpanel"
+                   aria-labelledby="locale-tab-<%= locale_s %>"
+                   class="p-5 <%= idx > 0 ? 'hidden' : '' %>"
+                   data-locale-panel>
+
+                <%= hidden_field_tag "content_block[locales][#{locale_s}][locale]", locale_s %>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="<%= RubyCms::Admin::AdminResourceCard::LABEL_CLASS %>"><%= t("ruby_cms.admin.content_blocks.title", default: "Title") %></label>
+                    <%= text_field_tag "content_block[locales][#{locale_s}][title]",
+                                       block.title,
+                                       class: RubyCms::Admin::AdminResourceCard::INPUT_CLASS %>
+                  </div>
+
+                  <div class="sm:col-span-2">
+                    <label class="<%= RubyCms::Admin::AdminResourceCard::LABEL_CLASS %>"><%= t("ruby_cms.admin.content_blocks.content", default: "Content") %></label>
+                    <%= text_area_tag "content_block[locales][#{locale_s}][content]",
+                                      block.content,
+                                      rows: 5,
+                                      class: "#{RubyCms::Admin::AdminResourceCard::INPUT_CLASS} resize-y" %>
+                  </div>
+
+                  <% if ::ContentBlock.respond_to?(:action_text_available?) && ::ContentBlock.action_text_available? && block.persisted? && block.respond_to?(:rich_content) %>
+                    <div class="sm:col-span-2">
+                      <label class="<%= RubyCms::Admin::AdminResourceCard::LABEL_CLASS %>"><%= t("ruby_cms.admin.content_blocks.rich_content", default: "Rich Content") %></label>
+                      <%= rich_text_area_tag "content_block[locales][#{locale_s}][rich_content]",
+                                             block.rich_content.present? ? block.rich_content.to_s : "",
+                                             class: "rounded-lg border border-border bg-background text-sm shadow-sm focus:outline-none" %>
+                    </div>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <%# ── Details Sidebar (Right 1/3) ── %>
+      <div class="<%= RubyCms::Admin::AdminResourceCard::SIDEBAR_CLASS %>">
+        <div>
+          <h3 class="<%= RubyCms::Admin::AdminResourceCard::SECTION_TITLE_CLASS %>">Details</h3>
+          <dl class="space-y-4">
+            <div>
+              <dt class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_LABEL_CLASS %>">ID</dt>
+              <dd class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_VALUE_CLASS %> font-mono"><%= @content_block.id %></dd>
+            </div>
+
+            <div>
+              <dt class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_LABEL_CLASS %>">Key</dt>
+              <dd class="mt-1">
+                <code class="text-xs bg-muted px-2 py-1 rounded-md font-mono text-foreground"><%= @content_block.key %></code>
+              </dd>
+            </div>
+
+            <div>
+              <dt class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_LABEL_CLASS %>">Locale</dt>
+              <dd class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_VALUE_CLASS %>"><%= ruby_cms_locale_display_name(@content_block.locale) %></dd>
+            </div>
+
+            <div>
+              <dt class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_LABEL_CLASS %>">Type</dt>
+              <dd class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_VALUE_CLASS %>"><%= @content_block.content_type %></dd>
+            </div>
+
+            <div>
+              <dt class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_LABEL_CLASS %>">Status</dt>
+              <dd class="mt-1">
+                <% if @content_block.published? %>
+                  <span class="inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200">Published</span>
+                <% else %>
+                  <span class="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground ring-1 ring-inset ring-border/60">Draft</span>
+                <% end %>
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="border-t border-border/60 pt-5">
+          <h3 class="<%= RubyCms::Admin::AdminResourceCard::SECTION_TITLE_CLASS %> mb-3">Timestamps</h3>
+          <dl class="space-y-4">
+            <div>
+              <dt class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_LABEL_CLASS %>">Created</dt>
+              <dd class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_VALUE_CLASS %>"><%= @content_block.created_at.strftime("%b %d, %Y") %></dd>
+            </div>
+
+            <div>
+              <dt class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_LABEL_CLASS %>">Last Updated</dt>
+              <dd class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_VALUE_CLASS %>"><%= @content_block.updated_at.strftime("%b %d, %Y") %></dd>
+            </div>
+
+            <% if @content_block.updated_by.present? %>
+              <div>
+                <dt class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_LABEL_CLASS %>">Updated By</dt>
+                <dd class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_VALUE_CLASS %>"><%= ruby_cms_user_display(@content_block.updated_by) %></dd>
+              </div>
+            <% end %>
+          </dl>
+        </div>
+
+        <%# ── Preview per locale ── %>
+        <% if @blocks_by_locale.present? && @blocks_by_locale.values.any? { |b| b.title.present? || b.content_body.present? } %>
+          <div class="border-t border-border/60 pt-5">
+            <h3 class="<%= RubyCms::Admin::AdminResourceCard::SECTION_TITLE_CLASS %> mb-3">Content Preview</h3>
+            <div class="space-y-3">
+              <% @blocks_by_locale.each do |locale_s, block| %>
+                <% next if block.title.blank? && block.content_body.blank? %>
+                <div class="rounded-lg border border-border/60 bg-muted/30 p-3">
+                  <span class="inline-flex items-center rounded-md bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground ring-1 ring-border/60 mb-2"><%= ruby_cms_locale_display_name(locale_s) %></span>
+                  <% if block.title.present? %>
+                    <p class="text-xs font-medium text-foreground"><%= block.title %></p>
+                  <% end %>
+                  <% if block.content_body.present? %>
+                    <p class="text-xs text-muted-foreground mt-1 line-clamp-3"><%= block.content_body %></p>
+                  <% end %>
+                </div>
+              <% end %>
+            </div>
+          </div>
         <% end %>
       </div>
     </div>
 
-    <div>
-      <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Created At</div>
-      <div class="text-sm text-gray-900"><%= @content_block.created_at.strftime("%B %d, %Y at %I:%M %p") %></div>
+    <%# ── Actions Footer ── %>
+    <div class="<%= RubyCms::Admin::AdminResourceCard::ACTIONS_CLASS %>">
+      <%= link_to t("ruby_cms.admin.common.cancel", default: "Cancel"), ruby_cms_admin_content_blocks_path, class: RubyCms::Admin::AdminResourceCard::CANCEL_CLASS %>
+      <%= f.submit t("ruby_cms.admin.common.save", default: "Save Changes"), class: RubyCms::Admin::AdminResourceCard::SUBMIT_CLASS %>
     </div>
-
-    <div>
-      <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Last Updated</div>
-      <div class="text-sm text-gray-900"><%= @content_block.updated_at.strftime("%B %d, %Y at %I:%M %p") %></div>
-    </div>
-
-    <% if @content_block.updated_by.present? %>
-      <div>
-        <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Updated By</div>
-        <div class="text-sm text-gray-900"><%= ruby_cms_user_display(@content_block.updated_by) %></div>
-      </div>
-    <% end %>
   </div>
-
-  <% if @blocks_by_locale.present? %>
-    <div class="grid gap-4 p-6" style="grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));">
-      <% @blocks_by_locale.each do |locale_s, block| %>
-        <div class="rounded-md border border-gray-200 bg-gray-50 overflow-hidden">
-          <div class="px-3 py-2 border-b border-gray-200 bg-gray-100">
-            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium bg-white text-gray-600 ring-1 ring-gray-200">
-              <%= ruby_cms_locale_display_name(locale_s) %>
-            </span>
-          </div>
-
-          <div class="p-4 grid grid-cols-2 gap-4">
-            <div>
-              <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Title</div>
-              <div class="text-sm text-gray-900"><%= block.title.presence || "—" %></div>
-            </div>
-
-            <div class="col-span-2">
-              <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Content</div>
-              <div class="text-sm text-gray-900 whitespace-pre-wrap"><%= block.content_body.presence || "—" %></div>
-            </div>
-
-            <% if block.respond_to?(:rich_content) && block.rich_content.present? %>
-              <div class="col-span-2">
-                <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Rich content</div>
-                <div class="text-sm text-gray-900 whitespace-pre-wrap"><%= block.rich_content %></div>
-              </div>
-            <% end %>
-          </div>
-        </div>
-      <% end %>
-    </div>
-  <% else %>
-    <div class="grid grid-cols-2 gap-6 p-6">
-      <div>
-        <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Title</div>
-        <div class="text-sm text-gray-900"><%= @content_block.title %></div>
-      </div>
-
-      <div>
-        <div class="text-xs font-medium uppercase tracking-wide text-gray-400 mb-1">Content</div>
-        <div class="text-sm text-gray-900 whitespace-pre-wrap"><%= @content_block.content_body %></div>
-      </div>
-    </div>
-  <% end %>
-
-</div>
+<% end %>

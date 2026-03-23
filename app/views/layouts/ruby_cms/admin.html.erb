@@ -39,34 +39,30 @@
         <% else %>
           <div class="flex-1 flex flex-col min-h-0 p-6 overflow-y-auto bg-gray-50">
             <div class="mx-auto w-full max-w-7xl">
+            <%# Page header – prefer AdminPageHeader component rendered by views.
+                Legacy content_for fallback kept for pages that haven't migrated. %>
             <% if content_for?(:title) || content_for?(:header_actions) %>
-              <header class="flex-shrink-0 mb-4 <%= yield(:header_styles) if content_for?(:header_styles) %>">
+              <header class="flex-shrink-0 mb-4">
+                <% if content_for?(:breadcrumbs) %>
+                  <nav class="mb-1 text-sm text-muted-foreground" aria-label="Breadcrumb">
+                    <ol class="flex items-center flex-wrap gap-y-1">
+                      <%= yield :breadcrumbs %>
+                    </ol>
+                  </nav>
+                <% end %>
                 <div class="flex flex-wrap items-center justify-between gap-4">
-                  <div>
+                  <div class="min-w-0">
                     <% if content_for?(:title) %>
-                      <h1 class="text-lg font-semibold tracking-tight text-gray-900"><%= yield :title %></h1>
-                    <% end %>
-                    <% if content_for?(:breadcrumbs) %>
-                      <nav class="mt-0.5 text-sm text-gray-500" aria-label="Breadcrumb">
-                        <ol class="flex items-center flex-wrap gap-x-2 gap-y-1">
-                          <%= yield :breadcrumbs %>
-                        </ol>
-                      </nav>
+                      <h1 class="text-lg font-semibold tracking-tight text-foreground"><%= yield :title %></h1>
                     <% end %>
                   </div>
                   <% if content_for?(:header_actions) %>
-                    <div class="flex items-center flex-shrink-0">
+                    <div class="flex items-center gap-3 flex-shrink-0">
                       <%= yield :header_actions %>
                     </div>
                   <% end %>
                 </div>
               </header>
-            <% elsif content_for?(:breadcrumbs) %>
-              <nav class="mb-4" aria-label="Breadcrumb">
-                <ol class="flex items-center space-x-2 text-sm text-gray-600">
-                  <%= content_for :breadcrumbs %>
-                </ol>
-              </nav>
             <% end %>
 
             <%= render "layouts/ruby_cms/admin_flash_messages" %>

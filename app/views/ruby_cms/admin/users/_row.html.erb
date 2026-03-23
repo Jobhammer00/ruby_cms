@@ -4,7 +4,10 @@
 <%= tag.td (user.try(:email_address) || user.try(:email) || user.to_s), class: "px-6 py-3 text-gray-700" %>
 <%= tag.td class: "px-6 py-3 text-right" do %>
   <div class="flex items-center justify-end gap-2">
-    <%= link_to "Permissions", ruby_cms_admin_user_permissions_path(user), class: "text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors" %>
+    <%= link_to "Permissions",
+                ruby_cms_admin_user_permissions_path(user),
+                class: "text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors",
+                data: { turbo_frame: "_top" } %>
     <%= render RubyCms::Admin::BulkActionTable::BulkActionTableActions.new(
       delete_path: ruby_cms_admin_user_path(user),
       item_id: user.id,

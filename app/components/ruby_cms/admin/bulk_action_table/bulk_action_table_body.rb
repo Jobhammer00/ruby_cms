@@ -7,7 +7,7 @@ module RubyCms
       # Simple wrapper for <tbody> content
       class BulkActionTableBody < BaseComponent
         def view_template(&)
-          tbody(class: "divide-y divide-gray-100", &)
+          tbody(class: "[&_tr:last-child]:border-0 [&_td]:text-sm", &)
         end
       end
     end

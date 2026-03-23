@@ -63,7 +63,7 @@ module RubyCms
 
         def dialog_content_attributes
           {
-            class: "w-full max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-lg",
+            class: "w-full max-w-md rounded-xl border border-border/60 bg-white p-6 shadow-lg ring-1 ring-black/[0.03]",
             data: {
               "#{@controller_name}-target": "dialogContent"
             },
@@ -74,8 +74,8 @@ module RubyCms
         def render_close_button
           button(
             type: "button",
-            class: "inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-500 " \
-                   "hover:bg-gray-100 hover:text-gray-900 transition-colors",
+            class: "inline-flex size-8 items-center justify-center rounded-md text-muted-foreground " \
+                   "hover:bg-muted hover:text-foreground transition-colors",
             data: {
               action: "click->#{@controller_name}#closeDialog"
             },
@@ -119,7 +119,7 @@ module RubyCms
         def render_header
           h3(
             id: "dialog-title",
-            class: "text-base font-semibold text-gray-900",
+            class: "text-base font-semibold text-foreground",
             data: {
               "#{@controller_name}-target": "dialogTitle"
             }
@@ -128,7 +128,7 @@ module RubyCms
 
         def render_message
           div(
-            class: "mt-3 text-sm text-gray-600 space-y-1",
+            class: "mt-3 text-sm text-muted-foreground space-y-1",
             data: {
               "#{@controller_name}-target": "dialogMessage"
             }
@@ -149,8 +149,8 @@ module RubyCms
           button(
             type: "button",
             class: "inline-flex h-9 items-center justify-center rounded-md border " \
-                   "border-gray-200 bg-white px-4 text-sm font-medium text-gray-900 " \
-                   "shadow-sm hover:bg-gray-50 transition-colors",
+                   "border-border bg-white px-4 text-sm font-medium text-foreground " \
+                   "shadow-sm hover:bg-muted transition-colors",
             data: {
               action: "click->#{@controller_name}#closeDialog"
             }
@@ -160,8 +160,8 @@ module RubyCms
         def render_confirm_button
           button(
             type: "button",
-            class: "inline-flex h-9 items-center justify-center rounded-md bg-rose-600 px-4 " \
-                   "text-sm font-medium text-white shadow-sm hover:bg-rose-700 transition-colors",
+            class: "inline-flex h-9 items-center justify-center rounded-md bg-destructive px-4 " \
+                   "text-sm font-medium text-destructive-foreground shadow-sm hover:bg-destructive/90 transition-colors",
             data: {
               "#{@controller_name}-target": "dialogConfirmButton",
               action: "click->#{@controller_name}#confirmAction"
