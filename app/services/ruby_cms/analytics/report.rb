@@ -25,33 +25,7 @@ module RubyCms
 
       def dashboard_stats
         Rails.cache.fetch(cache_key("dashboard"), expires_in: cache_duration) do
-          total_views = page_view_events.count
-          total_sessions = visits.distinct.count(:visit_token)
-          unique_visitors = visits.distinct.count(:visitor_token)
-
-          {
-            total_page_views: total_views,
-            unique_visitors: unique_visitors,
-            total_sessions: total_sessions,
-            pages_per_session: total_sessions.positive? ? (total_views.to_f / total_sessions).round(1) : 0,
-            bounce_rate: compute_bounce_rate,
-            new_visitor_percentage: compute_new_visitor_percentage,
-            avg_daily_views: days_in_range.positive? ? (total_views.to_f / days_in_range).round(0).to_i : 0,
-            popular_pages: popular_pages_data,
-            top_visitors: top_visitors_data,
-            hourly_activity: hourly_activity_data,
-            daily_activity: daily_activity_data,
-            daily_visitors: daily_visitors_data,
-            top_referrers: referrer_data,
-            landing_pages: landing_pages_data,
-            utm_sources: utm_sources_data,
-            browser_stats: visits.where.not(browser: [nil, ""]).group(:browser).count,
-            device_stats: visits.where.not(device_type: [nil, ""]).group(:device_type).count,
-            os_stats: visits.where.not(os: [nil, ""]).group(:os).count,
-            suspicious_activity: suspicious_activity_data,
-            recent_page_views: page_view_events.order(time: :desc).limit(recent_page_views_limit),
-            extra_cards: extra_cards_data
-          }
+          dashboard_stats_payload
         end
       end
 
@@ -352,7 +326,7 @@ module RubyCms
         return 0 unless total.positive?
 
         event_counts = page_view_events.group(:visit_id).count
-        single_page = event_counts.count { |_, c| c == 1 }
+        single_page = event_counts.count {|_, c| c == 1 }
         ((single_page.to_f / total) * 100).round(1)
       rescue StandardError
         0
@@ -363,9 +337,9 @@ module RubyCms
         return 0 unless total.positive?
 
         returning_tokens = Ahoy::Visit
-          .where("started_at < ?", @start_date)
-          .distinct
-          .pluck(:visitor_token)
+                           .where(started_at: ...@start_date)
+                           .distinct
+                           .pluck(:visitor_token)
 
         new_count = visits.where.not(visitor_token: returning_tokens).distinct.count(:visitor_token)
         ((new_count.to_f / total) * 100).round(0).to_i
@@ -390,6 +364,36 @@ module RubyCms
       def visitor_details_limit
         RubyCms::Settings.get(:analytics_visitor_details_limit,
                               default: DEFAULT_VISITOR_DETAILS_LIMIT).to_i
+      end
+
+      def dashboard_stats_payload
+        total_views = page_view_events.count
+        total_sessions = visits.distinct.count(:visit_token)
+        unique_visitors = visits.distinct.count(:visitor_token)
+
+        {
+          total_page_views: total_views,
+          unique_visitors: unique_visitors,
+          total_sessions: total_sessions,
+          pages_per_session: total_sessions.positive? ? (total_views.to_f / total_sessions).round(1) : 0,
+          bounce_rate: compute_bounce_rate,
+          new_visitor_percentage: compute_new_visitor_percentage,
+          avg_daily_views: days_in_range.positive? ? (total_views.to_f / days_in_range).round(0).to_i : 0,
+          popular_pages: popular_pages_data,
+          top_visitors: top_visitors_data,
+          hourly_activity: hourly_activity_data,
+          daily_activity: daily_activity_data,
+          daily_visitors: daily_visitors_data,
+          top_referrers: referrer_data,
+          landing_pages: landing_pages_data,
+          utm_sources: utm_sources_data,
+          browser_stats: visits.where.not(browser: [nil, ""]).group(:browser).count,
+          device_stats: visits.where.not(device_type: [nil, ""]).group(:device_type).count,
+          os_stats: visits.where.not(os: [nil, ""]).group(:os).count,
+          suspicious_activity: suspicious_activity_data,
+          recent_page_views: page_view_events.order(time: :desc).limit(recent_page_views_limit),
+          extra_cards: extra_cards_data
+        }
       end
     end
   end

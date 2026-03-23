@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-namespace :admin do
+namespace :admin do # rubocop:disable Metrics/BlockLength
   def ruby_cms_user_class
     Object.const_get(Rails.application.config.ruby_cms.user_class_name.presence ||
                         "User")
@@ -118,3 +118,5 @@ namespace :admin do
     puts "Logged out #{count} session(s)"
   end
 end
+
+# rubocop:enable Metrics/BlockLength
