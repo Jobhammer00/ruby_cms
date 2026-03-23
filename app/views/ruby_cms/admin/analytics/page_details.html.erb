@@ -4,76 +4,72 @@
   show_security = high_volume || suspicious_ua
 %>
 <%= admin_page(
-  title: t("ruby_cms.admin.analytics.page_details_title", default: "Page details"),
-  subtitle: "#{@start_date} → #{@end_date}",
+  title: @page_name.to_s.humanize,
+  subtitle: "Page analytics · #{@start_date} → #{@end_date}",
   content_card: false
 ) do %>
   <div class="space-y-6">
     <div class="flex items-start justify-between gap-4">
-      <div class="min-w-0">
-        <p class="text-sm font-medium text-gray-500">Page</p>
-        <p class="mt-1 text-lg font-semibold tracking-tight text-gray-900 truncate"><%= @page_name %></p>
-      </div>
-      <div class="flex items-center gap-2 flex-shrink-0">
+      <div class="flex items-center gap-2">
         <%= render "ruby_cms/admin/analytics/partials/security_alert" if show_security %>
-        <%= render "ruby_cms/admin/analytics/partials/back_button", path: ruby_cms_admin_analytics_path(start_date: @start_date, end_date: @end_date, period: @period) %>
       </div>
+      <%= render "ruby_cms/admin/analytics/partials/back_button", path: ruby_cms_admin_analytics_path(start_date: @start_date, end_date: @end_date, period: @period) %>
     </div>
 
     <div class="grid grid-cols-3 gap-4">
-      <div class="rounded-lg border border-gray-200/80 bg-white p-5 shadow-sm">
-        <p class="text-sm font-medium text-gray-500">Total views</p>
-        <p class="mt-2 text-3xl font-semibold tracking-tight text-gray-900 tabular-nums"><%= number_with_delimiter(@page_stats[:total_views]) %></p>
+      <div class="rounded-lg border border-border/60 bg-white p-6 shadow-sm">
+        <p class="text-sm font-medium text-muted-foreground">Total views</p>
+        <p class="mt-2 text-2xl font-semibold tracking-tight text-foreground tabular-nums"><%= number_with_delimiter(@page_stats[:total_views]) %></p>
       </div>
-      <div class="rounded-lg border border-gray-200/80 bg-white p-5 shadow-sm">
-        <p class="text-sm font-medium text-gray-500">Unique visitors</p>
-        <p class="mt-2 text-3xl font-semibold tracking-tight text-gray-900 tabular-nums"><%= number_with_delimiter(@page_stats[:unique_visitors]) %></p>
+      <div class="rounded-lg border border-border/60 bg-white p-6 shadow-sm">
+        <p class="text-sm font-medium text-muted-foreground">Unique visitors</p>
+        <p class="mt-2 text-2xl font-semibold tracking-tight text-foreground tabular-nums"><%= number_with_delimiter(@page_stats[:unique_visitors]) %></p>
       </div>
-      <div class="rounded-lg border border-gray-200/80 bg-white p-5 shadow-sm">
-        <p class="text-sm font-medium text-gray-500">Avg/day</p>
-        <p class="mt-2 text-3xl font-semibold tracking-tight text-gray-900 tabular-nums"><%= number_with_precision(@page_stats[:avg_views_per_day], precision: 1) %></p>
+      <div class="rounded-lg border border-border/60 bg-white p-6 shadow-sm">
+        <p class="text-sm font-medium text-muted-foreground">Avg / day</p>
+        <p class="mt-2 text-2xl font-semibold tracking-tight text-foreground tabular-nums"><%= number_with_precision(@page_stats[:avg_views_per_day], precision: 1) %></p>
       </div>
     </div>
 
-    <div class="rounded-lg border border-gray-200/80 bg-white shadow-sm overflow-hidden">
-      <div class="px-6 py-4 border-b border-gray-100">
-        <p class="text-sm font-semibold text-gray-900">Page views</p>
-        <p class="text-sm text-gray-500">Recent views for this page.</p>
+    <div class="rounded-lg border border-border/60 bg-white shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-border/40">
+        <p class="text-sm font-semibold text-foreground">Page views</p>
+        <p class="text-sm text-muted-foreground">Recent views for this page.</p>
       </div>
 
       <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
-          <thead class="bg-gray-50">
-            <tr class="text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+          <thead class="bg-muted/30">
+            <tr class="text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
               <th class="px-6 py-3">IP Address</th>
               <th class="px-6 py-3">Browser</th>
               <th class="px-6 py-3">Referrer</th>
               <th class="px-6 py-3">Time</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-100">
+          <tbody class="divide-y divide-border/40">
             <% if @page_views.any? %>
               <% @page_views.each do |event| %>
                 <% visit = event.visit %>
                 <% ip = visit&.ip %>
-                <tr class="hover:bg-gray-50 transition-colors">
-                  <td class="px-6 py-3 font-medium text-gray-900 tabular-nums">
+                <tr class="hover:bg-muted/30 transition-colors">
+                  <td class="px-6 py-3 font-medium text-foreground tabular-nums">
                     <% if ip.present? && ip != "Unknown" %>
                       <%= link_to ip,
                                   visitor_details_ruby_cms_admin_analytics_path(ip_address: ip, start_date: @start_date, end_date: @end_date, period: @period),
-                                  class: "text-gray-900 hover:underline" %>
+                                  class: "text-primary hover:underline" %>
                     <% else %>
-                      <span class="text-gray-500"><%= ip || "Unknown" %></span>
+                      <span class="text-muted-foreground"><%= ip || "Unknown" %></span>
                     <% end %>
                   </td>
-                  <td class="px-6 py-3 text-gray-700"><%= visit&.browser || "Unknown" %></td>
-                  <td class="px-6 py-3 text-gray-700 truncate max-w-[26rem]"><%= visit&.referrer.presence || "Direct" %></td>
-                  <td class="px-6 py-3 text-gray-700"><%= time_ago_in_words(event.time) %> ago</td>
+                  <td class="px-6 py-3 text-foreground"><%= visit&.browser || "Unknown" %></td>
+                  <td class="px-6 py-3 text-foreground truncate max-w-[26rem]"><%= visit&.referrer.presence || "Direct" %></td>
+                  <td class="px-6 py-3 text-muted-foreground"><%= time_ago_in_words(event.time) %> ago</td>
                 </tr>
               <% end %>
             <% else %>
               <tr>
-                <td colspan="4" class="px-6 py-10 text-center text-sm text-gray-500">No page views recorded for this page</td>
+                <td colspan="4" class="px-6 py-10 text-center text-sm text-muted-foreground">No page views recorded for this page</td>
               </tr>
             <% end %>
           </tbody>

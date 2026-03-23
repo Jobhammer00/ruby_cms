@@ -1,31 +1,33 @@
-<div class="rounded-lg border border-gray-200/80 bg-white shadow-sm">
-  <div class="px-6 py-4 border-b border-gray-100">
-    <p class="text-sm font-semibold text-gray-900"><%= t("ruby_cms.admin.analytics.recent_activity", default: "Recent activity") %></p>
-    <p class="text-sm text-gray-500">Latest page views.</p>
+<div class="rounded-lg border border-border/60 bg-white shadow-sm">
+  <div class="px-4 py-3 border-b border-border/40">
+    <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.recent_activity", default: "Recent Activity") %></p>
+    <p class="text-sm text-muted-foreground">Latest page views.</p>
   </div>
 
   <% if @recent_page_views.present? && @recent_page_views.any? %>
-    <div class="divide-y divide-gray-100">
+    <div class="divide-y divide-border/40">
       <% @recent_page_views.first(6).each do |event| %>
         <% page_name = event.respond_to?(:page_name) ? event.page_name : nil %>
         <% if page_name.present? %>
           <%= link_to page_details_ruby_cms_admin_analytics_path(page_name: page_name, start_date: @start_date, end_date: @end_date, period: @period),
-                      class: "block px-6 py-4 hover:bg-gray-50 transition-colors" do %>
-            <p class="text-sm font-medium text-gray-900 truncate"><%= page_name.to_s.humanize %></p>
-            <p class="mt-1 text-sm text-gray-500"><%= time_ago_in_words(event.time) %> ago</p>
+                      class: "group flex items-center justify-between gap-2 px-4 py-2 hover:bg-muted/50 transition-colors" do %>
+            <div class="min-w-0">
+              <p class="text-xs font-medium text-foreground truncate group-hover:text-primary"><%= page_name.to_s.humanize %></p>
+              <p class="text-[10px] text-muted-foreground mt-0.5"><%= time_ago_in_words(event.time) %> ago</p>
+            </div>
           <% end %>
         <% else %>
-          <div class="px-6 py-4">
-            <p class="text-sm font-medium text-gray-900"><%= t("ruby_cms.admin.analytics.page", default: "Page") %></p>
-            <p class="mt-1 text-sm text-gray-500"><%= time_ago_in_words(event.time) %> ago</p>
+          <div class="px-4 py-2">
+            <p class="text-xs font-medium text-foreground"><%= t("ruby_cms.admin.analytics.page", default: "Page") %></p>
+            <p class="text-[10px] text-muted-foreground mt-0.5"><%= time_ago_in_words(event.time) %> ago</p>
           </div>
         <% end %>
       <% end %>
     </div>
   <% else %>
-    <div class="px-6 py-12 text-center">
-      <p class="text-sm font-medium text-gray-900"><%= t("ruby_cms.admin.analytics.no_activity", default: "No activity recorded") %></p>
-      <p class="mt-1 text-sm text-gray-500">No page views in selected range.</p>
+    <div class="px-4 py-10 text-center">
+      <p class="text-sm font-medium text-foreground"><%= t("ruby_cms.admin.analytics.no_activity", default: "No activity recorded") %></p>
+      <p class="mt-1 text-sm text-muted-foreground">No page views in selected range.</p>
     </div>
   <% end %>
 </div>

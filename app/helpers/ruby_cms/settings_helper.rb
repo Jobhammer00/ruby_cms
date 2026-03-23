@@ -85,31 +85,33 @@ module RubyCms
 
     def render_boolean_setting_field(entry:, value:, tab:)
       checked = ActiveModel::Type::Boolean.new.cast(value)
+      input_id = setting_input_id(entry)
+
       hidden = hidden_field_tag("preferences[#{entry.key}]", "false")
       checkbox = check_box_tag(
         "preferences[#{entry.key}]",
         "true",
         checked,
-        id: setting_input_id(entry),
+        id: input_id,
         class: "peer sr-only",
         data: autosave_data(entry.key, tab)
       )
-      label = content_tag(
-        :label,
-        "",
-        for: setting_input_id(entry),
-        class: "relative inline-flex h-7 w-12 cursor-pointer items-center rounded-full " \
-               "border border-border bg-muted transition-colors peer-checked:bg-primary peer-checked:border-primary"
-      ) do
-        content_tag(
-          :span,
-          "",
-          class: "inline-block h-5 w-5 transform rounded-full bg-background shadow-sm ring-1 ring-border transition " \
-                 "translate-x-1 peer-checked:translate-x-6"
-        )
-      end
 
-      content_tag(:div, class: "inline-flex items-center shrink-0") { hidden + checkbox + label }
+      track = content_tag(:label, "", for: input_id,
+                                      class: "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full " \
+                                             "border-2 border-transparent bg-input transition-colors " \
+                                             "peer-checked:bg-primary " \
+                                             "peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-ring " \
+                                             "peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background")
+
+      thumb = content_tag(:span, "",
+                          class: "pointer-events-none absolute left-[3px] top-1/2 -translate-y-1/2 h-5 w-5 rounded-full " \
+                                 "bg-background shadow-lg ring-0 transition-transform " \
+                                 "translate-x-0 peer-checked:translate-x-5")
+
+      content_tag(:div, class: "relative inline-flex items-center shrink-0") do
+        safe_join([hidden, checkbox, track, thumb])
+      end
     end
 
     def render_json_setting_field(entry:, value:, tab:)

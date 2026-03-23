@@ -1,21 +1,21 @@
-<div class="rounded-lg border border-gray-200/80 bg-white shadow-sm">
-  <div class="px-6 py-4 border-b border-gray-100">
-    <p class="text-sm font-semibold text-gray-900"><%= t("ruby_cms.admin.analytics.top_referrers", default: "Top referrers") %></p>
-    <p class="text-sm text-gray-500">Where visitors came from.</p>
+<div class="rounded-lg border border-border/60 bg-white shadow-sm">
+  <div class="px-4 py-3 border-b border-border/40">
+    <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.top_referrers", default: "Top Referrers") %></p>
+    <p class="text-sm text-muted-foreground">Where visitors came from.</p>
   </div>
 
-  <div class="px-6 py-4">
+  <div class="divide-y divide-border/40">
     <% if @top_referrers.present? && @top_referrers.any? %>
-      <ul class="space-y-2">
-        <% @top_referrers.first(8).each do |referrer, count| %>
-          <li class="flex items-center justify-between gap-3">
-            <span class="text-sm text-gray-700 truncate" title="<%= referrer %>"><%= referrer %></span>
-            <span class="text-sm font-semibold tabular-nums text-gray-900"><%= number_with_delimiter(count) %></span>
-          </li>
-        <% end %>
-      </ul>
+      <% @top_referrers.first(6).each do |referrer, count| %>
+        <div class="flex items-center justify-between gap-3 px-4 py-2">
+          <span class="text-xs text-foreground truncate" title="<%= referrer %>"><%= truncate(referrer.to_s.gsub(%r{https?://}, ''), length: 40) %></span>
+          <span class="text-xs font-semibold tabular-nums text-foreground flex-shrink-0"><%= number_with_delimiter(count) %></span>
+        </div>
+      <% end %>
     <% else %>
-      <p class="text-sm text-gray-500"><%= t("ruby_cms.admin.analytics.no_referrers", default: "No referrers recorded") %></p>
+      <div class="px-4 py-8 text-center">
+        <p class="text-sm text-muted-foreground"><%= t("ruby_cms.admin.analytics.no_referrers", default: "No referrers recorded") %></p>
+      </div>
     <% end %>
   </div>
 </div>

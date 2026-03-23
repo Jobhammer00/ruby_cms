@@ -25,10 +25,18 @@ module RubyCms
 
       def dashboard_stats
         Rails.cache.fetch(cache_key("dashboard"), expires_in: cache_duration) do
+          total_views = page_view_events.count
+          total_sessions = visits.distinct.count(:visit_token)
+          unique_visitors = visits.distinct.count(:visitor_token)
+
           {
-            total_page_views: page_view_events.count,
-            unique_visitors: visits.distinct.count(:visitor_token),
-            total_sessions: visits.distinct.count(:visit_token),
+            total_page_views: total_views,
+            unique_visitors: unique_visitors,
+            total_sessions: total_sessions,
+            pages_per_session: total_sessions.positive? ? (total_views.to_f / total_sessions).round(1) : 0,
+            bounce_rate: compute_bounce_rate,
+            new_visitor_percentage: compute_new_visitor_percentage,
+            avg_daily_views: days_in_range.positive? ? (total_views.to_f / days_in_range).round(0).to_i : 0,
             popular_pages: popular_pages_data,
             top_visitors: top_visitors_data,
             hourly_activity: hourly_activity_data,
@@ -337,6 +345,32 @@ module RubyCms
         Array(cards)
       rescue StandardError
         []
+      end
+
+      def compute_bounce_rate
+        total = visits.distinct.count(:visit_token)
+        return 0 unless total.positive?
+
+        event_counts = page_view_events.group(:visit_id).count
+        single_page = event_counts.count { |_, c| c == 1 }
+        ((single_page.to_f / total) * 100).round(1)
+      rescue StandardError
+        0
+      end
+
+      def compute_new_visitor_percentage
+        total = visits.distinct.count(:visitor_token)
+        return 0 unless total.positive?
+
+        returning_tokens = Ahoy::Visit
+          .where("started_at < ?", @start_date)
+          .distinct
+          .pluck(:visitor_token)
+
+        new_count = visits.where.not(visitor_token: returning_tokens).distinct.count(:visitor_token)
+        ((new_count.to_f / total) * 100).round(0).to_i
+      rescue StandardError
+        0
       end
 
       def days_in_range

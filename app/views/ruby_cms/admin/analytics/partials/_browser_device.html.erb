@@ -1,40 +1,54 @@
-<div class="rounded-lg border border-gray-200/80 bg-white shadow-sm">
-  <div class="px-6 py-4 border-b border-gray-100">
-    <p class="text-sm font-semibold text-gray-900"><%= t("ruby_cms.admin.analytics.browsers_devices", default: "Browsers & devices") %></p>
-    <p class="text-sm text-gray-500">Environment breakdown.</p>
+<div class="rounded-lg border border-border/60 bg-white shadow-sm">
+  <div class="px-4 py-3 border-b border-border/40">
+    <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.browsers_devices", default: "Browsers & Devices") %></p>
+    <p class="text-sm text-muted-foreground">Environment breakdown.</p>
   </div>
 
-  <div class="px-6 py-4 space-y-4">
+  <div class="px-4 py-3 space-y-3">
     <% if @browser_stats.present? && @browser_stats.any? %>
       <div>
-        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Browsers</p>
-        <ul class="mt-2 space-y-2">
+        <p class="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Browsers</p>
+        <% total = @browser_stats.values.sum.to_f %>
+        <div class="space-y-2.5">
           <% @browser_stats.sort_by { |_, v| -v }.first(4).each do |browser, count| %>
-            <li class="flex items-center justify-between gap-3">
-              <span class="text-sm text-gray-700 truncate"><%= browser %></span>
-              <span class="text-sm font-semibold tabular-nums text-gray-900"><%= number_with_delimiter(count) %></span>
-            </li>
+            <% pct = total.positive? ? (count / total * 100).round(1) : 0 %>
+            <div>
+              <div class="flex items-center justify-between gap-3 mb-1">
+                <span class="text-sm text-foreground"><%= browser %></span>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span class="text-xs text-muted-foreground tabular-nums"><%= pct %>%</span>
+                  <span class="text-sm font-semibold tabular-nums text-foreground"><%= number_with_delimiter(count) %></span>
+                </div>
+              </div>
+              <div class="w-full h-1 bg-muted rounded-full overflow-hidden">
+                <div class="h-full bg-primary/60 rounded-full" style="width: <%= pct %>%"></div>
+              </div>
+            </div>
           <% end %>
-        </ul>
+        </div>
       </div>
     <% end %>
 
     <% if @device_stats.present? && @device_stats.any? %>
       <div>
-        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500">Devices</p>
-        <ul class="mt-2 space-y-2">
+        <p class="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Devices</p>
+        <% total = @device_stats.values.sum.to_f %>
+        <div class="flex gap-3">
           <% @device_stats.sort_by { |_, v| -v }.first(4).each do |device, count| %>
-            <li class="flex items-center justify-between gap-3">
-              <span class="text-sm text-gray-700 truncate"><%= device %></span>
-              <span class="text-sm font-semibold tabular-nums text-gray-900"><%= number_with_delimiter(count) %></span>
-            </li>
+            <% pct = total.positive? ? (count / total * 100).round(0) : 0 %>
+          <div class="flex-1 rounded-lg border border-border/40 bg-muted/30 p-2.5 text-center">
+              <p class="text-lg font-semibold text-foreground tabular-nums"><%= pct %>%</p>
+              <p class="text-xs text-muted-foreground mt-0.5"><%= device %></p>
+            </div>
           <% end %>
-        </ul>
+        </div>
       </div>
     <% end %>
 
     <% if (@browser_stats.blank? || @browser_stats.empty?) && (@device_stats.blank? || @device_stats.empty?) %>
-      <p class="text-sm text-gray-500"><%= t("ruby_cms.admin.analytics.no_data", default: "No data yet.") %></p>
+      <div class="py-6 text-center">
+        <p class="text-sm text-muted-foreground"><%= t("ruby_cms.admin.analytics.no_data", default: "No data yet.") %></p>
+      </div>
     <% end %>
   </div>
 </div>

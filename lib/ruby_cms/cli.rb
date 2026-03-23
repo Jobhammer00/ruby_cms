@@ -22,7 +22,7 @@ module RubyCms
   # Logic for the interactive first-admin setup. Uses Thor::Shell for prompts.
   class RunSetupAdmin
     ADMIN_PERMISSION_KEYS = %w[
-      manage_admin manage_permissions manage_content_blocks manage_visitor_errors
+      manage_admin manage_permissions manage_content_blocks manage_visitor_errors manage_analytics
     ].freeze
 
     class << self

@@ -13,7 +13,7 @@ module RubyCms
 
         Next steps (if not already done):
         - rails db:migrate
-        - rails ruby_cms:seed_permissions (includes manage_visitor_errors)
+        - rails ruby_cms:seed_permissions (includes manage_visitor_errors and manage_analytics)
         - rails ruby_cms:setup_admin (or: rails ruby_cms:grant_manage_admin email=you@example.com)
         - To seed content blocks from YAML: add content under content_blocks in config/locales/<locale>.yml, then run rails ruby_cms:content_blocks:seed (or call it from db/seeds.rb).
 
@@ -1035,6 +1035,7 @@ module RubyCms
               manage_permissions
               manage_content_blocks
               manage_visitor_errors
+              manage_analytics
             ]
             required_permission_ids = RubyCms::Permission.where(key: required_keys).pluck(:id)
             return false if required_permission_ids.size != required_keys.size

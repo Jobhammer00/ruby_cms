@@ -1,0 +1,28 @@
+<div class="rounded-lg border border-border/60 bg-white shadow-sm">
+  <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-border/40">
+    <div>
+      <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.top_visitors", default: "Top Visitors") %></p>
+      <p class="text-sm text-muted-foreground">Most active IPs.</p>
+    </div>
+  </div>
+
+  <% if @top_visitors.present? %>
+    <div class="divide-y divide-border/40">
+      <% @top_visitors.first(8).each_with_index do |(ip, count), idx| %>
+        <%= link_to visitor_details_ruby_cms_admin_analytics_path(ip_address: ip, start_date: @start_date, end_date: @end_date, period: @period),
+                    class: "group flex items-center justify-between gap-2 px-4 py-2 hover:bg-muted/50 transition-colors" do %>
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-xs font-medium text-muted-foreground tabular-nums w-5 text-right flex-shrink-0"><%= idx + 1 %></span>
+            <p class="text-xs font-medium text-foreground tabular-nums truncate group-hover:text-primary"><%= ip %></p>
+          </div>
+          <span class="text-xs font-semibold tabular-nums text-foreground flex-shrink-0"><%= number_with_delimiter(count) %></span>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="px-4 py-8 text-center">
+      <p class="text-sm font-medium text-foreground"><%= t("ruby_cms.admin.analytics.no_data", default: "No data yet.") %></p>
+      <p class="mt-1 text-sm text-muted-foreground">No visitors in selected range.</p>
+    </div>
+  <% end %>
+</div>

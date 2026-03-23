@@ -1,0 +1,26 @@
+<div class="rounded-lg border border-border/60 bg-white shadow-sm">
+  <div class="px-6 py-4 border-b border-border/40">
+    <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.operating_systems", default: "Operating Systems") %></p>
+    <p class="text-sm text-muted-foreground">Visitor OS breakdown.</p>
+  </div>
+
+  <div class="divide-y divide-border/40">
+    <% if @os_stats.present? && @os_stats.any? %>
+      <% total = @os_stats.values.sum.to_f %>
+      <% @os_stats.sort_by { |_, v| -v }.first(6).each do |os, count| %>
+        <% pct = total.positive? ? (count / total * 100).round(1) : 0 %>
+        <div class="flex items-center justify-between gap-3 px-6 py-3">
+          <span class="text-sm text-foreground"><%= os %></span>
+          <div class="flex items-center gap-3 flex-shrink-0">
+            <span class="text-xs text-muted-foreground tabular-nums"><%= pct %>%</span>
+            <span class="text-sm font-semibold tabular-nums text-foreground"><%= number_with_delimiter(count) %></span>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="px-6 py-10 text-center">
+        <p class="text-sm text-muted-foreground"><%= t("ruby_cms.admin.analytics.no_data", default: "No data yet.") %></p>
+      </div>
+    <% end %>
+  </div>
+</div>

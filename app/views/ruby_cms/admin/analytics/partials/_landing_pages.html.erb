@@ -1,0 +1,21 @@
+<div class="rounded-lg border border-border/60 bg-white shadow-sm">
+  <div class="px-6 py-4 border-b border-border/40">
+    <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.landing_pages", default: "Landing Pages") %></p>
+    <p class="text-sm text-muted-foreground">First pages visitors see.</p>
+  </div>
+
+  <div class="divide-y divide-border/40">
+    <% if @landing_pages.present? && @landing_pages.any? %>
+      <% @landing_pages.first(6).each do |page, count| %>
+        <div class="flex items-center justify-between gap-3 px-6 py-3">
+          <span class="text-sm text-foreground truncate" title="<%= page %>"><%= truncate(page.to_s.gsub(%r{https?://[^/]+}, ''), length: 40) %></span>
+          <span class="text-sm font-semibold tabular-nums text-foreground flex-shrink-0"><%= number_with_delimiter(count) %></span>
+        </div>
+      <% end %>
+    <% else %>
+      <div class="px-6 py-10 text-center">
+        <p class="text-sm text-muted-foreground">No landing page data</p>
+      </div>
+    <% end %>
+  </div>
+</div>
