@@ -40,7 +40,7 @@ module RubyCms
       return nil unless key_str.start_with?("nav_show_")
 
       nav_key = key_str.delete_prefix("nav_show_")
-      item = RubyCms.nav_registry.find { |e| e[:key].to_s == nav_key }
+      item = RubyCms.nav_registry.find {|e| e[:key].to_s == nav_key }
       item&.dig(:icon)
     end
 

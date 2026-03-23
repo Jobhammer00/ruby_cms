@@ -47,8 +47,8 @@ module RubyCms
       CANCEL_CLASS = "inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg border border-border bg-background text-foreground hover:bg-muted transition-colors"
       SUBMIT_CLASS = "inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-colors"
 
-      def view_template(&block)
-        div(class: CARD_CLASS, &block)
+      def view_template(&)
+        div(class: CARD_CLASS, &)
       end
     end
   end

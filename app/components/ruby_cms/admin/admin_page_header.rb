@@ -71,10 +71,8 @@ module RubyCms
         end
       end
 
-      def render_actions(&block)
-        div(class: "flex items-center gap-3 flex-shrink-0") do
-          yield
-        end
+      def render_actions(&)
+        div(class: "flex items-center gap-3 flex-shrink-0", &)
       end
     end
   end

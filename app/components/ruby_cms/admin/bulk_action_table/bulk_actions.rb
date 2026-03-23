@@ -42,34 +42,47 @@ module RubyCms
 
         def render_selection_info
           div(class: "flex items-center gap-3") do
-            div(class: "flex items-center gap-2") do
-              div(class: "size-6 rounded-full bg-primary/10 flex items-center justify-center") do
-                span(
-                  class: "text-xs font-bold text-primary tabular-nums",
-                  data: {
-                    "#{@controller_name}-target": "selectedCount"
-                  }
-                ) { "0" }
-              end
-              span(class: "text-sm font-medium text-foreground") { "selected" }
-            end
+            render_selection_left
             div(class: "h-4 w-px bg-border/60")
-            button(
-              type: "button",
-              class: "text-xs font-medium text-muted-foreground hover:text-foreground transition-colors",
-              data: {
-                "#{@controller_name}-target": "selectAllButton",
-                action: "click->#{@controller_name}#selectAll"
-              }
-            ) { "Select all" }
-            button(
-              type: "button",
-              class: "text-xs font-medium text-muted-foreground hover:text-foreground transition-colors",
-              data: {
-                action: "click->#{@controller_name}#clearSelection"
-              }
-            ) { "Clear" }
+            render_selection_buttons
           end
+        end
+
+        def render_selection_left
+          div(class: "flex items-center gap-2") do
+            render_selected_count_badge
+            span(class: "text-sm font-medium text-foreground") { "selected" }
+          end
+        end
+
+        def render_selected_count_badge
+          div(class: "size-6 rounded-full bg-primary/10 flex items-center justify-center") do
+            span(
+              class: "text-xs font-bold text-primary tabular-nums",
+              data: {
+                "#{@controller_name}-target": "selectedCount"
+              }
+            ) { "0" }
+          end
+        end
+
+        def render_selection_buttons
+          button(
+            type: "button",
+            class: "text-xs font-medium text-muted-foreground hover:text-foreground transition-colors",
+            data: {
+              "#{@controller_name}-target": "selectAllButton",
+              action: "click->#{@controller_name}#selectAll"
+            }
+          ) { "Select all" }
+
+          button(
+            type: "button",
+            class: "text-xs font-medium text-muted-foreground hover:text-foreground transition-colors",
+            data: {
+              action: "click->#{@controller_name}#clearSelection"
+            }
+          ) { "Clear" }
         end
 
         def render_action_buttons

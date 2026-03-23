@@ -46,7 +46,7 @@ module RubyCms
       end
 
       def matching_templates(user)
-        user_keys = RubyCms::UserPermission.where(user: user)
+        user_keys = RubyCms::UserPermission.where(user:)
                                            .joins(:permission)
                                            .pluck("permissions.key")
         templates.select {|_, tmpl| (tmpl[:keys] - user_keys).empty? }
