@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [0.1.2] - 2026-03-23
+
+- Update settings page and the bulk action table
+- Combined the permissions
+
 ## [0.1.1] - 2026-03-18
 
 - Fix admin templates calling `AdminPage(...)` instead of the `admin_page` helper
