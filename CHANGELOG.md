@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.1.5] - 2026-03-23
+
+- Fix image bug
+
 ## [0.1.4] - 2026-03-23
 
 - Improve visual editor and settings admin UX
