@@ -118,5 +118,3 @@ namespace :admin do # rubocop:disable Metrics/BlockLength
     puts "Logged out #{count} session(s)"
   end
 end
-
-# rubocop:enable Metrics/BlockLength
