@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [0.1.4] - 2026-03-23
+
+- Improve visual editor and settings admin UX
+- Update sidebar branding to use the new RubyCMS logo
+- Refresh README with project logo
+
 ## [0.1.3] - 2026-03-23
 
 - Update analytics pages (dashboard/detail views)

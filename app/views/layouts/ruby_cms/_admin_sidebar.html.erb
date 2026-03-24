@@ -3,10 +3,11 @@
   <div class="px-5 py-5 flex-shrink-0 bg-[#FAF9F5]">
     <div class="flex items-center gap-3" data-ruby-cms--mobile-menu-target="sidebarContent">
       <% if respond_to?(:image_tag, true) %>
-        <div class="w-7 h-7 flex-shrink-0 rounded-sm bg-gray-900 flex items-center justify-center text-white font-bold text-sm">
-          <% if respond_to?(:main_app, true) && main_app.respond_to?(:image_path) %>
-            <%= image_tag main_app.image_path("logo.png"), alt: "Logo", onerror: "this.style.display='none'", class: "w-full h-full object-contain" rescue nil %>
-          <% end %>
+        <div class="w-9 h-9 flex-shrink-0 rounded-md bg-white border border-gray-200 overflow-hidden">
+          <%= image_tag "ruby_cms/logo.png",
+                        alt: "RubyCMS logo",
+                        class: "w-full h-full object-contain",
+                        onerror: "this.style.display='none'; this.parentElement.classList.add('bg-gray-900','text-white','font-bold','text-xs','flex','items-center','justify-center'); this.parentElement.innerHTML='R';" %>
         </div>
       <% end %>
       <p class="text-base font-semibold text-gray-900 m-0">RubyCMS</p>

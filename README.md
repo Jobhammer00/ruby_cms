@@ -1,5 +1,7 @@
 # RubyCMS
 
+![RubyCMS logo](docs/assets/ruby_cms_logo.png)
+
 Reusable Rails engine for a CMS-style admin: permissions, admin UI shell, content blocks, and a visual editor.
 
 Vision: your app owns product features (pages, models, business logic); RubyCMS manages content workflows and admin screens.

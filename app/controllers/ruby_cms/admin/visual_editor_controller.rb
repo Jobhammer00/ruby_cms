@@ -22,7 +22,7 @@ module RubyCms
         return render_invalid_page unless template
 
         load_preview_data(@page_key)
-        render template: template, layout: "ruby_cms/minimal"
+        render template: template, layout: "admin/minimal"
       end
 
       def quick_update
@@ -186,7 +186,13 @@ module RubyCms
         pages = {}
         add_config_pages(pages)
         add_auto_detected_pages(pages) if pages.empty?
-        pages
+        prioritize_home_page(pages)
+      end
+
+      def prioritize_home_page(pages)
+        return pages unless pages.key?("home")
+
+        { "home" => pages["home"] }.merge(pages.except("home"))
       end
 
       def add_auto_detected_pages(pages)
@@ -273,7 +279,10 @@ module RubyCms
         %w[
           layouts shared mailers components
           admin
-        ].include?(dir_name) || relative_path.start_with?("admin")
+        ].include?(dir_name) ||
+          dir_name.end_with?("_mailer") ||
+          dir_name.end_with?("_mailers") ||
+          relative_path.start_with?("admin")
       end
 
       def depth_exceeded?(relative_path)

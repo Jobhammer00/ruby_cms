@@ -22,10 +22,10 @@
 
 <%# Single card: category rail | separator | content (Todoist-like) %>
 <div class="rounded-2xl border border-border bg-card shadow-sm ring-1 ring-black/[0.03] overflow-hidden">
-  <div class="flex flex-col lg:flex-row lg:min-h-[min(100vh-12rem,52rem)]">
+  <div class="flex flex-col lg:flex-row lg:h-[min(100vh-12rem,64rem)]">
     <%# Left: sections (icons from TAB_CONFIG) %>
     <aside class="shrink-0 border-b border-border lg:w-56 lg:border-b-0 lg:border-r bg-muted/25">
-      <div class="p-3 sm:p-4">
+      <div class="p-3 sm:p-4 lg:h-full lg:overflow-y-auto">
         <p class="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           <%= t("ruby_cms.admin.settings.categories_title", default: "Sections") %>
         </p>
@@ -50,7 +50,7 @@
     </aside>
 
     <%# Right: active section %>
-    <div class="flex min-w-0 flex-1 flex-col bg-background">
+    <div class="flex min-w-0 flex-1 flex-col bg-background min-h-0">
       <% tab_description = settings_tab_description(@active_tab) %>
 
       <div class="border-b border-border/80 px-5 py-4 sm:px-6 sm:py-5">
@@ -88,7 +88,7 @@
         <% end %>
       </div>
 
-      <div class="flex flex-1 flex-col px-5 py-5 sm:px-6 sm:py-6">
+      <div class="flex flex-1 flex-col px-5 py-5 sm:px-6 sm:py-6 min-h-0 overflow-y-auto">
         <% if is_navigation %>
           <% if nav_sub == "order" %>
             <%= form_with url: settings_url, method: :patch, local: true, html: { id: "nav_order_form", class: "flex flex-1 flex-col space-y-6", data: { turbo: false } } do %>

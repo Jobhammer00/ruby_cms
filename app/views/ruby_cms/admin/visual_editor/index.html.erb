@@ -5,16 +5,29 @@
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between gap-4">
       <h1 class="text-lg font-semibold tracking-tight text-gray-900">Visual Editor</h1>
-      <%= form_with url: ruby_cms_admin_visual_editor_path, method: :get, class: "flex items-center gap-2", data: { turbo: false } do %>
+      <%= form_with url: ruby_cms_admin_visual_editor_path, method: :get, class: "flex items-center gap-2", data: { turbo: false, controller: "visual-editor-page-select" } do %>
         <%= hidden_field_tag :edit_mode, @edit_mode %>
 
         <% if @available_pages && @available_pages.size > 1 %>
-          <%= select_tag(
-            :page,
-            options_for_select(@available_pages.map { |k, v| [v[:name], k] }, @current_page),
-            class: "h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200",
-            onchange: "this.form.requestSubmit()"
-          ) %>
+          <% selected_page_name = @available_pages.dig(@current_page, :name) || @current_page.to_s.humanize %>
+          <%= Select(class: "min-w-56") do %>
+            <%= SelectInput(name: :page, value: @current_page, data: { action: "change->visual-editor-page-select#submit" }) %>
+            <%= SelectTrigger(class: "h-9 bg-white font-medium") do %>
+              <%= SelectValue(placeholder: selected_page_name) { selected_page_name } %>
+            <% end %>
+            <%= SelectContent do %>
+              <%= SelectGroup do %>
+                <% @available_pages.each do |key, page| %>
+                    <% is_selected = key.to_s == @current_page.to_s %>
+                    <%= SelectItem(
+                      value: key,
+                      aria_selected: is_selected.to_s,
+                      class: (is_selected ? "bg-primary/10 text-primary ring-1 ring-primary/20" : nil)
+                    ) { page[:name] } %>
+                <% end %>
+              <% end %>
+            <% end %>
+          <% end %>
         <% else %>
           <%= hidden_field_tag :page, @current_page %>
         <% end %>
