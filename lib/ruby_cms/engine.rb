@@ -77,6 +77,8 @@ module RubyCms
       app.config.assets.paths.unshift(config.root.join("app/javascript")) if app.config.respond_to?(:assets)
       # Add stylesheets to asset pipeline
       app.config.assets.paths << config.root.join("app/assets/stylesheets") if app.config.respond_to?(:assets)
+      # Images (sidebar logo, etc.) — required for Propshaft/Sprockets `image_tag "ruby_cms/logo.png"`
+      app.config.assets.paths << config.root.join("app/assets/images") if app.config.respond_to?(:assets)
     end
 
     initializer "ruby_cms.importmap", before: "importmap" do |app|
