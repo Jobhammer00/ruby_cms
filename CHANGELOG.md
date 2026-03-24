@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.1.0.6] - 2026-03-23
+
+- Fix visual editor content block bug
+
 ## [0.1.5] - 2026-03-23
 
 - Fix image bug

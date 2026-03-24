@@ -135,9 +135,19 @@ module RubyCms
 
       def assign_content_block_content(block)
         if rich_text_content?
-          block.rich_content = params[:rich_content]
+          assign_rich_text_content(block)
         elsif params[:content].present?
           block.content = params[:content]
+        end
+      end
+
+      def assign_rich_text_content(block)
+        rich_content = params[:rich_content].to_s
+
+        if block.respond_to?(:rich_content=)
+          block.rich_content = rich_content
+        else
+          block.content = ActionController::Base.helpers.strip_tags(rich_content)
         end
       end
 
@@ -158,7 +168,11 @@ module RubyCms
       end
 
       def content_block_content_text(block)
-        block.content_type == "rich_text" ? block.rich_content.to_plain_text : block.content
+        return block.content unless block.content_type == "rich_text"
+        return block.content unless block.respond_to?(:rich_content)
+        return block.content unless block.rich_content.respond_to?(:to_plain_text)
+
+        block.rich_content.to_plain_text
       end
 
       # Return body HTML only (no layout/comments) so preview and Trix get clean HTML.
