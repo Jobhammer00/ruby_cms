@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.1.0.8] - 2026-03-25
+
+- Update admin page styling
+
 ## [0.1.0.7] - 2026-03-25
 
 - Improve some styling and fix rich text
