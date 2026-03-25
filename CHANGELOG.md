@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.1.0.9] - 2026-03-25
+
+- Update gems
+
 ## [0.1.0.8] - 2026-03-25
 
 - Update admin page styling
