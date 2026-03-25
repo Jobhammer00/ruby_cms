@@ -100,7 +100,7 @@ module RubyCms
     list = nav_registry
            .select {|item| nav_entry_visible?(item, view_context:, user:) }
            .sort_by {|item| nav_sort_tuple(item) }
-    apply_nav_order(list)
+    localize_nav_labels(apply_nav_order(list))
   rescue StandardError => e
     Rails.logger.error("[RubyCMS] Error filtering navigation: #{e.message}") if defined?(Rails.logger)
     nav_registry
@@ -129,6 +129,13 @@ module RubyCms
       section = item[:section].to_s.presence || NAV_SECTION_MAIN
       priority = nav_section_priority(section)
       [priority, item[:order] || 1000, item[:label].to_s]
+    end
+
+    def localize_nav_labels(list)
+      list.map do |item|
+        translated = I18n.t("ruby_cms.nav.items.#{item[:key]}", default: item[:label].to_s)
+        item.merge(label: translated)
+      end
     end
 
     def nav_section_priority(section)

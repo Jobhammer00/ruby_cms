@@ -14,7 +14,20 @@ en:
 
   ruby_cms:
     nav:
+      locale: "Locale"
       settings: "Settings"
+      view_site: "View site"
+      logout: "Logout"
+      logout_confirm: "Are you sure you want to logout?"
+      items:
+        dashboard: "Dashboard"
+        visual_editor: "Visual editor"
+        content_blocks: "Content blocks"
+        analytics: "Analytics"
+        permissions: "Permissions"
+        visitor_errors: "Visitor errors"
+        users: "Users"
+        settings: "Settings"
     admin:
       breadcrumb:
         admin: "Admin"

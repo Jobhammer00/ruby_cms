@@ -1,161 +1,92 @@
 <%= form_with model: @content_block,
-              url: @content_block.persisted? ? ruby_cms_admin_content_block_path(@content_block) : ruby_cms_admin_content_blocks_path,
-              method: (@content_block.persisted? ? :patch : :post),
+              url: ruby_cms_admin_content_blocks_path,
+              method: :post,
               id: "content-block-form",
               data: { turbo: false } do |f| %>
-
-  <div class="flex items-start justify-between gap-8 px-6 py-4 border-b border-gray-100">
-    <div class="grid grid-cols-2 gap-4 flex-1">
-      <div class="flex flex-col gap-1">
-        <%= f.label :key, class: "text-sm font-medium text-gray-700" %>
-        <% if @content_block.persisted? %>
-          <%= f.hidden_field :key, name: nil, value: @content_block.key %>
-          <span class="text-sm font-mono text-gray-900 py-2"><%= @content_block.key %></span>
-        <% else %>
-          <%= f.text_field :key, name: "content_block[key]", class: "h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200" %>
-        <% end %>
-      </div>
-
-      <% if @content_block.persisted? %>
-        <div class="flex flex-col gap-1">
-          <label class="text-sm font-medium text-gray-700"><%= t("ruby_cms.admin.content_blocks.content_type") %></label>
-          <%= select_tag "content_block[content_type]",
-                         options_for_select(::ContentBlock::CONTENT_TYPES, @content_block.content_type),
-                         class: "h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200" %>
-        </div>
-      <% end %>
-    </div>
-
-    <div class="flex items-center gap-2 flex-shrink-0">
-      <%= link_to "Cancel",
-                  @content_block.persisted? ? ruby_cms_admin_content_block_path(@content_block) : ruby_cms_admin_content_blocks_path,
-                  class: "inline-flex h-9 items-center justify-center rounded-md border border-gray-200 bg-white px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors no-underline" %>
-      <%= f.submit "Save", class: "inline-flex h-9 items-center justify-center rounded-md bg-gray-900 px-4 text-sm font-medium text-white shadow-sm hover:bg-gray-800 transition-colors cursor-pointer" %>
-    </div>
-  </div>
-
-  <% if @content_block.errors.any? %>
-    <div class="mx-6 mt-4 rounded-md border border-rose-200 bg-rose-50 p-4">
-      <ul class="list-disc pl-4 space-y-1">
-        <% @content_block.errors.full_messages.each do |msg| %>
-          <li class="text-sm text-rose-700"><%= msg %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
-
-  <% if @content_block.persisted? && @blocks_by_locale.present? %>
-    <%# Multi-locale layout %>
-
-    <div class="flex items-center gap-2 px-6 py-4 border-b border-gray-100">
-      <%= hidden_field_tag "content_block[published]", "0" %>
-      <%= check_box_tag "content_block[published]", "1",
-                        @blocks_by_locale.values.any?(&:published?),
-                        class: "h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-200" %>
-      <label class="text-sm font-medium text-gray-700"><%= t("ruby_cms.admin.content_blocks.published") %> (all translations)</label>
-    </div>
-
-    <div class="rounded-md border border-gray-200 overflow-hidden mx-6 my-4" data-controller="ruby-cms--locale-tabs">
-      <div class="flex gap-1 p-2 bg-gray-50 border-b border-gray-200" role="tablist">
-        <% @blocks_by_locale.each_with_index do |(locale_s, _), idx| %>
-          <button type="button"
-                  role="tab"
-                  aria-selected="<%= idx == 0 %>"
-                  aria-controls="locale-panel-<%= locale_s %>"
-                  id="locale-tab-<%= locale_s %>"
-                  data-ruby-cms--locale-tabs-target="tab"
-                  data-panel-id="locale-panel-<%= locale_s %>"
-                  data-action="click->ruby-cms--locale-tabs#switchTab"
-                  class="px-3 py-1.5 rounded text-xs font-medium border-none cursor-pointer transition-colors <%= idx == 0 ? 'bg-white text-blue-600 shadow-sm ring-1 ring-gray-200' : 'bg-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-900' %>">
-            <%= ruby_cms_locale_display_name(locale_s) %>
-          </button>
-        <% end %>
-      </div>
-
-      <% @blocks_by_locale.each_with_index do |(locale_s, block), idx| %>
-        <div id="locale-panel-<%= locale_s %>"
-             role="tabpanel"
-             aria-labelledby="locale-tab-<%= locale_s %>"
-             class="p-5 <%= idx > 0 ? 'hidden' : '' %>"
-             data-locale-panel>
-
-          <%= hidden_field_tag "content_block[locales][#{locale_s}][locale]", locale_s %>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div class="flex flex-col gap-1">
-              <label class="text-sm font-medium text-gray-700"><%= t("ruby_cms.admin.content_blocks.title") %></label>
-              <%= text_field_tag "content_block[locales][#{locale_s}][title]",
-                                 block.title,
-                                 class: "h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200" %>
+  <div class="<%= RubyCms::Admin::AdminResourceCard::CARD_CLASS %>">
+    <div class="p-6 space-y-6">
+      <% if @content_block.errors.any? %>
+        <div class="rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+          <div class="flex gap-3">
+            <svg class="size-5 text-destructive shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+            <div>
+              <p class="text-sm font-medium text-destructive"><%= t("ruby_cms.admin.content_blocks.errors_title", default: "Please fix the following errors:") %></p>
+              <ul class="mt-1.5 text-sm text-destructive/80 list-disc list-inside">
+                <% @content_block.errors.full_messages.each do |message| %>
+                  <li><%= message %></li>
+                <% end %>
+              </ul>
             </div>
-
-            <div class="flex flex-col gap-1">
-              <label class="text-sm font-medium text-gray-700"><%= t("ruby_cms.admin.content_blocks.content") %></label>
-              <%= text_area_tag "content_block[locales][#{locale_s}][content]",
-                                block.content,
-                                rows: 5,
-                                class: "rounded-md border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200 resize-y" %>
-            </div>
-
-            <% if ::ContentBlock.respond_to?(:action_text_available?) && ::ContentBlock.action_text_available? && block.persisted? && block.respond_to?(:rich_content) %>
-              <div class="col-span-2 flex flex-col gap-1">
-                <label class="text-sm font-medium text-gray-700"><%= t("ruby_cms.admin.content_blocks.rich_content") %></label>
-                <%= rich_text_area_tag "content_block[locales][#{locale_s}][rich_content]",
-                                       block.rich_content.present? ? block.rich_content.to_s : "",
-                                       class: "rounded-md border border-gray-200 bg-white text-sm shadow-sm focus:outline-none" %>
-              </div>
-            <% end %>
           </div>
         </div>
       <% end %>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div>
+          <%= f.label :key, class: RubyCms::Admin::AdminResourceCard::LABEL_CLASS %>
+          <%= f.text_field :key,
+              class: RubyCms::Admin::AdminResourceCard::INPUT_CLASS,
+              placeholder: "homepage_hero_title",
+              name: "content_block[key]" %>
+        </div>
+
+        <div>
+          <%= f.label :locale, class: RubyCms::Admin::AdminResourceCard::LABEL_CLASS %>
+          <%= f.select :locale,
+              I18n.available_locales.map { |l| [ruby_cms_locale_display_name(l), l.to_s] },
+              { include_blank: t("ruby_cms.admin.content_blocks.select_locale", default: "Select locale") },
+              class: RubyCms::Admin::AdminResourceCard::INPUT_CLASS,
+              name: "content_block[locale]" %>
+        </div>
+
+        <div>
+          <%= f.label :title, class: RubyCms::Admin::AdminResourceCard::LABEL_CLASS %>
+          <%= f.text_field :title, class: RubyCms::Admin::AdminResourceCard::INPUT_CLASS %>
+        </div>
+
+        <div>
+          <%= f.label :content_type, class: RubyCms::Admin::AdminResourceCard::LABEL_CLASS %>
+          <%= f.select :content_type, ::ContentBlock::CONTENT_TYPES, {}, class: RubyCms::Admin::AdminResourceCard::INPUT_CLASS %>
+        </div>
+
+        <div class="sm:col-span-2">
+          <%= f.label :content, class: RubyCms::Admin::AdminResourceCard::LABEL_CLASS %>
+          <%= f.text_area :content,
+              rows: 5,
+              class: "#{RubyCms::Admin::AdminResourceCard::INPUT_CLASS} resize-y" %>
+        </div>
+
+        <% if ::ContentBlock.respond_to?(:action_text_available?) && ::ContentBlock.action_text_available? %>
+          <div class="sm:col-span-2">
+            <%= f.label :rich_content, class: RubyCms::Admin::AdminResourceCard::LABEL_CLASS %>
+            <%= f.rich_text_area :rich_content, class: "rounded-lg border border-border bg-background text-sm shadow-sm focus:outline-none" %>
+          </div>
+        <% else %>
+          <div class="sm:col-span-2 rounded-lg border border-border/60 bg-muted/30 p-4">
+            <p class="text-sm text-muted-foreground">
+              Rich text requires Action Text. Run:
+              <code class="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">bin/rails action_text:install</code>
+              and
+              <code class="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">bin/rails db:migrate</code>.
+            </p>
+          </div>
+        <% end %>
+      </div>
+
+      <label class="inline-flex items-center gap-3 cursor-pointer">
+        <%= f.check_box :published, class: "size-4 rounded border-border text-primary focus:ring-primary/30 cursor-pointer" %>
+        <span class="text-sm font-medium text-foreground"><%= t("ruby_cms.admin.content_blocks.published", default: "Published") %></span>
+      </label>
     </div>
 
-  <% else %>
-    <%# Single-locale (new block) %>
-
-    <div class="grid grid-cols-2 gap-4 p-6">
-      <div class="flex flex-col gap-1">
-        <%= f.label :locale, class: "text-sm font-medium text-gray-700" %>
-        <%= f.select :locale,
-                     I18n.available_locales.map { |l| [ruby_cms_locale_display_name(l), l.to_s] },
-                     { include_blank: t("ruby_cms.admin.content_blocks.select_locale") },
-                     class: "h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200",
-                     name: "content_block[locale]" %>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <%= f.label :title, class: "text-sm font-medium text-gray-700" %>
-        <%= f.text_field :title, class: "h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200" %>
-      </div>
-
-      <div class="flex flex-col gap-1">
-        <%= f.label :content_type, class: "text-sm font-medium text-gray-700" %>
-        <%= f.select :content_type, ::ContentBlock::CONTENT_TYPES, {}, class: "h-9 rounded-md border border-gray-200 bg-white px-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200" %>
-      </div>
-
-      <div class="col-span-2 flex flex-col gap-1">
-        <%= f.label :content, class: "text-sm font-medium text-gray-700" %>
-        <%= f.text_area :content, rows: 5, class: "rounded-md border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-200 resize-y" %>
-      </div>
-
-      <% if ::ContentBlock.respond_to?(:action_text_available?) && ::ContentBlock.action_text_available? %>
-        <div class="col-span-2 flex flex-col gap-1">
-          <%= f.label :rich_content, class: "text-sm font-medium text-gray-700" %>
-          <%= f.rich_text_area :rich_content, class: "rounded-md border border-gray-200 bg-white text-sm shadow-sm focus:outline-none" %>
-        </div>
-      <% else %>
-        <div class="col-span-2 rounded-md border border-gray-200 bg-gray-50 p-4">
-          <p class="text-sm text-gray-500">
-            Rich text requires Action Text. Run:
-            <code class="font-mono text-xs bg-gray-100 px-1 rounded">bin/rails action_text:install</code> and <code class="font-mono text-xs bg-gray-100 px-1 rounded">bin/rails db:migrate</code>
-          </p>
-        </div>
-      <% end %>
-
-      <div class="col-span-2 flex items-center gap-2">
-        <%= f.check_box :published, class: "h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-200" %>
-        <%= f.label :published, class: "text-sm font-medium text-gray-700" %>
-      </div>
+    <div class="<%= RubyCms::Admin::AdminResourceCard::ACTIONS_CLASS %>">
+      <%= link_to t("ruby_cms.admin.common.cancel", default: "Cancel"),
+          ruby_cms_admin_content_blocks_path,
+          class: RubyCms::Admin::AdminResourceCard::CANCEL_CLASS %>
+      <%= f.submit t("ruby_cms.admin.content_blocks.create", default: "Save"),
+          class: RubyCms::Admin::AdminResourceCard::SUBMIT_CLASS %>
     </div>
-  <% end %>
+  </div>
 <% end %>

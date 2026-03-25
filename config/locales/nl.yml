@@ -1,0 +1,41 @@
+# frozen_string_literal: true
+
+nl:
+  ruby_cms:
+    nav:
+      locale: "Taal"
+      settings: "Instellingen"
+      view_site: "Bekijk site"
+      logout: "Uitloggen"
+      logout_confirm: "Weet je zeker dat je wilt uitloggen?"
+      items:
+        dashboard: "Dashboard"
+        visual_editor: "Visuele editor"
+        content_blocks: "Contentblokken"
+        analytics: "Analytics"
+        permissions: "Rechten"
+        visitor_errors: "Bezoekersfouten"
+        users: "Gebruikers"
+        settings: "Instellingen"
+    admin:
+      breadcrumb:
+        admin: "Beheer"
+      base:
+        authentication_required: "Authenticatie vereist."
+        not_authorized: "Niet geautoriseerd."
+      locales:
+        en: "Engels"
+        nl: "Nederlands"
+        de: "Duits"
+        fr: "Frans"
+        es: "Spaans"
+      content_blocks:
+        created: "Contentblok aangemaakt."
+        updated: "Contentblok bijgewerkt."
+        deleted: "Contentblok verwijderd."
+        select_locale: "Selecteer taal"
+        content_type: "Inhoudstype"
+        title: "Titel"
+        content: "Inhoud"
+        rich_content: "Rich content"
+        published: "Gepubliceerd"

@@ -1,5 +1,10 @@
-<h1 class="text-2xl font-semibold text-gray-900 mb-4">New content block</h1>
+<%= render RubyCms::Admin::AdminPageHeader.new(
+  title: t("ruby_cms.admin.content_blocks.new_title", default: "New content block"),
+  breadcrumbs: [
+    { label: t("ruby_cms.admin.nav.admin", default: "Admin"), url: ruby_cms_admin_root_path },
+    { label: t("ruby_cms.admin.nav.content_blocks", default: "Content Blocks"), url: ruby_cms_admin_content_blocks_path },
+    { label: t("ruby_cms.admin.content_blocks.new_title", default: "New content block") }
+  ]
+) %>
 
 <%= render "form" %>
-
-<p class="mt-4"><%= link_to "Back", ruby_cms_admin_content_blocks_path, class: "text-blue-600 hover:text-blue-800" %></p>

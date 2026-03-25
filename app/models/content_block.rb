@@ -9,26 +9,28 @@ class ContentBlock < ApplicationRecord
 
   def self.action_text_available?
     return false unless defined?(::ActionText::RichText)
-    return false unless ActiveRecord::Base.connected?
 
     ActiveRecord::Base.connection.data_source_exists?("action_text_rich_texts")
-  rescue ActiveRecord::ConnectionNotEstablished, ActiveRecord::NoDatabaseError
+  rescue ActiveRecord::ConnectionNotEstablished, ActiveRecord::NoDatabaseError,
+         ActiveRecord::StatementInvalid
     false
   end
 
   def self.active_storage_available?
     return false unless defined?(::ActiveStorage::Blob)
-    return false unless ActiveRecord::Base.connected?
 
     c = ActiveRecord::Base.connection
     c.data_source_exists?("active_storage_blobs") &&
       c.data_source_exists?("active_storage_attachments")
-  rescue ActiveRecord::ConnectionNotEstablished, ActiveRecord::NoDatabaseError
+  rescue ActiveRecord::ConnectionNotEstablished, ActiveRecord::NoDatabaseError,
+         ActiveRecord::StatementInvalid
     false
   end
 
-  has_rich_text :rich_content if action_text_available?
-  has_one_attached :image if active_storage_available?
+  # Define associations without requiring an active DB connection at boot time.
+  # In production, eager loading may happen before AR has connected.
+  has_rich_text :rich_content if defined?(::ActionText::RichText)
+  has_one_attached :image if defined?(::ActiveStorage::Blob)
 
   belongs_to :updated_by, class_name: "User", optional: true
 

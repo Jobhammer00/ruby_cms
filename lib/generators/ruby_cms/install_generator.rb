@@ -260,11 +260,17 @@ module RubyCms
       def install_action_text
         migrate_dir = Rails.root.join("db/migrate")
         return unless migrate_dir.directory?
-        return if action_text_already_installed?(migrate_dir)
 
-        say "ℹ Task action_text: Installing Action Text for rich text/image content blocks.", :cyan
-        run "bin/rails action_text:install"
-        say "✓ Task action_text: Installed Action Text", :green
+        if action_text_already_installed?(migrate_dir)
+          say "ℹ Task action_text: Existing Action Text setup detected. Skipping action_text:install.",
+              :cyan
+        else
+          say "ℹ Task action_text: Installing Action Text for rich text/image content blocks.", :cyan
+          run "bin/rails action_text:install"
+          say "✓ Task action_text: Installed Action Text", :green
+        end
+
+        configure_action_text_assets
       rescue StandardError => e
         say "⚠ Task action_text: Could not install: #{e.message}. Rich text will be disabled.",
             :yellow
@@ -379,6 +385,63 @@ module RubyCms
           ActiveRecord::Base.connection.data_source_exists?("action_text_rich_texts")
         rescue ActiveRecord::ConnectionNotEstablished, ActiveRecord::NoDatabaseError
           false
+        end
+
+        def configure_action_text_assets
+          add_action_text_importmap_pins
+          add_action_text_imports_to_admin_entrypoint
+        end
+
+        def add_action_text_importmap_pins
+          importmap_path = Rails.root.join("config/importmap.rb")
+          return unless File.exist?(importmap_path)
+
+          content = File.read(importmap_path)
+          lines_to_add = []
+          lines_to_add << %(pin "trix") unless content.include?('pin "trix"')
+          unless content.include?('pin "@rails/actiontext"')
+            lines_to_add << %(pin "@rails/actiontext", to: "actiontext.esm.js")
+          end
+          return if lines_to_add.empty?
+
+          inject_into_file importmap_path.to_s, before: /^end/ do
+            "\n  # RubyCMS rich text (Action Text + Trix)\n  #{lines_to_add.join("\n  ")}\n"
+          end
+          say "✓ Task action_text/importmap: Added trix/actiontext pins to importmap.rb.", :green
+        rescue StandardError => e
+          say "⚠ Task action_text/importmap: Could not add pins: #{e.message}. " \
+              "Add pins for trix and @rails/actiontext manually.",
+              :yellow
+        end
+
+        def add_action_text_imports_to_admin_entrypoint
+          admin_js_path = Rails.root.join("app/javascript/admin.js")
+          content = File.exist?(admin_js_path) ? File.read(admin_js_path) : ""
+
+          lines_to_add = []
+          lines_to_add << %(import "trix") unless content.include?('import "trix"') || content.include?("import 'trix'")
+          unless content.include?('import "@rails/actiontext"') ||
+                 content.include?("import '@rails/actiontext'")
+            lines_to_add << %(import "@rails/actiontext")
+          end
+          return if lines_to_add.empty?
+
+          if File.exist?(admin_js_path)
+            append_to_file admin_js_path.to_s, "\n#{lines_to_add.join("\n")}\n"
+            say "✓ Task action_text/js: Added Action Text imports to app/javascript/admin.js.", :green
+          else
+            content = <<~JS
+              // RubyCMS admin entrypoint
+              import "trix"
+              import "@rails/actiontext"
+            JS
+            File.write(admin_js_path, content)
+            say "✓ Task action_text/js: Created app/javascript/admin.js with Action Text imports.", :green
+          end
+        rescue StandardError => e
+          say "⚠ Task action_text/js: Could not update admin.js: #{e.message}. " \
+              "Import trix and @rails/actiontext manually.",
+              :yellow
         end
       end
 

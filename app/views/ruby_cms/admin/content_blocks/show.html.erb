@@ -78,28 +78,33 @@
 
         <%# ── Locale Tabs ── %>
         <% if @blocks_by_locale.present? %>
+          <% active_locale = @blocks_by_locale.key?(@content_block.locale.to_s) ? @content_block.locale.to_s : @blocks_by_locale.keys.first %>
           <div class="rounded-xl border border-border/60 overflow-hidden" data-controller="ruby-cms--locale-tabs">
             <div class="flex gap-1 p-2 bg-muted/30 border-b border-border/60" role="tablist">
-              <% @blocks_by_locale.each_with_index do |(locale_s, _), idx| %>
+              <% @blocks_by_locale.each do |locale_s, _| %>
+                <% selected = locale_s == active_locale %>
                 <button type="button"
                         role="tab"
-                        aria-selected="<%= idx == 0 %>"
+                        aria-selected="<%= selected %>"
                         aria-controls="locale-panel-<%= locale_s %>"
                         id="locale-tab-<%= locale_s %>"
                         data-ruby-cms--locale-tabs-target="tab"
                         data-panel-id="locale-panel-<%= locale_s %>"
+                        data-active-classes="bg-background text-primary shadow-sm ring-1 ring-border/60"
+                        data-inactive-classes="bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
                         data-action="click->ruby-cms--locale-tabs#switchTab"
-                        class="px-3 py-1.5 rounded-md text-xs font-medium border-none cursor-pointer transition-colors <%= idx == 0 ? 'bg-background text-primary shadow-sm ring-1 ring-border/60' : 'bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground' %>">
+                        class="px-3 py-1.5 rounded-md text-xs font-medium border-none cursor-pointer transition-colors <%= selected ? 'bg-background text-primary shadow-sm ring-1 ring-border/60' : 'bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground' %>">
                   <%= ruby_cms_locale_display_name(locale_s) %>
                 </button>
               <% end %>
             </div>
 
-            <% @blocks_by_locale.each_with_index do |(locale_s, block), idx| %>
+            <% @blocks_by_locale.each do |locale_s, block| %>
+              <% selected = locale_s == active_locale %>
               <div id="locale-panel-<%= locale_s %>"
                    role="tabpanel"
                    aria-labelledby="locale-tab-<%= locale_s %>"
-                   class="p-5 <%= idx > 0 ? 'hidden' : '' %>"
+                   class="p-5 <%= selected ? '' : 'hidden' %>"
                    data-locale-panel>
 
                 <%= hidden_field_tag "content_block[locales][#{locale_s}][locale]", locale_s %>
@@ -204,8 +209,8 @@
             <div class="space-y-3">
               <% @blocks_by_locale.each do |locale_s, block| %>
                 <% next if block.title.blank? && block.content_body.blank? %>
-                <div class="rounded-lg border border-border/60 bg-muted/30 p-3">
-                  <span class="inline-flex items-center rounded-md bg-background px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground ring-1 ring-border/60 mb-2"><%= ruby_cms_locale_display_name(locale_s) %></span>
+                <div class="py-1">
+                  <span class="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground"><%= ruby_cms_locale_display_name(locale_s) %></span>
                   <% if block.title.present? %>
                     <p class="text-xs font-medium text-foreground"><%= block.title %></p>
                   <% end %>
