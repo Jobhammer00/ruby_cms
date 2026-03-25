@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.1.0.7] - 2026-03-25
+
+- Improve some styling and fix rich text
+
 ## [0.1.0.6] - 2026-03-23
 
 - Fix visual editor content block bug
