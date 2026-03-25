@@ -399,9 +399,7 @@ module RubyCms
           content = File.read(importmap_path)
           lines_to_add = []
           lines_to_add << %(pin "trix") unless content.include?('pin "trix"')
-          unless content.include?('pin "@rails/actiontext"')
-            lines_to_add << %(pin "@rails/actiontext", to: "actiontext.esm.js")
-          end
+          lines_to_add << %(pin "@rails/actiontext", to: "actiontext.esm.js") unless content.include?('pin "@rails/actiontext"')
           return if lines_to_add.empty?
 
           inject_into_file importmap_path.to_s, before: /^end/ do
