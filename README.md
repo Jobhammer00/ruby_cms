@@ -6,13 +6,16 @@ Reusable Rails engine for a CMS-style admin: permissions, admin UI shell, conten
 
 Vision: your app owns product features (pages, models, business logic); RubyCMS manages content workflows and admin screens.
 
+This README is an **overview and quick start**. For a full, versioned checklist of admin routes, rake tasks, and integrations, see **[docs/FEATURES.md](docs/FEATURES.md)**. Use a GitHub Wiki only if you want long, site-specific runbooks; keep the gem’s canonical list in-repo to avoid drift.
+
 ## Features
 
 * Visual editor (inline editing for `content_block` regions)
 * Content blocks (rich text + placeholders + list items)
 * Permissions and users (admin access control)
+* Admin settings (DB-backed options, nav order)
 * Visitor error tracking (`/admin/visitor_errors`)
-* Analytics via Ahoy (page views + events)
+* Analytics via Ahoy (dashboard, page and visitor drill-downs)
 
 ## Quick Start
 
