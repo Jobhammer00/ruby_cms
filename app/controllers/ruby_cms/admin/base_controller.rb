@@ -20,6 +20,24 @@ module RubyCms
       # new_session_path, root_path, etc.
       include RubyCms::Engine.routes.url_helpers
 
+      # Declare which registered page this controller serves.
+      # Looks up the permission from the nav_registry entry and sets a before_action.
+      # Usage: cms_page :backups (requires a matching register_page call with key: :backups)
+      def self.cms_page(key)
+        page_key = key.to_sym
+        before_action do
+          entry = RubyCms.nav_registry.find {|e| e[:key] == page_key }
+          if entry.nil?
+            if defined?(Rails.logger)
+              Rails.logger.warn("[RubyCMS] cms_page :#{page_key} has no matching register_page entry. " \
+                                "Only manage_admin is enforced.")
+            end
+          elsif entry[:permission].present?
+            require_permission!(entry[:permission].to_sym)
+          end
+        end
+      end
+
       # Public API: dashboard block +data procs and host code may call this on the controller instance.
       def current_user_cms
         @current_user_cms ||= resolve_current_user

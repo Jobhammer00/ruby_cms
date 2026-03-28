@@ -27,15 +27,15 @@ module RubyCms
       def assign_dashboard_blocks
         visible = RubyCms.visible_dashboard_blocks(user: current_user_cms)
         @stats_blocks = visible
-          .select {|b| b[:section] == :stats }
-          .map {|b| prepare_dashboard_block(b) }
+                        .select {|b| b[:section] == :stats }
+                        .map {|b| prepare_dashboard_block(b) }
         main = visible
-          .select {|b| b[:section] == :main }
-          .map {|b| prepare_dashboard_block(b) }
+               .select {|b| b[:section] == :main }
+               .map {|b| prepare_dashboard_block(b) }
         @primary_main_blocks = PRIMARY_MAIN_ROW_KEYS.filter_map {|k| main.find {|b| b[:key] == k } }
         @extra_main_blocks = main
-          .reject {|b| PRIMARY_MAIN_ROW_KEYS.include?(b[:key]) }
-          .sort_by {|b| [b[:order], b[:label].to_s] }
+                             .reject {|b| PRIMARY_MAIN_ROW_KEYS.include?(b[:key]) }
+                             .sort_by {|b| [b[:order], b[:label].to_s] }
       end
 
       def prepare_dashboard_block(block)
@@ -45,7 +45,7 @@ module RubyCms
           else
             {}
           end
-        from_data = {} unless from_data.is_a?(Hash)
+        from_data = {} unless from_data.kind_of?(Hash)
 
         block.merge(locals: { dashboard_block: block }.merge(from_data))
       end

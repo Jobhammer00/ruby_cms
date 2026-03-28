@@ -4,6 +4,7 @@ require_relative "ruby_cms/version"
 require_relative "ruby_cms/css_compiler"
 require_relative "ruby_cms/settings_registry"
 require_relative "ruby_cms/settings"
+require_relative "ruby_cms/icons"
 require_relative "ruby_cms/dashboard_blocks"
 require_relative "ruby_cms/engine"
 require_relative "ruby_cms/app_integration"
@@ -46,11 +47,6 @@ module RubyCms
   NAV_SECTION_MAIN = "main"
   NAV_SECTION_BOTTOM = "Settings"
 
-  ANALYTICS_ICON_PATH = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
-                        'd="M3 3v18h18"></path>' \
-                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
-                        'd="M7 13l3-3 3 2 4-5"></path>'
-
   def self.configure
     yield(Rails.application.config.ruby_cms)
   end
@@ -65,8 +61,8 @@ module RubyCms
   # Options:
   # - key: required Symbol/String
   # - label: required String
-  # - path: required String or callable(view_context) -> path
-  # - icon: optional SVG path fragment
+  # - path: String, Symbol (route helper name, auto-wrapped via main_app), or callable(view_context) -> path
+  # - icon: Symbol (named icon from RubyCms::Icons) or raw SVG path fragment string
   # - section: "main" | "Settings" (or nil => main)
   # - order: optional Integer for sorting within section
   # - permission: optional permission key (e.g., :manage_analytics)
@@ -75,11 +71,13 @@ module RubyCms
   def self.nav_register(key:, label:, path:, icon: nil, section: nil, order: nil, permission: nil, default_visible: true, **options)
     normalized_key = key.to_sym
     normalized_section = section.presence || NAV_SECTION_MAIN
+    resolved_path = path.kind_of?(Symbol) ? ->(v) { v.main_app.send(path) } : path
+    resolved_icon = icon.nil? ? nil : RubyCms::Icons.resolve(icon)
     entry = {
       key: normalized_key,
       label: label.to_s,
-      path: path,
-      icon: icon,
+      path: resolved_path,
+      icon: resolved_icon,
       section: normalized_section,
       order: order,
       permission: permission&.to_s,
@@ -95,8 +93,35 @@ module RubyCms
     entry
   end
 
+  VALID_PAGE_SECTIONS = %i[main settings].freeze
+
+  # Unified API to register an admin page: nav item + permission key in one call.
+  # Accepts :main or :settings for section (resolved to NAV_SECTION_MAIN / NAV_SECTION_BOTTOM).
+  # Automatically registers the permission key if provided.
+  def self.register_page(
+    key:, label:, path:, icon: nil, section: :main, order: nil,
+    permission: nil, default_visible: true, **
+  )
+    raise ArgumentError, "register_page section must be :main or :settings, got #{section.inspect}" unless VALID_PAGE_SECTIONS.include?(section.to_s.to_sym)
+
+    register_permission_keys(permission) if permission.present?
+    resolved_section = section.to_s == "settings" ? NAV_SECTION_BOTTOM : NAV_SECTION_MAIN
+    nav_register(
+      key: key,
+      label: label,
+      path: path,
+      icon: icon,
+      section: resolved_section,
+      order: order,
+      permission: permission,
+      default_visible: default_visible,
+      **
+    )
+  end
+
   # Returns only entries that pass settings + permissions + conditional checks,
   # sorted by saved nav_order (Settings → Navigation drag-and-drop) when set, else by section + order.
+  # Fail-closed: returns empty array on error (never exposes unfiltered items).
   def self.visible_nav_registry(view_context: nil, user: nil)
     list = nav_registry
            .select {|item| nav_entry_visible?(item, view_context:, user:) }
@@ -104,7 +129,7 @@ module RubyCms
     localize_nav_labels(apply_nav_order(list))
   rescue StandardError => e
     Rails.logger.error("[RubyCMS] Error filtering navigation: #{e.message}") if defined?(Rails.logger)
-    nav_registry
+    []
   end
 
   module Nav

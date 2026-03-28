@@ -72,9 +72,4 @@ RSpec.describe RubyCms::Admin::ContentBlockVersionsController, type: :controller
       expect(response).to be_successful
     end
   end
-
-  # GET index toont versiegeschiedenis (HTML + JSON)
-  # GET show toont diff met vorige versie
-  # POST rollback draait terug en redirect
-  # Permissie-check: alleen gebruikers met manage_content_blocks
 end

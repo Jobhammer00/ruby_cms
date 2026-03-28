@@ -5,7 +5,7 @@ class User < ApplicationRecord
   self.table_name = "users"
 
   # Matches RubyCms::Permittable enough for controller doubles / stubs.
-  def can?(_permission_key, record: nil)
+  def can?(_permission_key, **)
     true
   end
 end

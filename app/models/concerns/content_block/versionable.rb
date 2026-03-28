@@ -8,10 +8,13 @@ module ContentBlock::Versionable # rubocop:disable Style/ClassAndModuleChildren
                         dependent: :destroy
     after_create :create_initial_version
     after_update :create_update_version, if: :content_changed_meaningfully?
+
+    attr_accessor :_rollback_in_progress
   end
 
   def rollback_to_version!(version, user: nil)
     transaction do
+      self._rollback_in_progress = true
       assign_attributes(
         title: version.title,
         content: version.content,
@@ -22,6 +25,8 @@ module ContentBlock::Versionable # rubocop:disable Style/ClassAndModuleChildren
       self.updated_by = user if user
       save!
     end
+  ensure
+    self._rollback_in_progress = false
   end
 
   def current_version_number
@@ -44,6 +49,7 @@ module ContentBlock::Versionable # rubocop:disable Style/ClassAndModuleChildren
   end
 
   def determine_event
+    return "rollback" if _rollback_in_progress
     return "publish" if saved_change_to_published? && published?
     return "unpublish" if saved_change_to_published? && !published?
 

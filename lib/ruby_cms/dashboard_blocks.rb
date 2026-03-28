@@ -7,8 +7,10 @@ module RubyCms
   self.dashboard_registry = []
 
   # Register a dashboard block (stats row or main row). Host apps can add blocks or replace defaults by key.
-  def self.dashboard_register(key:, label:, section:, order:, partial: nil, render: nil, permission: nil,
-                                enabled: true, default_visible: true, span: :single, data: nil)
+  def self.dashboard_register(
+    key:, label:, section:, order:, partial: nil, render: nil, permission: nil,
+    enabled: true, default_visible: true, span: :single, data: nil
+  )
     normalized_key = key.to_sym
     normalized_section = section.to_sym
     raise ArgumentError, "section must be :stats or :main" unless %i[stats main].include?(normalized_section)

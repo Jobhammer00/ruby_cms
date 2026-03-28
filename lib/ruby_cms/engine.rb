@@ -3,9 +3,20 @@
 require_relative "settings_registry"
 require_relative "settings"
 require_relative "dashboard_blocks"
+require_relative "engine/css"
+require_relative "engine/dashboard_registration"
+require_relative "engine/navigation_registration"
+require_relative "engine/admin_permissions"
+require_relative "engine/content_blocks_tasks"
 
 module RubyCms
   class Engine < ::Rails::Engine
+    extend RubyCms::EngineCss
+    extend RubyCms::EngineDashboardRegistration
+    extend RubyCms::EngineNavigationRegistration
+    extend RubyCms::EngineAdminPermissions
+    extend RubyCms::EngineContentBlocksTasks
+
     # Do not isolate namespace so we can use /admin and explicit table names.
     # Engine models use unprefixed table names: content_blocks, preferences, permissions, user_permissions, visitor_errors.
 
@@ -104,7 +115,7 @@ module RubyCms
 
     initializer "ruby_cms.versionable" do
       Rails.application.config.to_prepare do
-        ContentBlock.include(ContentBlock::Versionable) unless ContentBlock.ancestors.include?(ContentBlock::Versionable)
+        ContentBlock.include(ContentBlock::Versionable) unless ContentBlock <= ContentBlock::Versionable
       end
     end
 
@@ -118,220 +129,6 @@ module RubyCms
       RubyCms::Permission.ensure_defaults!
     rescue StandardError => e
       Rails.logger.warn("[RubyCMS] Permission.ensure_defaults! skipped: #{e.message}")
-    end
-
-    def self.register_default_dashboard_blocks
-      RubyCms.dashboard_register(
-        key: :content_blocks_stats,
-        label: "Content blocks",
-        section: :stats,
-        order: 1,
-        partial: "ruby_cms/admin/dashboard/blocks/content_blocks_stats",
-        permission: :manage_content_blocks
-      )
-      RubyCms.dashboard_register(
-        key: :users_stats,
-        label: "Users",
-        section: :stats,
-        order: 2,
-        partial: "ruby_cms/admin/dashboard/blocks/users_stats",
-        permission: :manage_permissions
-      )
-      RubyCms.dashboard_register(
-        key: :permissions_stats,
-        label: "Permissions",
-        section: :stats,
-        order: 3,
-        partial: "ruby_cms/admin/dashboard/blocks/permissions_stats",
-        permission: :manage_permissions
-      )
-      RubyCms.dashboard_register(
-        key: :visitor_errors_stats,
-        label: "Visitor errors",
-        section: :stats,
-        order: 4,
-        partial: "ruby_cms/admin/dashboard/blocks/visitor_errors_stats",
-        permission: :manage_visitor_errors
-      )
-      RubyCms.dashboard_register(
-        key: :quick_actions,
-        label: "Quick actions",
-        section: :main,
-        order: 1,
-        span: :single,
-        partial: "ruby_cms/admin/dashboard/blocks/quick_actions"
-      )
-      RubyCms.dashboard_register(
-        key: :recent_errors,
-        label: "Recent errors",
-        section: :main,
-        order: 2,
-        span: :single,
-        partial: "ruby_cms/admin/dashboard/blocks/recent_errors",
-        permission: :manage_visitor_errors
-      )
-      RubyCms.dashboard_register(
-        key: :analytics_overview,
-        label: "Analytics",
-        section: :main,
-        order: 3,
-        span: :single,
-        partial: "ruby_cms/admin/dashboard/blocks/analytics_overview",
-        permission: :manage_analytics
-      )
-    end
-
-    def self.register_main_nav_items
-      RubyCms.nav_register(
-        key: :dashboard,
-        label: "Dashboard",
-        path: lambda(&:ruby_cms_admin_root_path),
-        icon: dashboard_icon_path,
-        section: RubyCms::NAV_SECTION_MAIN,
-        permission: :manage_admin,
-        order: 1
-      )
-      RubyCms.nav_register(
-        key: :visual_editor,
-        label: "Visual editor",
-        path: lambda(&:ruby_cms_admin_visual_editor_path),
-        icon: visual_editor_icon_path,
-        section: RubyCms::NAV_SECTION_MAIN,
-        permission: :manage_content_blocks,
-        order: 2
-      )
-      RubyCms.nav_register(
-        key: :content_blocks,
-        label: "Content blocks",
-        path: lambda(&:ruby_cms_admin_content_blocks_path),
-        icon: content_blocks_icon_path,
-        section: RubyCms::NAV_SECTION_MAIN,
-        permission: :manage_content_blocks,
-        order: 3
-      )
-    end
-
-    def self.dashboard_icon_path
-      # Heroicons HomeIcon (outline)
-      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
-        'd="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3' \
-        'm-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>'
-    end
-
-    def self.content_blocks_icon_path
-      # Heroicons DocumentDuplicateIcon (outline)
-      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
-        'd="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414' \
-        'a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 ' \
-        '0 002-2v-2"></path>'
-    end
-
-    def self.visual_editor_icon_path
-      # Heroicons PencilSquareIcon (outline)
-      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
-        'd="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 ' \
-        '0 012.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>'
-    end
-
-    def self.register_settings_nav_items
-      RubyCms.nav_register(
-        key: :analytics,
-        label: "Analytics",
-        path: lambda(&:ruby_cms_admin_analytics_path),
-        section: RubyCms::NAV_SECTION_BOTTOM,
-        icon: analytics_icon_path,
-        permission: :manage_analytics,
-        order: 1
-      )
-      RubyCms.nav_register(
-        key: :permissions,
-        label: "Permissions",
-        path: lambda(&:ruby_cms_admin_permissions_path),
-        section: RubyCms::NAV_SECTION_BOTTOM,
-        icon: permissions_icon_path,
-        permission: :manage_permissions,
-        order: 2
-      )
-      RubyCms.nav_register(
-        key: :visitor_errors,
-        label: "Visitor errors",
-        path: lambda(&:ruby_cms_admin_visitor_errors_path),
-        section: RubyCms::NAV_SECTION_BOTTOM,
-        icon: visitor_errors_icon_path,
-        permission: :manage_visitor_errors,
-        order: 3
-      )
-      RubyCms.nav_register(
-        key: :users,
-        label: "Users",
-        path: lambda(&:ruby_cms_admin_users_path),
-        section: RubyCms::NAV_SECTION_BOTTOM,
-        icon: users_icon_path,
-        permission: :manage_permissions,
-        order: 4
-      )
-      RubyCms.nav_register(
-        key: :settings,
-        label: "Settings",
-        path: lambda(&:ruby_cms_admin_settings_path),
-        section: RubyCms::NAV_SECTION_BOTTOM,
-        icon: settings_icon_path,
-        permission: :manage_admin,
-        order: 5
-      )
-    end
-
-    def self.settings_icon_path
-      # Heroicons Cog6ToothIcon (outline)
-      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
-        'd="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 ' \
-        '1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 ' \
-        '1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 ' \
-        '6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 ' \
-        '0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 ' \
-        '1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 ' \
-        '6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 ' \
-        '1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 ' \
-        '1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"></path>' \
-        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>'
-    end
-
-    def self.visitor_errors_icon_path
-      # Heroicons ExclamationTriangleIcon (outline)
-      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
-        'd="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 ' \
-        '4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>'
-    end
-
-    def self.permissions_icon_path
-      # Heroicons ShieldCheckIcon (outline)
-      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
-        'd="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01' \
-        '-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 ' \
-        '9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>'
-    end
-
-    def self.users_icon_path
-      # Heroicons UserGroupIcon (outline)
-      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
-        'd="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 ' \
-        '00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>'
-    end
-
-    def self.analytics_icon_path
-      '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
-        'd="M3 3v18h18"></path>' \
-        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" ' \
-        'd="M7 13l3-3 3 2 4-5"></path>'
-    end
-
-    def self.compile_admin_css(dest_path)
-      gem_root = begin
-        root
-      rescue StandardError
-        Pathname.new(File.expand_path("../..", __dir__))
-      end
-      RubyCms::CssCompiler.compile(gem_root, dest_path)
     end
 
     config.paths.add "db/migrate", with: "db/migrate"
@@ -443,131 +240,6 @@ module RubyCms
           end
         end
       end
-    end
-
-    def self.grant_admin_permissions_to_admin_users
-      return unless defined?(::User) && User.column_names.include?("admin")
-
-      permission_keys = RubyCms::Permission.all_keys
-      permissions = RubyCms::Permission.where(key: permission_keys).index_by(&:key)
-      User.where(admin: true).find_each do |u|
-        permission_keys.each do |key|
-          perm = permissions[key]
-          next if perm.nil?
-
-          RubyCms::UserPermission.find_or_create_by!(user: u, permission: perm)
-        end
-      end
-    end
-
-    def self.extract_email_from_args(args)
-      args[:email] || ENV["email"] || ENV.fetch("EMAIL", nil)
-    end
-
-    def self.validate_email_present(email)
-      return if email.present?
-
-      warn "Usage: rails ruby_cms:grant_manage_admin " \
-           "email=user@example.com"
-      raise "Email is required"
-    end
-
-    def self.find_user_by_email(email)
-      user_class = Rails.application.config.ruby_cms.user_class_name
-                        .constantize
-      find_user_by_email_address(user_class, email) ||
-        find_user_by_email_column(user_class, email)
-    end
-
-    def self.find_user_by_email_address(user_class, email)
-      return unless user_class.column_names.include?("email_address")
-
-      user_class.find_by(email_address: email)
-    end
-
-    def self.find_user_by_email_column(user_class, email)
-      return unless user_class.column_names.include?("email")
-
-      user_class.find_by(email:)
-    end
-
-    def self.validate_user_found(user, email)
-      return if user
-
-      warn "User not found: #{email}"
-      raise "User not found: #{email}"
-    end
-
-    def self.grant_manage_admin_permission(user, email)
-      RubyCms::Permission.ensure_defaults!
-      RubyCms::Permission.all_keys.each do |key|
-        perm = RubyCms::Permission.find_by(key:)
-        next unless perm
-
-        RubyCms::UserPermission.find_or_create_by!(user: user, permission: perm)
-      end
-      puts "Granted full admin permissions to #{email}" # rubocop:disable Rails/Output
-    end
-
-    def self.parse_locales_dir(locales_dir_arg)
-      return nil unless locales_dir_arg.presence
-
-      Pathname.new(locales_dir_arg)
-    end
-
-    def self.parse_import_options
-      {
-        create_missing: ENV["create_missing"] != "false",
-        update_existing: ENV["update_existing"] != "false",
-        published: ENV["published"] == "true"
-      }
-    end
-
-    def self.display_export_summary(summary)
-      if summary.empty?
-        puts "No content blocks found to export." # rubocop:disable Rails/Output
-      else
-        puts "Exported content blocks to locale files:" # rubocop:disable Rails/Output
-        summary.each do |locale, count|
-          # rubocop:disable Rails/Output
-          puts "  #{locale}: #{count} block(s) updated " \
-               "in config/locales/#{locale}.yml"
-          # rubocop:enable Rails/Output
-        end
-      end
-    end
-
-    def self.display_import_summary(summary)
-      $stdout.puts "Import summary:"
-      $stdout.puts "  Created: #{summary[:created]}"
-      $stdout.puts "  Updated: #{summary[:updated]}"
-      $stdout.puts "  Skipped: #{summary[:skipped]}"
-      return unless summary[:errors].any?
-
-      $stdout.puts "  Errors:"
-      summary[:errors].each {|e| $stdout.puts "    - #{e}" }
-    end
-
-    def self.display_sync_summary(result, import_after)
-      display_export_results(result[:export])
-      display_import_results(result[:import], import_after) if import_after
-    end
-
-    def self.display_export_results(export_data)
-      $stdout.puts "Sync complete!"
-      $stdout.puts "\nExport summary:"
-      export_data.each do |locale, count|
-        $stdout.puts "  #{locale}: #{count} block(s) updated"
-      end
-    end
-
-    def self.display_import_results(import_data, import_after)
-      return unless import_after && import_data.any?
-
-      $stdout.puts "\nImport summary:"
-      $stdout.puts "  Created: #{import_data[:created]}"
-      $stdout.puts "  Updated: #{import_data[:updated]}"
-      $stdout.puts "  Skipped: #{import_data[:skipped]}"
     end
 
     initializer "ruby_cms.load_migrations" do |app|

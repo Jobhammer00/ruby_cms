@@ -1,0 +1,8 @@
+# frozen_string_literal: true
+
+class Admin::<%= class_name %>Controller < RubyCms::Admin::BaseController
+  cms_page :<%= file_name %>
+
+  def index
+  end
+end

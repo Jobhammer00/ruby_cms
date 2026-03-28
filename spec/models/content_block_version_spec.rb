@@ -40,7 +40,7 @@ RSpec.describe ContentBlockVersion do
   end
 
   before do
-    ContentBlockVersion.delete_all
+    described_class.delete_all
     ContentBlock.delete_all
   end
 
@@ -119,7 +119,7 @@ RSpec.describe ContentBlockVersion do
     end
 
     let(:version_one) do
-      ContentBlockVersion.create!(
+      described_class.create!(
         content_block: content_block,
         version_number: 2,
         title: "Original Title",
@@ -132,7 +132,7 @@ RSpec.describe ContentBlockVersion do
     end
 
     let(:version_two) do
-      ContentBlockVersion.create!(
+      described_class.create!(
         content_block: content_block,
         version_number: 3,
         title: "Updated Title",
