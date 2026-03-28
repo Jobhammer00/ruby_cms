@@ -1,0 +1,37 @@
+<h1>Versie <%= @version.version_number %> - <%= @content_block.key %></h1>
+
+<%= link_to "Terug naar versiegeschiedenis",
+    ruby_cms_admin_content_block_versions_path(@content_block),
+    class: "inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4" %>
+
+<% diff = @version.diff_from(@previous_version) %>
+
+<% if diff.empty? %>
+  <p class="text-sm text-muted-foreground">Geen wijzigingen ten opzichte van de vorige versie.</p>
+<% else %>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <% diff.each do |field, changes| %>
+      <div class="col-span-2 rounded-lg border border-border/60 bg-card p-4">
+        <h3 class="text-sm font-semibold text-foreground mb-2"><%= field.to_s.humanize %></h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <span class="text-xs font-medium text-muted-foreground">Vorige versie</span>
+            <div class="mt-1 rounded-md bg-red-50 p-3 text-sm text-red-800 whitespace-pre-wrap"><%= changes[:old] || "(leeg)" %></div>
+          </div>
+          <div>
+            <span class="text-xs font-medium text-muted-foreground">Deze versie</span>
+            <div class="mt-1 rounded-md bg-emerald-50 p-3 text-sm text-emerald-800 whitespace-pre-wrap"><%= changes[:new] || "(leeg)" %></div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<div class="mt-6">
+  <%= button_to "Rollback naar deze versie",
+      rollback_ruby_cms_admin_content_block_version_path(@content_block, @version),
+      method: :post,
+      data: { turbo_confirm: "Weet je zeker dat je wilt terugdraaien naar versie #{@version.version_number}?" },
+      class: "inline-flex items-center px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90" %>
+</div>

@@ -2,6 +2,7 @@
 
 require_relative "settings_registry"
 require_relative "settings"
+require_relative "dashboard_blocks"
 
 module RubyCms
   class Engine < ::Rails::Engine
@@ -69,6 +70,7 @@ module RubyCms
         helper RubyCms::BulkActionTableHelper
         helper RubyCms::Admin::BulkActionTableHelper
         helper RubyCms::Admin::AdminPageHelper
+        helper RubyCms::Admin::DashboardHelper
       end
     end
 
@@ -96,6 +98,16 @@ module RubyCms
       end
     end
 
+    initializer "ruby_cms.dashboard_blocks" do
+      RubyCms::Engine.register_default_dashboard_blocks
+    end
+
+    initializer "ruby_cms.versionable" do
+      Rails.application.config.to_prepare do
+        ContentBlock.include(ContentBlock::Versionable) unless ContentBlock.ancestors.include?(ContentBlock::Versionable)
+      end
+    end
+
     initializer "ruby_cms.settings_import", after: :load_config_initializers do
       RubyCms::Settings.import_initializer_values!
     end
@@ -106,6 +118,67 @@ module RubyCms
       RubyCms::Permission.ensure_defaults!
     rescue StandardError => e
       Rails.logger.warn("[RubyCMS] Permission.ensure_defaults! skipped: #{e.message}")
+    end
+
+    def self.register_default_dashboard_blocks
+      RubyCms.dashboard_register(
+        key: :content_blocks_stats,
+        label: "Content blocks",
+        section: :stats,
+        order: 1,
+        partial: "ruby_cms/admin/dashboard/blocks/content_blocks_stats",
+        permission: :manage_content_blocks
+      )
+      RubyCms.dashboard_register(
+        key: :users_stats,
+        label: "Users",
+        section: :stats,
+        order: 2,
+        partial: "ruby_cms/admin/dashboard/blocks/users_stats",
+        permission: :manage_permissions
+      )
+      RubyCms.dashboard_register(
+        key: :permissions_stats,
+        label: "Permissions",
+        section: :stats,
+        order: 3,
+        partial: "ruby_cms/admin/dashboard/blocks/permissions_stats",
+        permission: :manage_permissions
+      )
+      RubyCms.dashboard_register(
+        key: :visitor_errors_stats,
+        label: "Visitor errors",
+        section: :stats,
+        order: 4,
+        partial: "ruby_cms/admin/dashboard/blocks/visitor_errors_stats",
+        permission: :manage_visitor_errors
+      )
+      RubyCms.dashboard_register(
+        key: :quick_actions,
+        label: "Quick actions",
+        section: :main,
+        order: 1,
+        span: :single,
+        partial: "ruby_cms/admin/dashboard/blocks/quick_actions"
+      )
+      RubyCms.dashboard_register(
+        key: :recent_errors,
+        label: "Recent errors",
+        section: :main,
+        order: 2,
+        span: :single,
+        partial: "ruby_cms/admin/dashboard/blocks/recent_errors",
+        permission: :manage_visitor_errors
+      )
+      RubyCms.dashboard_register(
+        key: :analytics_overview,
+        label: "Analytics",
+        section: :main,
+        order: 3,
+        span: :single,
+        partial: "ruby_cms/admin/dashboard/blocks/analytics_overview",
+        permission: :manage_analytics
+      )
     end
 
     def self.register_main_nav_items

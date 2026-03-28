@@ -3,12 +3,52 @@
 module RubyCms
   module Admin
     class DashboardController < BaseController
+      # First main row: quick actions, recent errors, analytics (fixed keys). Remaining :main blocks render below (host/custom).
+      PRIMARY_MAIN_ROW_KEYS = %i[quick_actions recent_errors analytics_overview].freeze
+
       def index
         assign_counts
         assign_recent_activity
+        assign_analytics_overview_stats
+        assign_dashboard_blocks
       end
 
       private
+
+      def assign_analytics_overview_stats
+        start_date = 7.days.ago.beginning_of_day
+        end_date = Time.current.end_of_day
+        @dashboard_analytics_stats = RubyCms::Analytics::Report.new(start_date:, end_date:).dashboard_stats
+      rescue StandardError => e
+        Rails.logger.warn("[RubyCMS] Dashboard analytics snapshot: #{e.class}: #{e.message}")
+        @dashboard_analytics_stats = nil
+      end
+
+      def assign_dashboard_blocks
+        visible = RubyCms.visible_dashboard_blocks(user: current_user_cms)
+        @stats_blocks = visible
+          .select {|b| b[:section] == :stats }
+          .map {|b| prepare_dashboard_block(b) }
+        main = visible
+          .select {|b| b[:section] == :main }
+          .map {|b| prepare_dashboard_block(b) }
+        @primary_main_blocks = PRIMARY_MAIN_ROW_KEYS.filter_map {|k| main.find {|b| b[:key] == k } }
+        @extra_main_blocks = main
+          .reject {|b| PRIMARY_MAIN_ROW_KEYS.include?(b[:key]) }
+          .sort_by {|b| [b[:order], b[:label].to_s] }
+      end
+
+      def prepare_dashboard_block(block)
+        from_data =
+          if block[:data].respond_to?(:call)
+            block[:data].call(self)
+          else
+            {}
+          end
+        from_data = {} unless from_data.is_a?(Hash)
+
+        block.merge(locals: { dashboard_block: block }.merge(from_data))
+      end
 
       def assign_counts
         @content_blocks_count = ::ContentBlock.count

@@ -1,0 +1,53 @@
+<div class="flex h-full flex-col rounded-lg border border-gray-200/80 bg-white shadow-sm">
+  <div class="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-3">
+    <div>
+      <p class="text-sm font-semibold text-gray-900">Analytics</p>
+      <p class="text-xs text-gray-500">Last 7 days.</p>
+    </div>
+    <%= link_to "View all", ruby_cms_admin_analytics_path, class: "text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors" %>
+  </div>
+
+  <% if @dashboard_analytics_stats.present? %>
+    <div class="grid grid-cols-2 gap-x-4 gap-y-3 px-5 py-4">
+      <div>
+        <p class="text-xs font-medium text-gray-500">Page views</p>
+        <p class="mt-1 text-2xl font-semibold tracking-tight text-gray-900 tabular-nums"><%= number_with_delimiter(@dashboard_analytics_stats[:total_page_views].to_i) %></p>
+      </div>
+      <div>
+        <p class="text-xs font-medium text-gray-500">Unique visitors</p>
+        <p class="mt-1 text-2xl font-semibold tracking-tight text-gray-900 tabular-nums"><%= number_with_delimiter(@dashboard_analytics_stats[:unique_visitors].to_i) %></p>
+      </div>
+      <div>
+        <p class="text-xs font-medium text-gray-500">Sessions</p>
+        <p class="mt-1 text-2xl font-semibold tracking-tight text-gray-900 tabular-nums"><%= number_with_delimiter(@dashboard_analytics_stats[:total_sessions].to_i) %></p>
+      </div>
+      <div>
+        <p class="text-xs font-medium text-gray-500">Avg / day</p>
+        <p class="mt-1 text-2xl font-semibold tracking-tight text-gray-900 tabular-nums"><%= number_with_delimiter(@dashboard_analytics_stats[:avg_daily_views].to_i) %></p>
+      </div>
+    </div>
+
+    <% top = @dashboard_analytics_stats[:popular_pages] %>
+    <% if top.present? %>
+      <div class="flex-1 border-t border-gray-100">
+        <p class="px-5 pt-3 text-xs text-gray-500">Popular pages</p>
+        <div class="divide-y divide-gray-100">
+          <% top.to_a.first(4).each do |page_name, count| %>
+            <div class="flex items-center justify-between gap-2 px-5 py-2">
+              <span class="min-w-0 truncate text-sm font-medium text-gray-900" title="<%= page_name %>"><%= page_name.presence || "(empty)" %></span>
+              <span class="shrink-0 text-sm tabular-nums text-gray-500"><%= number_with_delimiter(count.to_i) %></span>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="flex flex-1 flex-col items-center justify-center px-5 py-8 text-center">
+      <div class="mb-2 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 text-gray-600 ring-1 ring-inset ring-gray-200">
+        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      </div>
+      <p class="text-sm font-medium text-gray-900">Analytics unavailable</p>
+      <p class="mt-1 text-xs text-gray-500">Could not load data.</p>
+    </div>
+  <% end %>
+</div>

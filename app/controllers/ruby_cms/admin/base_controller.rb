@@ -20,7 +20,20 @@ module RubyCms
       # new_session_path, root_path, etc.
       include RubyCms::Engine.routes.url_helpers
 
+      # Public API: dashboard block +data procs and host code may call this on the controller instance.
+      def current_user_cms
+        @current_user_cms ||= resolve_current_user
+      end
+
       private
+
+      def resolve_current_user
+        if respond_to?(:current_user, true)
+          send(:current_user)
+        else
+          Rails.application.config.ruby_cms.current_user_resolver&.call(self)
+        end
+      end
 
       def require_cms_access
         ensure_authenticated
@@ -67,18 +80,6 @@ module RubyCms
         Rails.application.config.ruby_cms.unauthorized_redirect_path.presence || "/"
       end
 
-      def current_user_cms
-        @current_user_cms ||= resolve_current_user
-      end
-
-      def resolve_current_user
-        if respond_to?(:current_user, true)
-          send(:current_user)
-        else
-          Rails.application.config.ruby_cms.current_user_resolver&.call(self)
-        end
-      end
-
       def render_not_found
         render "ruby_cms/errors/not_found",
                status: :not_found,
@@ -106,6 +107,8 @@ module RubyCms
       def model_param_key(model_class, param_name)
         params.key?(param_name) ? param_name : model_class.model_name.param_key.to_sym
       end
+
+      public :current_user_cms
     end
   end
 end

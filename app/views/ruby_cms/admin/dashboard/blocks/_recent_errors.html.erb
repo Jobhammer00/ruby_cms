@@ -1,0 +1,39 @@
+<div class="flex h-full flex-col rounded-lg border border-gray-200/80 bg-white shadow-sm">
+  <div class="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-3">
+    <div>
+      <p class="text-sm font-semibold text-gray-900">Recent errors</p>
+      <p class="text-xs text-gray-500">Latest visitor errors.</p>
+    </div>
+    <%= link_to "View all", ruby_cms_admin_visitor_errors_path, class: "text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors" %>
+  </div>
+
+  <% if @recent_errors.any? %>
+    <div class="flex-1 divide-y divide-gray-100">
+      <% @recent_errors.first(4).each do |error| %>
+        <div class="px-5 py-3">
+          <p class="truncate text-sm font-medium text-gray-900">
+            <span class="font-normal text-gray-500"><%= error.error_class %>:</span>
+            <%= error.error_message.truncate(56) %>
+          </p>
+          <div class="mt-1.5 flex items-center justify-between gap-2">
+            <div class="flex min-w-0 flex-wrap items-center gap-2">
+              <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset <%= error.resolved? ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-rose-50 text-rose-700 ring-rose-200' %>">
+                <%= error.resolved? ? 'Resolved' : 'Unresolved' %>
+              </span>
+              <span class="text-xs text-gray-500"><%= time_ago_in_words(error.created_at) %> ago</span>
+            </div>
+            <%= link_to "Open", ruby_cms_admin_visitor_error_path(error), class: "shrink-0 text-xs font-medium text-gray-600 hover:text-gray-900 transition-colors" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="flex flex-1 flex-col items-center justify-center px-5 py-8 text-center">
+      <div class="mb-2 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 ring-1 ring-inset ring-emerald-100">
+        <svg class="h-5 w-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <p class="text-sm font-medium text-gray-900">No errors recorded</p>
+      <p class="mt-1 text-xs text-gray-500">Everything is running smoothly.</p>
+    </div>
+  <% end %>
+</div>

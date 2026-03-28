@@ -1,0 +1,52 @@
+<h1>Versiegeschiedenis: <%= @content_block.key %></h1>
+
+<%= link_to "Terug naar content block", ruby_cms_admin_content_block_path(@content_block),
+    class: "inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4" %>
+
+<div class="space-y-4">
+  <% @versions.each do |version| %>
+    <div class="rounded-lg border border-border/60 bg-card p-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium
+            <%= case version.event
+                when 'create' then 'bg-blue-50 text-blue-700 ring-1 ring-blue-200'
+                when 'update' then 'bg-amber-50 text-amber-700 ring-1 ring-amber-200'
+                when 'rollback' then 'bg-purple-50 text-purple-700 ring-1 ring-purple-200'
+                when 'publish' then 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200'
+                when 'unpublish' then 'bg-red-50 text-red-700 ring-1 ring-red-200'
+                when 'visual_editor' then 'bg-cyan-50 text-cyan-700 ring-1 ring-cyan-200'
+                else 'bg-muted text-muted-foreground ring-1 ring-border/60'
+                end %>">
+            v<%= version.version_number %> — <%= version.event %>
+          </span>
+          <span class="text-sm text-muted-foreground">
+            <%= version.user&.name || version.user&.email || "System" %>
+          </span>
+          <span class="text-xs text-muted-foreground">
+            <%= version.created_at.strftime("%b %d, %Y %H:%M") %>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <%= link_to "Bekijk diff", ruby_cms_admin_content_block_version_path(@content_block, version),
+              class: "text-xs text-primary hover:underline" %>
+
+          <% unless version == @versions.first %>
+            <%= button_to "Rollback",
+                rollback_ruby_cms_admin_content_block_version_path(@content_block, version),
+                method: :post,
+                data: { turbo_confirm: "Weet je zeker dat je wilt terugdraaien naar versie #{version.version_number}?" },
+                class: "text-xs text-destructive hover:underline" %>
+          <% end %>
+        </div>
+      </div>
+
+      <% if version.metadata&.dig("changed_fields").present? %>
+        <p class="mt-2 text-xs text-muted-foreground">
+          Gewijzigde velden: <%= version.metadata["changed_fields"].join(", ") %>
+        </p>
+      <% end %>
+    </div>
+  <% end %>
+</div>

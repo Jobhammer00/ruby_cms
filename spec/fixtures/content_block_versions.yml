@@ -1,0 +1,23 @@
+version_one:
+  content_block: homepage_hero (of de naam van je content_block fixture)
+  user: admin
+  version_number: 1
+  title: "Original Title"
+  content: "Original content"
+  content_type: text
+  published: true
+  event: create
+  metadata: { "changed_fields": ["title", "content"] }
+  created_at: <%= 2.days.ago.to_fs(:db) %>
+
+version_two:
+  content_block: homepage_hero
+  user: admin
+  version_number: 2
+  title: "Updated Title"
+  content: "Updated content"
+  content_type: text
+  published: true
+  event: update
+  metadata: { "changed_fields": ["title", "content"] }
+  created_at: <%= 1.day.ago.to_fs(:db) %>

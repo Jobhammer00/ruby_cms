@@ -12,6 +12,14 @@ RubyCms::Engine.routes.draw do # rubocop:disable Metrics/BlockLength
       end
     end
 
+    resources :content_blocks, only: [] do
+      resources :versions, controller: "content_block_versions", only: %i[index show] do
+        member do
+          post :rollback
+        end
+      end
+    end
+
     resources :permissions, only: %i[index create destroy] do
       collection do
         delete "bulk_delete", to: "permissions#bulk_delete"

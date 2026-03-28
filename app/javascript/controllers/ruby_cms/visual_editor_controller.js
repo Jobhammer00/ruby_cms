@@ -17,7 +17,7 @@ export default class extends Controller {
     "toast",
     "toastMessage"
   ]
-  
+
   static values = {
     currentPage: String
   }
@@ -25,16 +25,17 @@ export default class extends Controller {
   connect() {
     this.currentContentBlockKey = null
     this.currentContentBlockLocale = null
+    this.currentContentBlockId = null
     this.currentBlockIndex = 0
     this.editMode = false
 
     // Listen for messages from iframe
     this.boundHandleMessage = this.handleMessage.bind(this)
     window.addEventListener("message", this.boundHandleMessage)
-    
+
     // Listen for Escape key globally when modal is open
     this.boundHandleEscape = this.handleEscape.bind(this)
-    
+
     // Listen for iframe load
     this.previewFrameTarget.addEventListener("load", () => {
       console.log("Preview frame loaded")
@@ -51,9 +52,9 @@ export default class extends Controller {
   handleMessage(event) {
     // Only accept same-origin messages (iframe preview is same app)
     if (event.origin !== window.location.origin) return
-    
+
     const { type, blockId, blockIndex, page } = event.data
-    
+
     if (type === "CONTENT_BLOCK_CLICKED") {
       this.openBlockEditor(blockId, blockIndex)
     }
@@ -75,11 +76,13 @@ export default class extends Controller {
       const currentLocale = this.getCurrentLocale()
       // Prefer block matching key and current locale; else first block with same key
       const block = blocks.find(b => b.key === blockKey && (b.locale === currentLocale || !b.locale)) ||
-                    blocks.find(b => b.key === blockKey) ||
-                    (blocks[blockIndex]?.key === blockKey ? blocks[blockIndex] : null) ||
-                    {}
+        blocks.find(b => b.key === blockKey) ||
+        (blocks[blockIndex]?.key === blockKey ? blocks[blockIndex] : null) ||
+        {}
 
       this.currentContentBlockLocale = block.locale || currentLocale
+      this.currentContentBlockId = block.id || null
+      this.dispatch("block-loaded", { detail: { blockId: block.id } })
 
       const contentType = String(block.content_type || "text").toLowerCase()
       this.contentTypeTarget.value = contentType
@@ -139,12 +142,13 @@ export default class extends Controller {
     this.modalTarget.classList.add("hidden")
     this.currentContentBlockKey = null
     this.currentContentBlockLocale = null
+    this.currentContentBlockId = null
     this.currentBlockIndex = 0
 
     document.removeEventListener("keydown", this.boundHandleEscape)
     this.sendMessageToPreview({ type: "CLEAR_HIGHLIGHT" })
   }
-  
+
   handleEscape(event) {
     // Only handle Escape if modal is visible
     if (event.key === "Escape" && !this.modalTarget.classList.contains("hidden")) {
@@ -156,7 +160,7 @@ export default class extends Controller {
 
   changeContentType() {
     const contentType = this.contentTypeTarget.value
-    
+
     if (contentType === "rich_text") {
       this.textContainerTarget.style.display = "none"
       this.richTextContainerTarget.classList.add("ruby_cms-visual-editor-modal__rich-text-container--visible")
@@ -164,14 +168,14 @@ export default class extends Controller {
       this.textContainerTarget.style.display = "block"
       this.richTextContainerTarget.classList.remove("ruby_cms-visual-editor-modal__rich-text-container--visible")
     }
-    
+
     this.updateCharCount()
   }
 
   updateCharCount() {
     const contentType = this.contentTypeTarget.value
     let content = ""
-    
+
     if (contentType === "rich_text") {
       const editor = this.richTextContainerTarget.querySelector("trix-editor")
       if (editor && editor.editor) {
@@ -180,33 +184,33 @@ export default class extends Controller {
     } else {
       content = this.contentInputTarget.value
     }
-    
+
     this.charCountTarget.textContent = `${content.length} characters`
   }
 
   async saveContent(event) {
     event.preventDefault()
-    
+
     if (!this.currentContentBlockKey) return
-    
+
     const contentType = this.contentTypeTarget.value
     const payload = {
       key: this.currentContentBlockKey,
       content_type: contentType,
       locale: this.currentContentBlockLocale || null
     }
-    
+
     if (contentType === "rich_text") {
       const editor = this.richTextContainerTarget.querySelector("trix-editor")
       payload.rich_content = editor ? editor.value : ""
     } else {
       payload.content = this.contentInputTarget.value
     }
-    
+
     try {
       this.saveButtonTarget.disabled = true
       this.saveButtonTarget.textContent = "Saving..."
-      
+
       const response = await fetch("/admin/visual_editor/quick_update", {
         method: "PATCH",
         headers: {
@@ -216,16 +220,16 @@ export default class extends Controller {
         },
         body: JSON.stringify(payload)
       })
-      
+
       const data = await response.json()
-      
+
       if (!response.ok || !data.success) {
         throw new Error(data.message || "Failed to save")
       }
-      
+
       // Update last updated time
       this.lastUpdatedTarget.textContent = data.updated_at
-      
+
       // Update content in preview (same message format as app so page_preview_controller works)
       const contentToDisplay = contentType === "rich_text"
         ? (data.rich_content_html || data.content || "")
@@ -237,13 +241,13 @@ export default class extends Controller {
         content: contentToDisplay,
         blockIndex: this.currentBlockIndex ?? 0
       })
-      
+
       // Close modal
       this.closeModal()
-      
+
       // Show success toast
       this.showToast(data.message || "Content updated successfully")
-      
+
     } catch (error) {
       console.error("Error saving content:", error)
       alert(error.message || "Failed to save content")
@@ -258,12 +262,12 @@ export default class extends Controller {
     if (event.key === "Enter") {
       const isTextarea = event.target.matches("textarea")
       const isTrixEditor = event.target.matches("trix-editor") || event.target.closest("trix-editor")
-      
+
       // Allow Shift+Enter for newlines in textareas/trix
       if ((isTextarea || isTrixEditor) && event.shiftKey) {
         return // Let the default behavior happen (newline)
       }
-      
+
       // Enter without Shift submits the form
       if (!isTextarea && !isTrixEditor) {
         // Enter outside textarea/trix submits
@@ -275,7 +279,7 @@ export default class extends Controller {
         this.saveContent(event)
       }
     }
-    
+
     // Ctrl/Cmd + Enter to save (alternative shortcut)
     if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
       event.preventDefault()
@@ -298,7 +302,7 @@ export default class extends Controller {
   showToast(message) {
     this.toastMessageTarget.textContent = message
     this.toastTarget.classList.remove("hidden")
-    
+
     setTimeout(() => {
       this.toastTarget.classList.add("hidden")
     }, 3000)

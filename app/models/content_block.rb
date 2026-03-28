@@ -4,6 +4,7 @@
 class ContentBlock < ApplicationRecord
   include Publishable
   include Searchable
+  include Versionable
 
   self.table_name = "content_blocks"
 

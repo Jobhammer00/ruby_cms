@@ -9,6 +9,8 @@ require "active_record/railtie"
 require "action_controller/railtie"
 require "ruby_cms" # <-- move up
 
-require_relative "support/dummy_app"
 require_relative "support/application_record"
+require_relative "support/ahoy_for_specs"
+require_relative "support/dummy_app"
+require_relative "support/user"
 require "rspec/rails"

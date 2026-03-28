@@ -197,6 +197,18 @@
           </dl>
         </div>
 
+        <div class="border-t border-border/60 pt-5">
+          <h3 class="<%= RubyCms::Admin::AdminResourceCard::SECTION_TITLE_CLASS %> mb-3">Versiegeschiedenis</h3>
+          <%= link_to "Bekijk alle versies",
+              ruby_cms_admin_content_block_versions_path(@content_block),
+              class: "inline-flex items-center gap-2 text-sm text-primary hover:underline" %>
+          <% if @content_block.respond_to?(:versions) && @content_block.versions.any? %>
+            <p class="text-xs text-muted-foreground mt-2">
+              <%= @content_block.versions.count %> versie(s) beschikbaar
+            </p>
+          <% end %>
+        </div>
+
         <%# ── Preview per locale ── %>
         <% if @blocks_by_locale.present? && @blocks_by_locale.values.any? { |b| b.title.present? || b.content_body.present? } %>
           <div class="border-t border-border/60 pt-5">
