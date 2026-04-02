@@ -66,6 +66,8 @@ module RubyCms
 
     # Ensure Ahoy is loaded before host's config/initializers/ahoy.rb runs
     initializer "ruby_cms.require_ahoy", before: :load_config_initializers do
+      next if RubyCms::Engine.assets_precompile_phase?
+
       require "ahoy_matey"
     end
 
@@ -103,6 +105,8 @@ module RubyCms
     end
 
     initializer "ruby_cms.nav" do
+      next if RubyCms::Engine.assets_precompile_phase?
+
       Rails.application.config.to_prepare do
         RubyCms::Engine.register_main_nav_items
         RubyCms::Engine.register_settings_nav_items
@@ -110,22 +114,30 @@ module RubyCms
     end
 
     initializer "ruby_cms.dashboard_blocks" do
+      next if RubyCms::Engine.assets_precompile_phase?
+
       RubyCms::Engine.register_default_dashboard_blocks
     end
 
     initializer "ruby_cms.versionable" do
+      next if RubyCms::Engine.assets_precompile_phase?
+
       Rails.application.config.to_prepare do
         ContentBlock.include(ContentBlock::Versionable) unless ContentBlock <= ContentBlock::Versionable
       end
     end
 
     initializer "ruby_cms.settings_import", after: :load_config_initializers do
+      next if RubyCms::Engine.assets_precompile_phase?
+
       RubyCms::Settings.import_initializer_values!
     end
 
     # After host initializers (e.g. register_permission_keys), ensure Permission rows exist
     # so can?(:manage_backups) and other keys do not fail on Permission.exists? checks.
     initializer "ruby_cms.ensure_permission_rows", after: :load_config_initializers do
+      next if RubyCms::Engine.assets_precompile_phase?
+
       RubyCms::Permission.ensure_defaults!
     rescue StandardError => e
       Rails.logger.warn("[RubyCMS] Permission.ensure_defaults! skipped: #{e.message}")
@@ -248,6 +260,14 @@ module RubyCms
       config.paths["db/migrate"].expanded.each do |path|
         app.config.paths["db/migrate"] << path
       end
+    end
+
+    def self.assets_precompile_phase?
+      command = File.basename($PROGRAM_NAME.to_s)
+      rake_assets_precompile = command == "rake" && ARGV.include?("assets:precompile")
+      rails_assets_precompile = command == "rails" && ARGV.include?("assets:precompile")
+
+      rake_assets_precompile || rails_assets_precompile
     end
   end
 end

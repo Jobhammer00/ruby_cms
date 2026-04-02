@@ -490,6 +490,20 @@ Tests use an in-memory SQLite database via `spec/support/dummy_app.rb`. No separ
 rails ruby_cms:css:compile_gem
 ```
 
+### Faster Docker Builds (`assets:precompile`)
+
+`assets:precompile` loads the Rails app in production mode and can be slow in Docker/Fly builds.
+RubyCMS now skips non-asset runtime initializers during this phase (navigation registration,
+dashboard registration, versioning hook, settings import, and permission seeding), which reduces
+precompile overhead.
+
+Recommended Docker layer order:
+
+1. Copy `Gemfile` / `Gemfile.lock`
+2. Run `bundle install`
+3. Copy app source
+4. Run `SECRET_KEY_BASE=DUMMY bin/rails assets:precompile`
+
 ### Architecture
 
 ```

@@ -34,3 +34,5 @@ pin "ruby_cms/auto_save_preference_controller",
 pin "ruby_cms/nav_order_sortable_controller",
     to: "controllers/ruby_cms/nav_order_sortable_controller.js"
 pin "ruby_cms/page_preview_controller", to: "controllers/ruby_cms/page_preview_controller.js"
+pin "ruby_cms/content_block_history_controller",
+    to: "controllers/ruby_cms/content_block_history_controller.js"
