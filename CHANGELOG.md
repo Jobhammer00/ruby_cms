@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.1.0.9] - 2026-04-02
+
+- Update add page generator, dashboard blocks and some ui tweaks.
+
 ## [0.1.0.9] - 2026-03-25
 
 - Update gems
