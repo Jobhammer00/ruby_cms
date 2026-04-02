@@ -1,6 +1,11 @@
 ## [Unreleased]
 
-## [0.1.0.9] - 2026-04-02
+## [0.2.0.1] - 2026-04-02
+
+- Fix compile
+
+
+## [0.2.0] - 2026-04-02
 
 - Update add page generator, dashboard blocks and some ui tweaks.
 
