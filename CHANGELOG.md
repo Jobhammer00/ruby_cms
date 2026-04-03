@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.2.0.2] - 2026-04-02
+
+- Add commands page
+
 ## [0.2.0.1] - 2026-04-02
 
 - Fix compile
