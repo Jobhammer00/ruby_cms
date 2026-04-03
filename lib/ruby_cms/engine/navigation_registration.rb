@@ -67,13 +67,22 @@ module RubyCms
         order: 4
       )
       RubyCms.register_page(
+        key: :commands,
+        label: "Commands",
+        path: lambda(&:ruby_cms_admin_settings_commands_path),
+        icon: :wrench,
+        section: :settings,
+        permission: :manage_admin,
+        order: 5
+      )
+      RubyCms.register_page(
         key: :settings,
         label: "Settings",
         path: lambda(&:ruby_cms_admin_settings_path),
         icon: :cog_6_tooth,
         section: :settings,
         permission: :manage_admin,
-        order: 5
+        order: 6
       )
     end
   end

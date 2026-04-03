@@ -28,7 +28,8 @@
               id: "content-block-form",
               data: { turbo: false } do |f| %>
   <div class="<%= RubyCms::Admin::AdminResourceCard::CARD_CLASS %>">
-    <div class="<%= RubyCms::Admin::AdminResourceCard::GRID_CLASS %>">
+    <div class="<%= RubyCms::Admin::AdminResourceCard::GRID_CLASS %>"
+         data-controller="ruby-cms--locale-tabs">
       <%# ── Form Fields (Left 2/3) ── %>
       <div class="<%= RubyCms::Admin::AdminResourceCard::MAIN_CLASS %>">
         <% if @content_block.errors.any? %>
@@ -78,18 +79,23 @@
 
         <%# ── Locale Tabs ── %>
         <% if @blocks_by_locale.present? %>
-          <div class="rounded-xl border border-border/60 overflow-hidden" data-controller="ruby-cms--locale-tabs">
+          <div class="rounded-xl border border-border/60 overflow-hidden">
             <div class="flex gap-1 p-2 bg-background border-b border-border/60" role="tablist">
               <% @blocks_by_locale.each_with_index do |(locale_s, _), idx| %>
+                <% tab_active = "bg-background text-primary shadow-sm ring-1 ring-border/60" %>
+                <% tab_inactive = "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground" %>
                 <button type="button"
                         role="tab"
-                        aria-selected="<%= idx == 0 %>"
+                        aria-selected="<%= idx == 0 ? "true" : "false" %>"
                         aria-controls="locale-panel-<%= locale_s %>"
                         id="locale-tab-<%= locale_s %>"
                         data-ruby-cms--locale-tabs-target="tab"
                         data-panel-id="locale-panel-<%= locale_s %>"
+                        data-locale-label="<%= ruby_cms_locale_display_name(locale_s) %>"
+                        data-active-classes="<%= tab_active %>"
+                        data-inactive-classes="<%= tab_inactive %>"
                         data-action="click->ruby-cms--locale-tabs#switchTab"
-                        class="px-3 py-1.5 rounded-md text-xs font-medium border-none cursor-pointer transition-colors <%= idx == 0 ? 'bg-background text-primary shadow-sm ring-1 ring-border/60' : 'bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground' %>">
+                        class="px-3 py-1.5 rounded-md text-xs font-medium border-none cursor-pointer transition-colors <%= idx == 0 ? tab_active : tab_inactive %>">
                   <%= ruby_cms_locale_display_name(locale_s) %>
                 </button>
               <% end %>
@@ -154,7 +160,8 @@
 
             <div>
               <dt class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_LABEL_CLASS %>">Locale</dt>
-              <dd class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_VALUE_CLASS %>"><%= ruby_cms_locale_display_name(@content_block.locale) %></dd>
+              <dd class="<%= RubyCms::Admin::AdminResourceCard::DETAIL_VALUE_CLASS %>"
+                  data-ruby-cms--locale-tabs-target="localeLabel"><%= ruby_cms_locale_display_name(@content_block.locale) %></dd>
             </div>
 
             <div>

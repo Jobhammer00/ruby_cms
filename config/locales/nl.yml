@@ -16,6 +16,7 @@ nl:
         permissions: "Rechten"
         visitor_errors: "Bezoekersfouten"
         users: "Gebruikers"
+        commands: "Commando's"
         settings: "Instellingen"
     admin:
       breadcrumb:
@@ -29,6 +30,22 @@ nl:
         de: "Duits"
         fr: "Frans"
         es: "Spaans"
+      commands:
+        title: "Commando's"
+        subtitle: "Voer geregistreerde Rake-taken uit (host app). Uitvoer en recente logregels staan rechts."
+        available: "Beschikbare commando's"
+        hint: "Commando's registreer je in de host app (RubyCms.register_command)."
+        run: "Uitvoeren"
+        empty: "Er zijn geen commando's geregistreerd, of je rol mag er geen uitvoeren."
+        command_output: "Uitvoer commando"
+        app_log: "Applicatielog (tail)"
+        output_placeholder: "Uitvoer verschijnt hier na het uitvoeren."
+        log_placeholder: "Recente logregels verschijnen hier na een run."
+        unknown: "Onbekend commando."
+        right_column_label: "Commando-resultaat en applicatielog"
+      settings:
+        commands_page_hint: "Geregistreerde Rake-taken (Commando's) staan niet als tab op dit scherm. Open «Commando's» in de linkerzijbalk onder het kopje Instellingen, of gebruik de link hieronder."
+        commands_open_link: "Commando's openen"
       content_blocks:
         created: "Contentblok aangemaakt."
         updated: "Contentblok bijgewerkt."

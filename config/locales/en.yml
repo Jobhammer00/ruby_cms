@@ -27,6 +27,7 @@ en:
         permissions: "Permissions"
         visitor_errors: "Visitor errors"
         users: "Users"
+        commands: "Commands"
         settings: "Settings"
     admin:
       breadcrumb:
@@ -40,6 +41,19 @@ en:
         de: "German"
         fr: "French"
         es: "Spanish"
+      commands:
+        title: "Commands"
+        subtitle: "Run registered Rake tasks from the host app. Output and recent log lines appear on the right."
+        available: "Available commands"
+        hint: "Commands are registered in the host app initializer (RubyCms.register_command)."
+        run: "Run"
+        empty: "No commands are registered, or your role cannot run any of them."
+        command_output: "Command output"
+        app_log: "Application log (tail)"
+        output_placeholder: "Output appears here after you run a command."
+        log_placeholder: "Recent log lines appear here after a run."
+        unknown: "Unknown command."
+        right_column_label: "Command result and application log"
       settings:
         title: "Settings"
         subtitle: "Configure admin interface preferences"
@@ -57,6 +71,8 @@ en:
         reset_inline_hint: "Restore factory defaults for the entire admin (all sections)."
         reset_confirm: "Reset all settings to default values?"
         no_settings: "No settings in this category"
+        commands_page_hint: "Registered rake tasks (Commands) are not a tab on this screen. Open “Commands” in the left sidebar under “Settings”, or use the link below."
+        commands_open_link: "Open Commands"
       analytics:
         title: "Analytics"
         subtitle: "Traffic and engagement overview"

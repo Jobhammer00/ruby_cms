@@ -241,6 +241,13 @@ module RubyCms
           description: "Show Analytics in navigation"
         )
         register(
+          key: :nav_show_commands,
+          type: :boolean,
+          default: true,
+          category: :navigation,
+          description: "Show Commands in navigation"
+        )
+        register(
           key: :nav_order,
           type: :json,
           default: [],

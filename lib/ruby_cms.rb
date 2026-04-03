@@ -10,6 +10,7 @@ require_relative "ruby_cms/engine"
 require_relative "ruby_cms/app_integration"
 require_relative "ruby_cms/content_blocks_sync"
 require_relative "ruby_cms/content_blocks_grouping"
+require_relative "ruby_cms/commands_registry"
 
 module RubyCms
   class Error < StandardError; end

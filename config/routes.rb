@@ -49,6 +49,9 @@ RubyCms::Engine.routes.draw do # rubocop:disable Metrics/BlockLength
     post "settings/nav_order", to: "settings#update_nav_order", as: :settings_nav_order
     post "settings/reset_defaults", to: "settings#reset_defaults", as: :settings_reset_defaults
 
+    get "settings/commands", to: "commands#index", as: :settings_commands
+    post "settings/commands/run", to: "commands#run", as: :settings_commands_run
+
     resources :users, only: %i[index create destroy] do
       collection do
         delete "bulk_delete", to: "users#bulk_delete"

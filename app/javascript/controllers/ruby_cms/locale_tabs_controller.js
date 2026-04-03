@@ -1,7 +1,19 @@
 import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
-  static targets = ["tab"];
+  static targets = ["tab", "localeLabel"];
+
+  connect() {
+    const activeTab = this.tabTargets.find(
+      (t) => t.getAttribute("aria-selected") === "true"
+    );
+    if (!activeTab) return;
+
+    this.tabTargets.forEach((t) => {
+      this.setTabState(t, t === activeTab);
+    });
+    this.syncLocaleLabel(activeTab);
+  }
 
   switchTab(event) {
     const tab = event.currentTarget;
@@ -25,6 +37,7 @@ export default class extends Controller {
 
     // Highlight selected tab
     this.setTabState(tab, true);
+    this.syncLocaleLabel(tab);
   }
 
   findPanel(panelId) {
@@ -45,6 +58,13 @@ export default class extends Controller {
     tab.classList.add(...(isActive ? activeClasses : inactiveClasses));
     if (isActive) tab.classList.add("is-active");
     tab.setAttribute("aria-selected", isActive ? "true" : "false");
+  }
+
+  syncLocaleLabel(tab) {
+    if (!this.hasLocaleLabelTarget) return;
+
+    const label = tab.dataset.localeLabel;
+    if (label) this.localeLabelTarget.textContent = label;
   }
 
   splitClasses(classListString) {

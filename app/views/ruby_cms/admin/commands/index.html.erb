@@ -1,0 +1,104 @@
+<%= render RubyCms::Admin::AdminPageHeader.new(
+  title: t("ruby_cms.admin.commands.title", default: "Commands"),
+  subtitle: t("ruby_cms.admin.commands.subtitle", default: "Run registered Rake tasks from the host app. Output and recent log lines appear on the right."),
+  breadcrumbs: [
+    { label: t("ruby_cms.admin.breadcrumb.admin", default: "Admin"), url: ruby_cms_admin_root_path },
+    { label: t("ruby_cms.admin.commands.title", default: "Commands") }
+  ]
+) %>
+
+<div class="flex min-h-0 flex-col gap-4">
+  <% if @run_error.present? %>
+    <div class="w-full shrink-0 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+      <%= h(@run_error) %>
+    </div>
+  <% end %>
+
+  <%#
+    md+: 3-koloms grid — links 1/3 (commando's), rechts 2/3 (output + log).
+    Klein scherm: één kolom, eerst commando's, daaronder resultaat.
+  %>
+  <div
+    class="grid min-h-0 w-full min-w-0 grid-cols-1 gap-4 md:grid-cols-3 md:gap-6 md:items-stretch md:min-h-[min(32rem,calc(100dvh-14rem))] md:max-h-[min(90vh,calc(100dvh-12rem))] md:overflow-hidden"
+    dir="ltr"
+  >
+    <%# Links: 1/3 — beschikbare commando's %>
+    <aside
+      class="flex min-h-[16rem] w-full min-w-0 flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm ring-1 ring-black/[0.03] md:col-span-1 md:row-start-1 md:h-full md:min-h-0"
+    >
+      <div class="shrink-0 border-b border-border/80 px-4 py-3">
+        <h2 class="text-sm font-semibold leading-tight tracking-tight text-foreground">
+          <%= t("ruby_cms.admin.commands.available", default: "Available commands") %>
+        </h2>
+        <p class="mt-1 text-xs leading-snug text-muted-foreground">
+          <%= t("ruby_cms.admin.commands.hint", default: "Commands are registered in the host app initializer (RubyCms.register_command).") %>
+        </p>
+      </div>
+      <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4">
+        <% if @commands.any? %>
+          <div class="flex flex-col gap-3">
+            <% @commands.each do |cmd| %>
+              <div class="rounded-xl border border-border/60 bg-muted/20 p-3">
+                <div class="flex flex-col gap-2">
+                  <div class="min-w-0">
+                    <p class="text-sm font-medium leading-snug text-foreground"><%= cmd[:label] %></p>
+                    <% if cmd[:description].present? %>
+                      <p class="mt-1 text-xs leading-snug text-muted-foreground"><%= cmd[:description] %></p>
+                    <% end %>
+                    <p class="mt-2 break-all font-mono text-[10px] leading-tight text-muted-foreground">
+                      rake <%= cmd[:rake_task] %>
+                    </p>
+                  </div>
+                  <%= button_to t("ruby_cms.admin.commands.run", default: "Run"),
+                      ruby_cms_admin_settings_commands_run_path,
+                      method: :post,
+                      params: { key: cmd[:key] },
+                      form: {
+                        data: { turbo: false },
+                        class: "m-0 w-full shrink-0"
+                      },
+                      class: "inline-flex w-full cursor-pointer items-center justify-center rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground shadow-sm transition-colors hover:bg-primary/90" %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-sm text-muted-foreground">
+            <%= t("ruby_cms.admin.commands.empty", default: "No commands are registered, or your role cannot run any of them.") %>
+          </p>
+        <% end %>
+      </div>
+    </aside>
+
+    <%# Rechts: 2/3 — commando-output + applicatielog %>
+    <section
+      aria-label="<%= t("ruby_cms.admin.commands.right_column_label", default: "Command result and application log") %>"
+      class="flex min-h-0 w-full min-w-0 flex-col gap-3 md:col-span-2 md:row-start-1 md:h-full md:min-h-0 md:overflow-hidden md:border-l md:border-border/60 md:pl-6"
+    >
+      <%# min-h-0: grid/flex item mag krimpen zodat max-h geldt en <pre> scrollt i.p.v. de pagina. %>
+      <div class="flex min-h-0 max-h-[50dvh] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm ring-1 ring-black/[0.03]">
+        <div class="shrink-0 border-b border-border/80 px-4 py-3">
+          <h3 class="text-sm font-semibold text-foreground">
+            <%= t("ruby_cms.admin.commands.command_output", default: "Command output") %>
+          </h3>
+        </div>
+        <pre
+          class="ruby-cms-commands__pre min-h-0 flex-1 overflow-y-auto overflow-x-auto overscroll-contain whitespace-pre-wrap break-words p-4 text-xs font-mono text-foreground [scrollbar-gutter:stable]"
+          aria-live="polite"
+        ><%= @run_command_output.present? ? h(@run_command_output) : t("ruby_cms.admin.commands.output_placeholder", default: "Output appears here after you run a command.") %></pre>
+      </div>
+
+      <div class="flex min-h-0 max-h-[50dvh] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm ring-1 ring-black/[0.03] [scrollbar-gutter:stable]">
+        <div class="shrink-0 border-b border-border/80 px-4 py-3">
+          <h3 class="text-sm font-semibold text-foreground">
+            <%= t("ruby_cms.admin.commands.app_log", default: "Application log (tail)") %>
+          </h3>
+        </div>
+        <pre
+          class="ruby-cms-commands__pre min-h-0 flex-1 overflow-y-auto overflow-x-auto overscroll-contain whitespace-pre-wrap break-words p-4 text-xs font-mono text-muted-foreground [scrollbar-gutter:stable]"
+          aria-live="polite"
+        ><%= @run_app_log_tail.present? ? h(@run_app_log_tail) : t("ruby_cms.admin.commands.log_placeholder", default: "Recent log lines appear here after a run.") %></pre>
+      </div>
+    </section>
+  </div>
+</div>

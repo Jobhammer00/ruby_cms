@@ -13,6 +13,7 @@ RSpec.describe RubyCms::SettingsRegistry do
 
     expect(defaults).to include(
       :nav_show_analytics,
+      :nav_show_commands,
       :analytics_high_volume_threshold,
       :analytics_cache_duration_seconds,
       :pagination_min_per_page,
