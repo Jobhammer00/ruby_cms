@@ -855,45 +855,18 @@ module RubyCms
           end.join("\n")
         end
 
-        # Adds a single @import for tailwindcss-rails' engine shim (see gem app/assets/tailwind/ruby_cms_engine/engine.css).
-        # Avoids duplicate @source globs to the gem, which makes tailwindcss:build much slower.
+        # Helper: add @source for RubyCMS views/components so Tailwind finds utility classes.
+        # Not a generator task.
         def add_ruby_cms_tailwind_source(tailwind_css_path)
           return unless tailwind_css_path.to_s.present? && File.exist?(tailwind_css_path)
 
           content = File.read(tailwind_css_path)
-          return if content.match?(%r{builds/tailwind/ruby_cms_engine})
+          gem_source_lines = build_gem_source_lines(tailwind_css_path)
+          return if gem_source_lines.all? {|line| content.include?(line) }
 
-          injection = +"\n/* RubyCMS: Tailwind content via tailwindcss-rails engine (see ruby_cms README). */\n"
-          injection << "@import \"../builds/tailwind/ruby_cms_engine\";\n"
-
-          inserted = inject_ruby_cms_engine_import_after_tailwind!(tailwind_css_path, content, injection)
-          unless inserted
-            inject_into_file tailwind_css_path.to_s, after: /\A/ do
-              injection
-            end
-          end
-
-          say "✓ Task tailwind/source: Added RubyCMS engine import to #{tailwind_css_path}.", :green
+          inject_tailwind_source(tailwind_css_path, content, gem_source_lines)
         rescue StandardError => e
-          say "⚠ Task tailwind/source: Could not add engine import: #{e.message}. Add manually.", :yellow
-        end
-
-        def inject_ruby_cms_engine_import_after_tailwind!(tailwind_css_path, content, injection)
-          patterns = [
-            %(@import "tailwindcss";\n),
-            %(@import "tailwindcss";),
-            %(@import "tailwindcss"\n),
-            %(@import "tailwindcss")
-          ]
-          patterns.each do |after_pattern|
-            next unless content.include?(after_pattern)
-
-            inject_into_file tailwind_css_path.to_s, after: after_pattern do
-              injection
-            end
-            return true
-          end
-          false
+          say "⚠ Task tailwind/source: Could not add @source: #{e.message}. Add manually.", :yellow
         end
 
         # Tailwind v3 support (tailwind.config.js content array)
@@ -932,6 +905,65 @@ module RubyCms
           ]
         end
 
+        def build_gem_source_lines(tailwind_css_path)
+          css_dir = Pathname.new(tailwind_css_path).dirname
+          gem_views = path_relative_to_css_or_absolute(RubyCms::Engine.root.join("app/views"),
+                                                       css_dir)
+          gem_components = path_relative_to_css_or_absolute(
+            RubyCms::Engine.root.join("app/components"), css_dir
+          )
+          [
+            %(@source "#{gem_views}/**/*.erb";),
+            %(@source "#{gem_components}/**/*.rb";)
+          ]
+        end
+
+        def path_relative_to_css_or_absolute(target_path, css_dir)
+          Pathname.new(target_path).relative_path_from(css_dir).to_s
+        rescue ArgumentError
+          # Different mount/volume: fall back to absolute path.
+          Pathname.new(target_path).to_s
+        end
+
+        def inject_tailwind_source(tailwind_css_path, content, gem_source_lines)
+          to_inject = build_tailwind_source_injection(gem_source_lines)
+          inserted = try_insert_after_patterns?(tailwind_css_path, content, to_inject)
+          inject_at_start(tailwind_css_path, to_inject) unless inserted
+          say "✓ Task tailwind/source: Added @source for RubyCMS views/components to " \
+              "tailwind/application.css.",
+              :green
+        end
+
+        def build_tailwind_source_injection(gem_source_lines)
+          to_inject = +"\n/* Include RubyCMS views/components so Tailwind finds utility classes. */\n"
+          Array(gem_source_lines).each {|line| to_inject << line << "\n" }
+          to_inject << "\n"
+          to_inject
+        end
+
+        def try_insert_after_patterns?(tailwind_css_path, content, to_inject)
+          patterns = [
+            %(@import "tailwindcss";\n),
+            %(@import "tailwindcss";),
+            %(@import "tailwindcss"\n),
+            %(@import "tailwindcss")
+          ]
+          patterns.each do |after_pattern|
+            next unless content.include?(after_pattern)
+
+            inject_into_file tailwind_css_path.to_s, after: after_pattern do
+              to_inject
+            end
+            return true
+          end
+          false
+        end
+
+        def inject_at_start(tailwind_css_path, to_inject)
+          inject_into_file tailwind_css_path.to_s, after: /\A/ do
+            to_inject
+          end
+        end
       end
 
       def run_migrate

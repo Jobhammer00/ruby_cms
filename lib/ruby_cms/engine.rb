@@ -100,8 +100,7 @@ module RubyCms
       # For importmap: ensure engine's importmap is loaded
       if app.config.respond_to?(:importmap)
         app.config.importmap.paths << config.root.join("config/importmap.rb")
-        # Only sweep the engine's Stimulus tree (not the whole app/javascript tree)
-        app.config.importmap.cache_sweepers << config.root.join("app/javascript/controllers/ruby_cms")
+        app.config.importmap.cache_sweepers << config.root.join("app/javascript")
       end
     end
 
@@ -263,18 +262,12 @@ module RubyCms
       end
     end
 
-    # True during asset pipeline tasks so we skip DB-heavy initializers (permissions, settings import).
-    # Detect by ARGV first: $PROGRAM_NAME is often "ruby" when using `ruby bin/rails`, which would
-    # miss the old rake/rails basename check; tailwindcss:build runs as a prerequisite of
-    # assets:precompile and keeps the same ARGV, but a standalone `rails tailwindcss:build` must match too.
     def self.assets_precompile_phase?
-      argv = Array(ARGV).map(&:to_s)
-      return true if argv.include?("assets:precompile")
-      return true if argv.any? {|a| a.start_with?("tailwindcss:") }
-      return true if argv.include?("propshaft:compile")
-
       command = File.basename($PROGRAM_NAME.to_s)
-      (command == "rake" || command == "rails") && argv.include?("assets:precompile")
+      rake_assets_precompile = command == "rake" && ARGV.include?("assets:precompile")
+      rails_assets_precompile = command == "rails" && ARGV.include?("assets:precompile")
+
+      rake_assets_precompile || rails_assets_precompile
     end
   end
 end
