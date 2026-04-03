@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.2.0.3] - 2026-04-02
+
+- Whole repo was scanned for comiling so it was slow.
+
 ## [0.2.0.2] - 2026-04-02
 
 - Add commands page

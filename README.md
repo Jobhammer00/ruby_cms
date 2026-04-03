@@ -493,9 +493,27 @@ rails ruby_cms:css:compile_gem
 ### Faster Docker Builds (`assets:precompile`)
 
 `assets:precompile` loads the Rails app in production mode and can be slow in Docker/Fly builds.
-RubyCMS now skips non-asset runtime initializers during this phase (navigation registration,
+RubyCMS skips non-asset runtime initializers during this phase (navigation registration,
 dashboard registration, versioning hook, settings import, and permission seeding), which reduces
-precompile overhead.
+precompile overhead. Detection uses `ARGV` (not only `$PROGRAM_NAME`) so it still applies when the
+Ruby program name is `ruby` instead of `rails`.
+
+**Tailwind CSS:** Do not add multiple `@source` globs that point at the same RubyCMS gem (e.g. both
+`../../../../gems/ruby_cms/...` and `/usr/local/bundle/.../ruby_cms-*`). That scans the engine twice
+and slows `tailwindcss:build` a lot. Instead, rely on [tailwindcss-rails engine support](https://github.com/rails/tailwindcss-rails#rails-engines-support-experimental):
+
+1. RubyCMS ships `app/assets/tailwind/ruby_cms_engine/engine.css` with `@source` paths relative to the gem
+   (the directory matches Rails’ `engine_name` for `RubyCms::Engine`, which is `ruby_cms_engine`).
+2. `rails tailwindcss:engines` (run automatically before `tailwindcss:build`) generates
+   `app/assets/builds/tailwind/ruby_cms_engine.css` in the host app.
+3. In the host’s `app/assets/tailwind/application.css`, add **once**:
+
+   ```css
+   @import "../builds/tailwind/ruby_cms_engine";
+   ```
+
+   Place it next to your other `@import` lines (e.g. after `@import "tailwindcss";`). Remove any
+   hand-written `@source` lines aimed at the RubyCMS gem.
 
 Recommended Docker layer order:
 
