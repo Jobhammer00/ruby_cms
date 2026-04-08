@@ -15,7 +15,7 @@
     <link rel="manifest" href="<%= asset_path("site.webmanifest") %>">
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "ruby_cms/admin", "data-turbo-track": "reload" rescue nil %>
     <%= stylesheet_link_tag "actiontext", "data-turbo-track": "reload" if asset_path("actiontext.css") rescue nil %>
     <%= javascript_importmap_tags "admin" %>
   </head>

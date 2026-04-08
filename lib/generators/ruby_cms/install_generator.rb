@@ -21,7 +21,7 @@ module RubyCms
         - If the host uses /admin already, remove or change those routes.
         - Avoid root to: redirect("/admin") — use a real root or ruby_cms.unauthorized_redirect_path.
         - Review config/initializers/ruby_cms.rb (session, CSP).
-        - Add 'css: bin/rails tailwindcss:watch' to Procfile.dev for Tailwind in development.
+        - RubyCMS admin styles are compiled once on install to app/assets/stylesheets/ruby_cms/admin.css.
         - Visit /admin (sign in as the admin you configured).
 
         Tracking:
@@ -215,7 +215,18 @@ module RubyCms
       no_tasks do
         def copy_admin_css(dest_dir)
           admin_css_dest = dest_dir.join("admin.css")
+          precompiled_admin_css = RubyCms::Engine.root.join("app/assets/stylesheets/ruby_cms/admin.css")
+          if File.exist?(precompiled_admin_css) && File.size(precompiled_admin_css).to_i.positive?
+            FileUtils.cp(precompiled_admin_css, admin_css_dest)
+            return
+          end
+
           RubyCms::Engine.compile_admin_css(admin_css_dest)
+          return if File.size(admin_css_dest).to_i > 64
+
+          say "⚠ Task css/copy: Generated admin.css is very small. " \
+              "Ensure RubyCMS ships precompiled CSS at app/assets/stylesheets/ruby_cms/admin.css.",
+              :yellow
         end
 
         def copy_components_css(src_dir, dest_dir)
@@ -478,8 +489,8 @@ module RubyCms
         end
 
         def configure_tailwind(tailwind_css)
-          add_ruby_cms_tailwind_source(tailwind_css)
-          add_ruby_cms_tailwind_content_paths
+          remove_ruby_cms_tailwind_source(tailwind_css)
+          remove_ruby_cms_tailwind_content_paths
           run "bin/rails tailwindcss:build" if File.exist?(tailwind_css)
           # Importmap pins are provided by the engine via `ruby_cms/config/importmap.rb`.
           add_importmap_pins
@@ -855,114 +866,56 @@ module RubyCms
           end.join("\n")
         end
 
-        # Helper: add @source for RubyCMS views/components so Tailwind finds utility classes.
+        # RubyCMS admin styles are precompiled to app/assets/stylesheets/ruby_cms/admin.css.
+        # Remove RubyCMS-specific Tailwind source globs to keep host-app builds fast.
         # Not a generator task.
-        def add_ruby_cms_tailwind_source(tailwind_css_path)
-          return unless tailwind_css_path.to_s.present? && File.exist?(tailwind_css_path)
+        def remove_ruby_cms_tailwind_source(tailwind_css_path)
+          return unless valid_tailwind_source_path?(tailwind_css_path)
 
           content = File.read(tailwind_css_path)
-          gem_source_lines = build_gem_source_lines(tailwind_css_path)
-          return if gem_source_lines.all? {|line| content.include?(line) }
+          cleaned_content = remove_legacy_ruby_cms_tailwind_sources(content)
+          return if cleaned_content == content
 
-          inject_tailwind_source(tailwind_css_path, content, gem_source_lines)
+          File.write(tailwind_css_path, cleaned_content)
+          say_tailwind_source_cleaned
         rescue StandardError => e
-          say "⚠ Task tailwind/source: Could not add @source: #{e.message}. Add manually.", :yellow
+          say_tailwind_source_clean_failed(e)
         end
 
-        # Tailwind v3 support (tailwind.config.js content array)
-        def add_ruby_cms_tailwind_content_paths # rubocop:disable Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength
+        # Remove RubyCMS content globs from Tailwind v3 config as well.
+        def remove_ruby_cms_tailwind_content_paths
           config_path = Rails.root.join("config/tailwind.config.js")
           return unless File.exist?(config_path)
 
           content = File.read(config_path)
-          patterns = ruby_cms_tailwind_content_patterns
-          return if patterns.all? {|p| content.include?(p) }
+          cleaned = content.gsub(/^\s*["']?[^"'\n]*ruby_cms[^"'\n]*["']?,?\s*$\n?/i, "")
+          return if cleaned == content
 
-          inject = "#{patterns.map {|p| "    \"#{p}\"," }.join("\n")}\n"
-
-          # Insert inside `content: [` if present; otherwise no-op.
-          inserted = false
-          if content.match?(/content:\s*\[/)
-            gsub_file config_path.to_s, /content:\s*\[\s*\n/ do |match|
-              inserted = true
-              "#{match}#{inject}"
-            end
-          end
-
-          return unless inserted
-
-          say "✓ Task tailwind/content: Added RubyCMS paths to config/tailwind.config.js.", :green
+          File.write(config_path, cleaned)
+          say "✓ Task tailwind/content: Removed RubyCMS paths from tailwind.config.js.", :green
         rescue StandardError => e
-          say "⚠ Task tailwind/content: Could not update tailwind.config.js: #{e.message}.", :yellow
+          say "⚠ Task tailwind/content: Could not clean tailwind.config.js: #{e.message}.", :yellow
         end
 
-        def ruby_cms_tailwind_content_patterns
-          views = RubyCms::Engine.root.join("app/views").relative_path_from(Rails.root).to_s
-          components = RubyCms::Engine.root.join("app/components").relative_path_from(Rails.root).to_s
-          [
-            "#{views}/**/*.erb",
-            "#{components}/**/*.rb"
-          ]
+        def remove_legacy_ruby_cms_tailwind_sources(content)
+          content
+            .gsub(%r{^\s*/\*\s*Include RubyCMS views/components so Tailwind finds utility classes\.\s*\*/\s*$\n?}, "")
+            .gsub(/^\s*@source\s+"[^"\n]*ruby_cms[^"\n]*";\s*$\n?/i, "")
         end
 
-        def build_gem_source_lines(tailwind_css_path)
-          css_dir = Pathname.new(tailwind_css_path).dirname
-          gem_views = path_relative_to_css_or_absolute(RubyCms::Engine.root.join("app/views"),
-                                                       css_dir)
-          gem_components = path_relative_to_css_or_absolute(
-            RubyCms::Engine.root.join("app/components"), css_dir
-          )
-          [
-            %(@source "#{gem_views}/**/*.erb";),
-            %(@source "#{gem_components}/**/*.rb";)
-          ]
+        def valid_tailwind_source_path?(tailwind_css_path)
+          tailwind_css_path.to_s.present? && File.exist?(tailwind_css_path)
         end
 
-        def path_relative_to_css_or_absolute(target_path, css_dir)
-          Pathname.new(target_path).relative_path_from(css_dir).to_s
-        rescue ArgumentError
-          # Different mount/volume: fall back to absolute path.
-          Pathname.new(target_path).to_s
-        end
-
-        def inject_tailwind_source(tailwind_css_path, content, gem_source_lines)
-          to_inject = build_tailwind_source_injection(gem_source_lines)
-          inserted = try_insert_after_patterns?(tailwind_css_path, content, to_inject)
-          inject_at_start(tailwind_css_path, to_inject) unless inserted
-          say "✓ Task tailwind/source: Added @source for RubyCMS views/components to " \
-              "tailwind/application.css.",
+        def say_tailwind_source_cleaned
+          say "✓ Task tailwind/source: Removed RubyCMS @source paths from tailwind entry CSS.",
               :green
         end
 
-        def build_tailwind_source_injection(gem_source_lines)
-          to_inject = +"\n/* Include RubyCMS views/components so Tailwind finds utility classes. */\n"
-          Array(gem_source_lines).each {|line| to_inject << line << "\n" }
-          to_inject << "\n"
-          to_inject
-        end
-
-        def try_insert_after_patterns?(tailwind_css_path, content, to_inject)
-          patterns = [
-            %(@import "tailwindcss";\n),
-            %(@import "tailwindcss";),
-            %(@import "tailwindcss"\n),
-            %(@import "tailwindcss")
-          ]
-          patterns.each do |after_pattern|
-            next unless content.include?(after_pattern)
-
-            inject_into_file tailwind_css_path.to_s, after: after_pattern do
-              to_inject
-            end
-            return true
-          end
-          false
-        end
-
-        def inject_at_start(tailwind_css_path, to_inject)
-          inject_into_file tailwind_css_path.to_s, after: /\A/ do
-            to_inject
-          end
+        def say_tailwind_source_clean_failed(error)
+          say "⚠ Task tailwind/source: Could not clean @source lines: #{error.message}. " \
+              "Check tailwind/application.css manually.",
+              :yellow
         end
       end
 

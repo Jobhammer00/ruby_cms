@@ -34,7 +34,7 @@ module RubyCms
 
         respond_to do |format|
           format.html do
-            token = persist_run_payload_for_redirect(output: output, log_tail: log_tail)
+            token = persist_run_payload_for_redirect(output:, log_tail:)
             redirect_to ruby_cms_admin_settings_commands_path,
                         status: :see_other,
                         flash: { FLASH_RUN => token }
@@ -55,14 +55,14 @@ module RubyCms
                         status: :see_other,
                         flash: { FLASH_RUN => token }
           end
-          format.json { render json: { error: e.message }, status: :unprocessable_entity }
+          format.json { render json: { error: e.message }, status: :unprocessable_content }
         end
       end
 
       private
 
       def persist_run_payload_for_redirect(output: nil, log_tail: nil, error: nil)
-        payload = { output: output, log_tail: log_tail, error: error }.compact
+        payload = { output:, log_tail:, error: }.compact
         token = SecureRandom.urlsafe_base64(32)
         if rails_cache_null_store?
           session[session_run_key(token)] = payload
@@ -77,7 +77,7 @@ module RubyCms
         return if token.blank?
 
         payload = load_run_payload(token)
-        assign_run_ivars_from_payload(payload) if payload.is_a?(Hash)
+        assign_run_ivars_from_payload(payload) if payload.kind_of?(Hash)
       end
 
       def load_run_payload(token)
@@ -99,7 +99,7 @@ module RubyCms
       end
 
       def rails_cache_null_store?
-        Rails.cache.is_a?(ActiveSupport::Cache::NullStore)
+        Rails.cache.kind_of?(ActiveSupport::Cache::NullStore)
       end
 
       def session_run_key(token)
@@ -115,7 +115,7 @@ module RubyCms
 
       def visible_commands
         RubyCms.registered_commands.select {|c| current_user_cms&.can?(c[:permission]) }
-                              .sort_by {|c| [ c[:label].to_s.downcase, c[:key] ] }
+                                   .sort_by {|c| [c[:label].to_s.downcase, c[:key]] }
       end
     end
   end
