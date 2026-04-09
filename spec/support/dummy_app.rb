@@ -4,6 +4,9 @@ module RubyCmsSpec
   class Application < Rails::Application
     config.root = File.expand_path("../..", __dir__)
     config.eager_load = false
+    # Rails 8 can freeze dependency path arrays during boot; avoid mutating
+    # `ActiveSupport::Dependencies.autoload_paths` via load path insertion.
+    config.add_autoload_paths_to_load_path = false
     config.secret_key_base = "ruby_cms_spec_secret_key_base"
     config.hosts << "www.example.com" if config.respond_to?(:hosts)
     # Specs run in an isolated app that does not define ApplicationController.
