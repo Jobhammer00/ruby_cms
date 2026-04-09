@@ -136,7 +136,7 @@ module RubyCms
               "#{@controller_name}-delete-path-not-found-message-value": t("ruby_cms.admin.bulk_action_table.delete_path_not_found", default: "Delete path not found."),
               "#{@controller_name}-action-url-not-configured-message-value": t("ruby_cms.admin.bulk_action_table.action_url_not_configured", default: "Action URL not configured. Please configure an action URL for this page."),
               "#{@controller_name}-default-confirm-message-value": t("ruby_cms.admin.bulk_action_table.default_confirm", default: "Are you sure you want to proceed?"),
-              "#{@controller_name}-generic-action-error-message-value": t("ruby_cms.admin.bulk_action_table.generic_action_error", default: "An error occurred while performing %{action}.")
+              "#{@controller_name}-generic-action-error-message-value": t("ruby_cms.admin.bulk_action_table.generic_action_error", default: "An error occurred while performing %<action>s.")
             }
           }
 
