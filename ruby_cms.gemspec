@@ -44,6 +44,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "actiontext", ">= 7.1"
   spec.add_dependency "ahoy_matey", ">= 5.0"
   spec.add_dependency "rails", ">= 7.1"
+  spec.add_dependency "safely_block", "< 1.0"
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
