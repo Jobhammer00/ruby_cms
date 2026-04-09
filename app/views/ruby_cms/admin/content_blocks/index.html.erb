@@ -29,8 +29,15 @@
   end
 %>
 
+  <div class="mb-4">
+    <h1 class="text-2xl font-semibold text-foreground">Content blocks</h1>
+    <p class="mt-1 text-sm text-muted-foreground">
+      <%= number_with_delimiter(@pagination&.dig(:total_count) || @content_blocks&.size || 0) %> total items
+    </p>
+  </div>
+
   <%= render partial: "ruby_cms/admin/shared/bulk_action_table_index", locals: {
-    title: "Content blocks",
+    title: nil,
     collection: @content_blocks || [],
     headers: ["Key", "Locale", "Title", "Type", "Published", { text: "Actions", class: "text-right" }],
     action_icons: [

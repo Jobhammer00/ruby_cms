@@ -1,5 +1,26 @@
 ## [Unreleased]
 
+## [0.2.0.8] - 2026-04-09
+
+- Analytics performance: migration adds `ahoy_events (name, time)`, `ahoy_events (visit_id, time)`, `ahoy_visits (started_at)`, `ahoy_visits (visitor_token)` indexes
+- Analytics performance: `compute_new_visitor_percentage` uses subquery instead of plucking all historical visitor tokens into Ruby memory
+- Analytics performance: `exit_pages_data` uses a single DB join-subquery instead of loading all page view rows into Ruby
+
+## [0.2.0.7] - 2026-04-09
+
+- Analytics: add `EVENT_PAGE_VIEW` / `EVENT_CONVERSION` constants for consistent ahoy.track usage
+- Analytics: conversion tracking — `Report` queries `conversion` events and surfaces totals + goal breakdown in dashboard
+- Analytics: exit pages — last `page_view` per visit in selected range, displayed as new dashboard section
+- Analytics: period-over-period comparison — KPI deltas (↑/↓ %) shown on page views, unique visitors, and sessions stat cards
+- Analytics: expanded bot-filtering documentation in install template (`analytics_visit_scope` examples)
+- Analytics: register `analytics_max_exit_pages`, `analytics_max_conversions`, `analytics_max_referrers`, `analytics_max_landing_pages`, `analytics_max_utm_sources` in SettingsRegistry
+- PageTracking: document conversion tracking convention in concern comments
+- Locales: add analytics i18n keys for exit pages, conversions, and period comparison (en + nl)
+
+## [0.2.0.6] - 2026-04-09
+
+- Analytics improvements
+
 ## [0.2.0.5] - 2026-04-08
 
 - The host app no longer needs to scan de gem for tailwind

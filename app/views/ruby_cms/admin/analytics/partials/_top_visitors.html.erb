@@ -1,28 +1,38 @@
-<div class="rounded-lg border border-border/60 bg-white shadow-sm">
-  <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-border/40">
+<div class="rounded-xl border border-border/60 bg-white shadow-sm overflow-hidden">
+  <div class="flex items-center gap-3 px-4 py-3 border-b border-border/40">
+    <div class="rounded-md bg-violet-50 p-1.5 flex-shrink-0">
+      <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+    </div>
     <div>
       <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.top_visitors", default: "Top Visitors") %></p>
-      <p class="text-sm text-muted-foreground">Most active IPs.</p>
+      <p class="text-xs text-muted-foreground">Most active IPs in selected range</p>
     </div>
   </div>
 
   <% if @top_visitors.present? %>
-    <div class="divide-y divide-border/40">
+    <% max_count = @top_visitors.values.first.to_i %>
+    <div class="divide-y divide-border/30">
       <% @top_visitors.first(8).each_with_index do |(ip, count), idx| %>
+        <% pct = max_count.positive? ? (count.to_f / max_count * 100).round(0) : 0 %>
         <%= link_to visitor_details_ruby_cms_admin_analytics_path(ip_address: ip, start_date: @start_date, end_date: @end_date, period: @period),
-                    class: "group flex items-center justify-between gap-2 px-4 py-2 hover:bg-muted/50 transition-colors" do %>
-          <div class="flex items-center gap-2 min-w-0">
+                    class: "group relative flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-muted/40 transition-colors" do %>
+          <div class="absolute inset-y-0 left-0 bg-violet-500/5 transition-all" style="width: <%= pct %>%"></div>
+          <div class="relative z-10 flex items-center gap-3 min-w-0">
             <span class="text-xs font-medium text-muted-foreground tabular-nums w-5 text-right flex-shrink-0"><%= idx + 1 %></span>
-            <p class="text-xs font-medium text-foreground tabular-nums truncate group-hover:text-primary"><%= ip %></p>
+            <p class="text-sm font-mono text-foreground truncate group-hover:text-primary transition-colors"><%= ip %></p>
           </div>
-          <span class="text-xs font-semibold tabular-nums text-foreground flex-shrink-0"><%= number_with_delimiter(count) %></span>
+          <div class="relative z-10 flex items-center gap-2 flex-shrink-0">
+            <span class="text-sm font-semibold tabular-nums text-foreground"><%= number_with_delimiter(count) %></span>
+            <svg class="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-primary/60 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </div>
         <% end %>
       <% end %>
     </div>
   <% else %>
-    <div class="px-4 py-8 text-center">
+    <div class="flex flex-col items-center justify-center px-4 py-10 gap-2">
+      <svg class="w-8 h-8 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
       <p class="text-sm font-medium text-foreground"><%= t("ruby_cms.admin.analytics.no_data", default: "No data yet.") %></p>
-      <p class="mt-1 text-sm text-muted-foreground">No visitors in selected range.</p>
+      <p class="text-xs text-muted-foreground">No visitors in selected range</p>
     </div>
   <% end %>
 </div>

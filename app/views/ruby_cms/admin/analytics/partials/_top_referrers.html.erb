@@ -1,21 +1,33 @@
-<div class="rounded-lg border border-border/60 bg-white shadow-sm">
-  <div class="px-4 py-3 border-b border-border/40">
-    <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.top_referrers", default: "Top Referrers") %></p>
-    <p class="text-sm text-muted-foreground">Where visitors came from.</p>
+<div class="rounded-xl border border-border/60 bg-white shadow-sm overflow-hidden">
+  <div class="flex items-center gap-3 px-4 py-3 border-b border-border/40">
+    <div class="rounded-md bg-purple-50 p-1.5 flex-shrink-0">
+      <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+    </div>
+    <div>
+      <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.top_referrers", default: "Top Referrers") %></p>
+      <p class="text-xs text-muted-foreground">Where visitors came from</p>
+    </div>
   </div>
 
-  <div class="divide-y divide-border/40">
-    <% if @top_referrers.present? && @top_referrers.any? %>
+  <% if @top_referrers.present? && @top_referrers.any? %>
+    <% total = @top_referrers.values.sum.to_f %>
+    <div class="divide-y divide-border/30">
       <% @top_referrers.first(6).each do |referrer, count| %>
-        <div class="flex items-center justify-between gap-3 px-4 py-2">
-          <span class="text-xs text-foreground truncate" title="<%= referrer %>"><%= truncate(referrer.to_s.gsub(%r{https?://}, ''), length: 40) %></span>
-          <span class="text-xs font-semibold tabular-nums text-foreground flex-shrink-0"><%= number_with_delimiter(count) %></span>
+        <% pct = total.positive? ? (count / total * 100).round(1) : 0 %>
+        <div class="relative flex items-center justify-between gap-3 px-4 py-2.5">
+          <div class="absolute inset-y-0 left-0 bg-purple-500/5" style="width: <%= pct %>%"></div>
+          <span class="relative z-10 text-sm text-foreground truncate" title="<%= referrer %>"><%= truncate(referrer.to_s.gsub(%r{https?://}, ''), length: 38) %></span>
+          <div class="relative z-10 flex items-center gap-2 flex-shrink-0">
+            <span class="text-xs text-muted-foreground tabular-nums"><%= pct %>%</span>
+            <span class="text-sm font-semibold tabular-nums text-foreground"><%= number_with_delimiter(count) %></span>
+          </div>
         </div>
       <% end %>
-    <% else %>
-      <div class="px-4 py-8 text-center">
-        <p class="text-sm text-muted-foreground"><%= t("ruby_cms.admin.analytics.no_referrers", default: "No referrers recorded") %></p>
-      </div>
-    <% end %>
-  </div>
+    </div>
+  <% else %>
+    <div class="flex flex-col items-center justify-center px-4 py-10 gap-2">
+      <svg class="w-8 h-8 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+      <p class="text-sm text-muted-foreground"><%= t("ruby_cms.admin.analytics.no_referrers", default: "No referrers recorded") %></p>
+    </div>
+  <% end %>
 </div>

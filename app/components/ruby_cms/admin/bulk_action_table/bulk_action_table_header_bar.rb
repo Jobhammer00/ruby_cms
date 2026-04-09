@@ -32,9 +32,9 @@ module RubyCms
 
         def view_template
           div(class: "px-5 py-3 border-b border-border/60 bg-white") do
-            div(class: "flex flex-wrap items-center justify-between gap-4") do
+            div(class: "flex items-center justify-between gap-3") do
               render_title_group if @title.present?
-              div(class: "flex items-center gap-2 flex-wrap") do
+              div(class: "ml-auto flex items-center gap-2 overflow-x-auto whitespace-nowrap") do
                 render_header_filter if @header_filter.present?
                 render_action_icons
                 render_search_form
@@ -75,9 +75,15 @@ module RubyCms
           form_options = {
             url: @search_url,
             method: :get,
-            class: "w-full sm:w-auto"
+            class: "w-full sm:w-auto",
+            data: { "#{default_controller_name}-target": "searchForm" }
           }
           form_options[:data] = { turbo_frame: @turbo_frame } if @turbo_frame.present?
+          if @turbo_frame.present?
+            form_options[:data] = form_options[:data].merge(
+              "#{default_controller_name}-target": "searchForm"
+            )
+          end
 
           form_with(**form_options) do
             div(class: "relative flex items-center") do
@@ -106,10 +112,10 @@ module RubyCms
             type: "search",
             name: @search_param,
             placeholder: "Search",
-            class: "h-9 w-full sm:w-72 rounded-md border border-border bg-white pl-9 " \
+            class: "h-9 w-64 sm:w-72 rounded-md border border-border bg-white pl-9 " \
                    "pr-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/20",
             value: search_value,
-            data: { action: "input->turbo-frame#submit" }
+            data: { action: "input->#{default_controller_name}#autoSearch" }
           )
         end
 
@@ -152,6 +158,10 @@ module RubyCms
             s.path(stroke_linecap: "round", stroke_linejoin: "round", stroke_width: "2",
                    d: icon_path)
           end
+        end
+
+        def default_controller_name
+          "ruby-cms--bulk-action-table"
         end
       end
     end

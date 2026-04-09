@@ -128,7 +128,15 @@ module RubyCms
             data: {
               controller: @controller_name,
               "#{@controller_name}-csrf-token-value": csrf_token,
-              "#{@controller_name}-item-name-value": @item_name
+              "#{@controller_name}-item-name-value": @item_name,
+              "#{@controller_name}-processing-label-value": t("ruby_cms.admin.bulk_action_table.processing", default: "Processing..."),
+              "#{@controller_name}-confirm-label-value": t("ruby_cms.admin.bulk_action_table.confirm", default: "Confirm"),
+              "#{@controller_name}-select-at-least-one-message-value": t("ruby_cms.admin.bulk_action_table.select_at_least_one", default: "Please select at least one item."),
+              "#{@controller_name}-item-id-not-found-message-value": t("ruby_cms.admin.bulk_action_table.item_id_not_found", default: "Item ID not found for deletion."),
+              "#{@controller_name}-delete-path-not-found-message-value": t("ruby_cms.admin.bulk_action_table.delete_path_not_found", default: "Delete path not found."),
+              "#{@controller_name}-action-url-not-configured-message-value": t("ruby_cms.admin.bulk_action_table.action_url_not_configured", default: "Action URL not configured. Please configure an action URL for this page."),
+              "#{@controller_name}-default-confirm-message-value": t("ruby_cms.admin.bulk_action_table.default_confirm", default: "Are you sure you want to proceed?"),
+              "#{@controller_name}-generic-action-error-message-value": t("ruby_cms.admin.bulk_action_table.generic_action_error", default: "An error occurred while performing %{action}.")
             }
           }
 

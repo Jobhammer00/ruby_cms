@@ -1,10 +1,15 @@
-<div class="rounded-lg border border-border/60 bg-white shadow-sm">
-  <div class="px-4 py-2 border-b border-border/40">
-    <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.hourly_activity", default: "Hourly Activity") %></p>
-    <p class="text-sm text-muted-foreground"><%= t("ruby_cms.admin.analytics.views_by_hour", default: "Views by hour") %></p>
+<div class="rounded-xl border border-border/60 bg-white shadow-sm overflow-hidden">
+  <div class="flex items-center gap-3 px-4 py-3 border-b border-border/40">
+    <div class="rounded-md bg-emerald-50 p-1.5 flex-shrink-0">
+      <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    </div>
+    <div>
+      <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.hourly_activity", default: "Hourly Activity") %></p>
+      <p class="text-xs text-muted-foreground"><%= t("ruby_cms.admin.analytics.views_by_hour", default: "Views by hour of day") %></p>
+    </div>
   </div>
 
-  <div class="px-4 py-3">
+  <div class="px-4 py-4">
     <% if @hourly_activity.present? && @hourly_activity.any? %>
       <%
         hourly_arr = @hourly_activity.is_a?(Hash) ? @hourly_activity.to_a : @hourly_activity
@@ -13,12 +18,13 @@
           total = group.sum { |_, c| c.to_i }
           [hours, total]
         end
-        max_value = grouped.map { |_, c| c }.max || 1
-        chart_h = 130
+        max_value = grouped.map { |_, c| c.to_i }.max.to_f
+        max_value = 1.0 unless max_value.positive? && max_value.finite?
+        chart_h = 160
       %>
 
       <div class="grid grid-cols-[2.75rem_1fr] gap-2">
-        <div class="flex flex-col justify-between h-[<%= chart_h %>px] text-xs text-muted-foreground tabular-nums">
+        <div class="flex flex-col justify-between text-xs text-muted-foreground tabular-nums" style="height:<%= chart_h %>px">
           <% [100, 75, 50, 25, 0].each do |pct| %>
             <div class="text-right"><%= number_with_delimiter((max_value * pct / 100.0).round) %></div>
           <% end %>
@@ -26,15 +32,24 @@
 
         <div class="relative">
           <div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
-            <% 5.times do %><div class="h-px bg-border/40"></div><% end %>
+            <% 5.times do %><div class="h-px bg-border/30"></div><% end %>
           </div>
 
-          <div class="h-[<%= chart_h %>px] flex items-end gap-1.5">
+          <div class="flex items-end gap-1.5" style="height:<%= chart_h %>px">
             <% grouped.each do |hours, count| %>
-              <% h = [((count.to_f / max_value) * chart_h).round, 2].max %>
+              <% ratio = count.to_f / max_value %>
+              <% ratio = 0.0 unless ratio.finite? %>
+              <% h = if count.to_i.positive?
+                       [[(ratio * chart_h).round, 2].max, chart_h].min
+                     else
+                       0
+                     end %>
               <div class="flex flex-col items-center gap-1.5 flex-1 min-w-0 group">
                 <div class="w-full flex items-end justify-center" title="<%= hours.size > 1 ? "#{hours.first}:00–#{hours.last}:00" : "#{hours.first}:00" %> — <%= number_with_delimiter(count) %> views">
-                  <div class="w-full max-w-[12px] rounded-t bg-emerald-500/80 group-hover:bg-emerald-500 transition-colors" style="height:<%= h %>px"></div>
+                  <div
+                    class="w-full rounded-t transition-colors group-hover:opacity-90"
+                    style="height:<%= h %>px; max-width:12px; background-color:rgb(16 185 129 / 0.75);"
+                  ></div>
                 </div>
                 <div class="text-[10px] text-muted-foreground truncate w-full text-center"><%= hours.size > 1 ? "#{hours.first}–#{hours.last}h" : "#{hours.first}h" %></div>
               </div>
@@ -43,7 +58,8 @@
         </div>
       </div>
     <% else %>
-      <div class="flex items-center justify-center h-40">
+      <div class="flex flex-col items-center justify-center h-44 gap-2">
+        <svg class="w-8 h-8 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <p class="text-sm text-muted-foreground"><%= t("ruby_cms.admin.analytics.no_hourly_data", default: "No hourly activity data") %></p>
       </div>
     <% end %>

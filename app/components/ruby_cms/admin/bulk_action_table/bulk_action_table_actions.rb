@@ -45,8 +45,8 @@ module RubyCms
         def render_edit_button
           link_options = {
             href: @edit_path,
-            class: "inline-flex size-8 items-center justify-center rounded-md text-muted-foreground " \
-                   "hover:bg-muted hover:text-foreground transition-colors"
+            class: "inline-flex size-8 items-center justify-center rounded-md text-blue-600 " \
+                   "hover:bg-blue-50 hover:text-blue-700 transition-colors"
           }
           link_options[:data] = { turbo_frame: @turbo_frame } if @turbo_frame
 
@@ -71,7 +71,7 @@ module RubyCms
           item_id = @item_id || extract_item_id_from_path
           button(
             type: "button",
-            class: "inline-flex size-8 items-center justify-center rounded-md text-muted-foreground " \
+            class: "inline-flex size-8 items-center justify-center rounded-md text-destructive " \
                    "hover:bg-destructive/10 hover:text-destructive transition-colors",
             data: {
               action: "click->#{@controller_name}#showIndividualDeleteDialog",

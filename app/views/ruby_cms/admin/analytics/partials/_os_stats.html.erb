@@ -1,26 +1,37 @@
-<div class="rounded-lg border border-border/60 bg-white shadow-sm">
-  <div class="px-6 py-4 border-b border-border/40">
-    <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.operating_systems", default: "Operating Systems") %></p>
-    <p class="text-sm text-muted-foreground">Visitor OS breakdown.</p>
+<div class="rounded-xl border border-border/60 bg-white shadow-sm overflow-hidden">
+  <div class="flex items-center gap-3 px-4 py-3 border-b border-border/40">
+    <div class="rounded-md bg-indigo-50 p-1.5 flex-shrink-0">
+      <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+    </div>
+    <div>
+      <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.operating_systems", default: "Operating Systems") %></p>
+      <p class="text-xs text-muted-foreground">Visitor OS breakdown</p>
+    </div>
   </div>
 
-  <div class="divide-y divide-border/40">
-    <% if @os_stats.present? && @os_stats.any? %>
-      <% total = @os_stats.values.sum.to_f %>
+  <% if @os_stats.present? && @os_stats.any? %>
+    <% total = @os_stats.values.sum.to_f %>
+    <div class="px-4 py-3 space-y-2.5">
       <% @os_stats.sort_by { |_, v| -v }.first(6).each do |os, count| %>
         <% pct = total.positive? ? (count / total * 100).round(1) : 0 %>
-        <div class="flex items-center justify-between gap-3 px-6 py-3">
-          <span class="text-sm text-foreground"><%= os %></span>
-          <div class="flex items-center gap-3 flex-shrink-0">
-            <span class="text-xs text-muted-foreground tabular-nums"><%= pct %>%</span>
-            <span class="text-sm font-semibold tabular-nums text-foreground"><%= number_with_delimiter(count) %></span>
+        <div>
+          <div class="flex items-center justify-between gap-3 mb-1">
+            <span class="text-sm text-foreground"><%= os %></span>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <span class="text-xs text-muted-foreground tabular-nums"><%= pct %>%</span>
+              <span class="text-sm font-semibold tabular-nums text-foreground"><%= number_with_delimiter(count) %></span>
+            </div>
+          </div>
+          <div class="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+            <div class="h-full bg-indigo-400 rounded-full" style="width: <%= pct %>%"></div>
           </div>
         </div>
       <% end %>
-    <% else %>
-      <div class="px-6 py-10 text-center">
-        <p class="text-sm text-muted-foreground"><%= t("ruby_cms.admin.analytics.no_data", default: "No data yet.") %></p>
-      </div>
-    <% end %>
-  </div>
+    </div>
+  <% else %>
+    <div class="flex flex-col items-center justify-center px-4 py-10 gap-2">
+      <svg class="w-8 h-8 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+      <p class="text-sm text-muted-foreground"><%= t("ruby_cms.admin.analytics.no_data", default: "No data yet.") %></p>
+    </div>
+  <% end %>
 </div>

@@ -1,16 +1,21 @@
-<div class="rounded-lg border border-border/60 bg-white shadow-sm">
-  <div class="flex items-center justify-between gap-3 px-4 py-2 border-b border-border/40">
-    <div>
-      <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.daily_activity", default: "Daily Activity") %></p>
-      <p class="text-sm text-muted-foreground"><%= t("ruby_cms.admin.analytics.page_views_visitors_over_time", default: "Page views and visitors over time") %></p>
+<div class="rounded-xl border border-border/60 bg-white shadow-sm overflow-hidden">
+  <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-border/40">
+    <div class="flex items-center gap-3">
+      <div class="rounded-md bg-sky-50 p-1.5 flex-shrink-0">
+        <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.daily_activity", default: "Daily Activity") %></p>
+        <p class="text-xs text-muted-foreground"><%= t("ruby_cms.admin.analytics.page_views_visitors_over_time", default: "Page views and visitors over time") %></p>
+      </div>
     </div>
-    <div class="flex items-center gap-4 text-sm text-muted-foreground">
+    <div class="flex items-center gap-4 text-xs text-muted-foreground flex-shrink-0">
       <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-primary"></span><%= t("ruby_cms.admin.analytics.views", default: "Views") %></span>
       <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-emerald-500"></span><%= t("ruby_cms.admin.analytics.visitors", default: "Visitors") %></span>
     </div>
   </div>
 
-  <div class="px-4 py-3">
+  <div class="px-4 py-4">
     <% if @daily_activity.present? && @daily_activity.any? %>
       <%
         daily_arr = @daily_activity.is_a?(Hash) ? @daily_activity.to_a : @daily_activity
@@ -18,11 +23,11 @@
         max_visitors = (@daily_visitors || {}).values.map(&:to_i).max || 0
         max_value = [max_views, max_visitors].max
         max_value = 1 if max_value.zero?
-        chart_h = 130
+        chart_h = 160
       %>
 
       <div class="grid grid-cols-[2.75rem_1fr] gap-2">
-        <div class="flex flex-col justify-between h-[<%= chart_h %>px] text-xs text-muted-foreground tabular-nums">
+        <div class="flex flex-col justify-between text-xs text-muted-foreground tabular-nums" style="height:<%= chart_h %>px">
           <% [100, 75, 50, 25, 0].each do |pct| %>
             <div class="text-right"><%= number_with_delimiter((max_value * pct / 100.0).round) %></div>
           <% end %>
@@ -30,18 +35,32 @@
 
         <div class="relative">
           <div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
-            <% 5.times do %><div class="h-px bg-border/40"></div><% end %>
+            <% 5.times do %><div class="h-px bg-border/30"></div><% end %>
           </div>
 
-          <div class="h-[<%= chart_h %>px] flex items-end gap-1">
+          <div class="flex items-end gap-1" style="height:<%= chart_h %>px">
             <% daily_arr.each do |date, views_count| %>
               <% visitors_count = (@daily_visitors || {})[date] || 0 %>
-              <% views_h = [((views_count.to_f / max_value) * chart_h).round, 2].max %>
-              <% visitors_h = [((visitors_count.to_f / max_value) * chart_h).round, 2].max %>
+              <% views_h = if views_count.to_i.positive?
+                             [((views_count.to_f / max_value) * chart_h).round, 2].max
+                           else
+                             0
+                           end %>
+              <% visitors_h = if visitors_count.to_i.positive?
+                                [((visitors_count.to_f / max_value) * chart_h).round, 2].max
+                              else
+                                0
+                              end %>
               <div class="flex flex-col items-center gap-1.5 flex-1 min-w-0 group">
                 <div class="w-full flex items-end justify-center gap-px" title="<%= format_chart_date(date) %> — Views: <%= number_with_delimiter(views_count) %>, Visitors: <%= number_with_delimiter(visitors_count) %>">
-                  <div class="flex-1 max-w-[8px] rounded-t bg-primary/80 group-hover:bg-primary transition-colors" style="height:<%= views_h %>px"></div>
-                  <div class="flex-1 max-w-[8px] rounded-t bg-emerald-500/80 group-hover:bg-emerald-500 transition-colors" style="height:<%= visitors_h %>px"></div>
+                  <div
+                    class="flex-1 rounded-t transition-colors group-hover:opacity-90"
+                    style="height:<%= views_h %>px; max-width:8px; background-color:hsl(var(--primary) / 0.75);"
+                  ></div>
+                  <div
+                    class="flex-1 rounded-t transition-colors group-hover:opacity-90"
+                    style="height:<%= visitors_h %>px; max-width:8px; background-color:rgb(16 185 129 / 0.75);"
+                  ></div>
                 </div>
                 <div class="text-[10px] text-muted-foreground truncate w-full text-center"><%= format_chart_date_short(date) %></div>
               </div>
@@ -50,7 +69,8 @@
         </div>
       </div>
     <% else %>
-      <div class="flex items-center justify-center h-40">
+      <div class="flex flex-col items-center justify-center h-44 gap-2">
+        <svg class="w-8 h-8 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
         <p class="text-sm text-muted-foreground"><%= t("ruby_cms.admin.analytics.no_daily_data", default: "No daily activity data") %></p>
       </div>
     <% end %>

@@ -49,16 +49,53 @@ RubyCms.configure do |c|
   # Preview data proc to pass instance variables.
   # c.preview_data = ->(page_key, view) { { products: Product.limit(5) } }
 
-  # Optional hook: customize Ahoy visit scope (e.g. exclude internal traffic)
-  # c.analytics_visit_scope = ->(scope) { scope.where.not(ip: ["127.0.0.1"]) }
+  # Optional hook: filter Ahoy visits before analytics queries run.
+  # Use this to exclude known bots, internal IPs, or staging traffic.
+  # Examples (combine as needed):
+  #
+  #   Exclude localhost + internal subnets:
+  #   c.analytics_visit_scope = ->(scope) {
+  #     scope.where.not(ip: %w[127.0.0.1 ::1])
+  #          .where("ip NOT LIKE '10.%'")
+  #          .where("ip NOT LIKE '192.168.%'")
+  #   }
+  #
+  #   Exclude Ahoy's built-in bot detection (requires Ahoy.bot_detection_enabled = true
+  #   in config/initializers/ahoy.rb, which sets user_agent on the visit):
+  #   c.analytics_visit_scope = ->(scope) {
+  #     scope.where("user_agent NOT REGEXP ?", Ahoy::BOT_AGENTS.join("|"))
+  #   }
+  #
+  #   Simple IP-based staging exclusion:
+  #   INTERNAL_IPS = %w[127.0.0.1 ::1].freeze
+  #   c.analytics_visit_scope = ->(scope) { scope.where.not(ip: INTERNAL_IPS) }
+  #
+  # c.analytics_visit_scope = ->(scope) { scope.where.not(ip: ["127.0.0.1", "::1"]) }
 
-  # Optional hook: customize Ahoy event scope
+  # Optional hook: customize Ahoy event scope (e.g. exclude events from certain visits)
   # c.analytics_event_scope = ->(scope) { scope }
 
   # Optional hook: provide extra dashboard cards
   # c.analytics_extra_cards = lambda do |start_date:, end_date:, period:, visits_scope:, events_scope:|
   #   [{ title: "Custom KPI", value: visits_scope.where.not(utm_source: nil).count }]
   # end
+
+  # Conversion tracking: track goals from host app controllers or form handlers.
+  # Use the EVENT_CONVERSION constant to stay consistent with the analytics dashboard.
+  # Example in a controller action (after a successful form submit):
+  #
+  #   def create
+  #     if @contact.save
+  #       ahoy.track RubyCms::Analytics::Report::EVENT_CONVERSION,
+  #                  goal: "contact_form", path: request.path
+  #       redirect_to success_path
+  #     else
+  #       render :new
+  #     end
+  #   end
+  #
+  # Goal names are free-form strings; keep them consistent so the dashboard groups them.
+  # Recommended goal names: "contact_form", "newsletter_signup", "registration", "purchase"
 
   # -----------------------------------------------------------------------------
   # Optional bootstrap values (initializer -> DB import, once)

@@ -28,6 +28,9 @@ module RubyCms
         - Visitor errors: Automatically captured via ApplicationController (see /admin/visitor_errors)
         - Page views (Ahoy): Include RubyCms::PageTracking in your public controllers to track page views
           Example: class PagesController < ApplicationController; include RubyCms::PageTracking; end
+        - Conversions: Call ahoy.track RubyCms::Analytics::Report::EVENT_CONVERSION, goal: "contact_form"
+          from any controller action (e.g. after a successful form submit). Goal names are free-form strings.
+        - Bot filtering: Set config.ruby_cms.analytics_visit_scope to exclude IPs/bots (see config/initializers/ruby_cms.rb)
         - Analytics: View visit/event data in Ahoy tables (ahoy_visits, ahoy_events)
       TEXT
 

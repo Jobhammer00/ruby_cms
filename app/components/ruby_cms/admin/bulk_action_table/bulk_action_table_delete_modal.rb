@@ -79,10 +79,10 @@ module RubyCms
             data: {
               action: "click->#{@controller_name}#closeDialog"
             },
-            aria_label: "Close"
+            aria_label: t("ruby_cms.admin.bulk_action_table.close", default: "Close")
           ) do
             render_close_icon
-            span(class: "sr-only") { "Close" }
+            span(class: "sr-only") { t("ruby_cms.admin.bulk_action_table.close", default: "Close") }
           end
         end
 
@@ -123,7 +123,7 @@ module RubyCms
             data: {
               "#{@controller_name}-target": "dialogTitle"
             }
-          ) { "Delete Selected Items" }
+          ) { t("ruby_cms.admin.bulk_action_table.delete_selected_items", default: "Delete Selected Items") }
         end
 
         def render_message
@@ -133,8 +133,8 @@ module RubyCms
               "#{@controller_name}-target": "dialogMessage"
             }
           ) do
-            p { "Are you sure you want to delete the selected items?" }
-            p { "This action cannot be undone." }
+            p { t("ruby_cms.admin.bulk_action_table.are_you_sure_you_want_to_delete_the_selected_items", default: "Are you sure you want to delete the selected items?") }
+            p { t("ruby_cms.admin.bulk_action_table.this_action_cannot_be_undone", default: "This action cannot be undone.") }
           end
         end
 
@@ -154,19 +154,19 @@ module RubyCms
             data: {
               action: "click->#{@controller_name}#closeDialog"
             }
-          ) { "Cancel" }
+          ) { t("ruby_cms.admin.bulk_action_table.cancel", default: "Cancel") }
         end
 
         def render_confirm_button
           button(
             type: "button",
             class: "inline-flex h-9 items-center justify-center rounded-md bg-destructive px-4 " \
-                   "text-sm font-medium text-destructive-foreground shadow-sm hover:bg-destructive/90 transition-colors",
+                   "text-sm font-medium text-white font-bold shadow-sm hover:bg-destructive/90 transition-colors",
             data: {
               "#{@controller_name}-target": "dialogConfirmButton",
               action: "click->#{@controller_name}#confirmAction"
             }
-          ) { "Delete Selected" }
+          ) { t("ruby_cms.admin.bulk_action_table.delete_selected", default: "Delete Selected") }
         end
       end
     end

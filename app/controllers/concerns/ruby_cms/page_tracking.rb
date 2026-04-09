@@ -12,6 +12,21 @@ module RubyCms
   # Sets @page_name to controller_name by default. Override in actions:
   #   @page_name = "custom_page_name"
   #
+  # Event naming conventions (keep property keys consistent across the app):
+  #   Page views (tracked automatically):
+  #     ahoy.track RubyCms::Analytics::Report::EVENT_PAGE_VIEW,
+  #                page_name: "home", request_path: request.path
+  #
+  #   Conversions (tracked by host app controllers/forms):
+  #     ahoy.track RubyCms::Analytics::Report::EVENT_CONVERSION,
+  #                goal: "contact_form", path: request.path
+  #     ahoy.track RubyCms::Analytics::Report::EVENT_CONVERSION,
+  #                goal: "newsletter_signup", path: request.path
+  #
+  # Convention for property keys:
+  #   page_view:  page_name (String), request_path (String)
+  #   conversion: goal (String, required), path (String, optional)
+  #
   module PageTracking
     extend ActiveSupport::Concern
 

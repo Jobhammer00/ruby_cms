@@ -1,21 +1,33 @@
-<div class="rounded-lg border border-border/60 bg-white shadow-sm">
-  <div class="px-6 py-4 border-b border-border/40">
-    <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.landing_pages", default: "Landing Pages") %></p>
-    <p class="text-sm text-muted-foreground">First pages visitors see.</p>
+<div class="rounded-xl border border-border/60 bg-white shadow-sm overflow-hidden">
+  <div class="flex items-center gap-3 px-4 py-3 border-b border-border/40">
+    <div class="rounded-md bg-teal-50 p-1.5 flex-shrink-0">
+      <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+    </div>
+    <div>
+      <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.landing_pages", default: "Landing Pages") %></p>
+      <p class="text-xs text-muted-foreground">First pages visitors see</p>
+    </div>
   </div>
 
-  <div class="divide-y divide-border/40">
-    <% if @landing_pages.present? && @landing_pages.any? %>
+  <% if @landing_pages.present? && @landing_pages.any? %>
+    <% total = @landing_pages.values.sum.to_f %>
+    <div class="divide-y divide-border/30">
       <% @landing_pages.first(6).each do |page, count| %>
-        <div class="flex items-center justify-between gap-3 px-6 py-3">
-          <span class="text-sm text-foreground truncate" title="<%= page %>"><%= truncate(page.to_s.gsub(%r{https?://[^/]+}, ''), length: 40) %></span>
-          <span class="text-sm font-semibold tabular-nums text-foreground flex-shrink-0"><%= number_with_delimiter(count) %></span>
+        <% pct = total.positive? ? (count / total * 100).round(1) : 0 %>
+        <div class="relative flex items-center justify-between gap-3 px-4 py-2.5">
+          <div class="absolute inset-y-0 left-0 bg-teal-500/5" style="width: <%= pct %>%"></div>
+          <span class="relative z-10 text-sm text-foreground truncate" title="<%= page %>"><%= truncate(page.to_s.gsub(%r{https?://[^/]+}, ''), length: 38) %></span>
+          <div class="relative z-10 flex items-center gap-2 flex-shrink-0">
+            <span class="text-xs text-muted-foreground tabular-nums"><%= pct %>%</span>
+            <span class="text-sm font-semibold tabular-nums text-foreground"><%= number_with_delimiter(count) %></span>
+          </div>
         </div>
       <% end %>
-    <% else %>
-      <div class="px-6 py-10 text-center">
-        <p class="text-sm text-muted-foreground">No landing page data</p>
-      </div>
-    <% end %>
-  </div>
+    </div>
+  <% else %>
+    <div class="flex flex-col items-center justify-center px-4 py-10 gap-2">
+      <svg class="w-8 h-8 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      <p class="text-sm text-muted-foreground">No landing page data</p>
+    </div>
+  <% end %>
 </div>

@@ -1,13 +1,18 @@
-<div class="rounded-lg border border-border/60 bg-white shadow-sm">
-  <div class="px-4 py-3 border-b border-border/40">
-    <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.browsers_devices", default: "Browsers & Devices") %></p>
-    <p class="text-sm text-muted-foreground">Environment breakdown.</p>
+<div class="rounded-xl border border-border/60 bg-white shadow-sm overflow-hidden">
+  <div class="flex items-center gap-3 px-4 py-3 border-b border-border/40">
+    <div class="rounded-md bg-slate-100 p-1.5 flex-shrink-0">
+      <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+    </div>
+    <div>
+      <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.browsers_devices", default: "Browsers & Devices") %></p>
+      <p class="text-xs text-muted-foreground">Environment breakdown</p>
+    </div>
   </div>
 
-  <div class="px-4 py-3 space-y-3">
+  <div class="px-4 py-3 space-y-4">
     <% if @browser_stats.present? && @browser_stats.any? %>
       <div>
-        <p class="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Browsers</p>
+        <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">Browsers</p>
         <% total = @browser_stats.values.sum.to_f %>
         <div class="space-y-2.5">
           <% @browser_stats.sort_by { |_, v| -v }.first(4).each do |browser, count| %>
@@ -20,8 +25,8 @@
                   <span class="text-sm font-semibold tabular-nums text-foreground"><%= number_with_delimiter(count) %></span>
                 </div>
               </div>
-              <div class="w-full h-1 bg-muted rounded-full overflow-hidden">
-                <div class="h-full bg-primary/60 rounded-full" style="width: <%= pct %>%"></div>
+              <div class="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                <div class="h-full bg-slate-400 rounded-full" style="width: <%= pct %>%"></div>
               </div>
             </div>
           <% end %>
@@ -31,14 +36,14 @@
 
     <% if @device_stats.present? && @device_stats.any? %>
       <div>
-        <p class="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Devices</p>
+        <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">Devices</p>
         <% total = @device_stats.values.sum.to_f %>
-        <div class="flex gap-3">
-          <% @device_stats.sort_by { |_, v| -v }.first(4).each do |device, count| %>
+        <div class="grid grid-cols-3 gap-2">
+          <% @device_stats.sort_by { |_, v| -v }.first(3).each do |device, count| %>
             <% pct = total.positive? ? (count / total * 100).round(0) : 0 %>
-          <div class="flex-1 rounded-lg border border-border/40 bg-muted/30 p-2.5 text-center">
-              <p class="text-lg font-semibold text-foreground tabular-nums"><%= pct %>%</p>
-              <p class="text-xs text-muted-foreground mt-0.5"><%= device %></p>
+            <div class="rounded-lg border border-border/40 bg-muted/30 p-2.5 text-center">
+              <p class="text-lg font-bold text-foreground tabular-nums"><%= pct %>%</p>
+              <p class="text-xs text-muted-foreground mt-0.5 truncate"><%= device %></p>
             </div>
           <% end %>
         </div>
@@ -46,7 +51,8 @@
     <% end %>
 
     <% if (@browser_stats.blank? || @browser_stats.empty?) && (@device_stats.blank? || @device_stats.empty?) %>
-      <div class="py-6 text-center">
+      <div class="flex flex-col items-center justify-center py-6 gap-2">
+        <svg class="w-8 h-8 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
         <p class="text-sm text-muted-foreground"><%= t("ruby_cms.admin.analytics.no_data", default: "No data yet.") %></p>
       </div>
     <% end %>

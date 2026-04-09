@@ -17,6 +17,7 @@ module RubyCms
         )
         @stats = report.dashboard_stats
         @stats.each {|key, value| instance_variable_set(:"@#{key}", value) }
+        @active_users = active_users_count
       end
 
       def page_details
@@ -71,6 +72,17 @@ module RubyCms
 
         redirect_to ruby_cms_admin_analytics_path,
                     alert: "Invalid date range. Maximum range is #{max_days} days."
+      end
+
+      def active_users_count
+        Ahoy::Event
+          .where(name: RubyCms::Analytics::Report::EVENT_PAGE_VIEW)
+          .where(time: 5.minutes.ago..)
+          .joins(:visit)
+          .distinct
+          .count(:visitor_token)
+      rescue StandardError
+        nil
       end
 
       def sanitize_period(value)

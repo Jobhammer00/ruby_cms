@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module RubyCms
-  VERSION = "0.2.0.5"
+  VERSION = "0.2.0.8"
 end

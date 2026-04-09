@@ -166,6 +166,41 @@ module RubyCms
           category: :analytics,
           description: "Events shown on visitor details screen"
         )
+        register(
+          key: :analytics_max_exit_pages,
+          type: :integer,
+          default: 10,
+          category: :analytics,
+          description: "Maximum number of exit pages to show"
+        )
+        register(
+          key: :analytics_max_conversions,
+          type: :integer,
+          default: 10,
+          category: :analytics,
+          description: "Maximum number of conversion goals to show in breakdown"
+        )
+        register(
+          key: :analytics_max_referrers,
+          type: :integer,
+          default: 10,
+          category: :analytics,
+          description: "Maximum number of top referrers to show"
+        )
+        register(
+          key: :analytics_max_landing_pages,
+          type: :integer,
+          default: 10,
+          category: :analytics,
+          description: "Maximum number of top landing pages to show"
+        )
+        register(
+          key: :analytics_max_utm_sources,
+          type: :integer,
+          default: 10,
+          category: :analytics,
+          description: "Maximum number of UTM sources to show"
+        )
 
         # Dashboard
         register(

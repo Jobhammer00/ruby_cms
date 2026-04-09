@@ -14,6 +14,14 @@ module RubyCms
       DEFAULT_RECENT_PAGE_VIEWS_LIMIT = 25
       DEFAULT_PAGE_DETAILS_LIMIT = 100
       DEFAULT_VISITOR_DETAILS_LIMIT = 100
+      DEFAULT_MAX_EXIT_PAGES = 10
+      DEFAULT_MAX_CONVERSIONS = 10
+
+      # Supported Ahoy event names. Use these constants when calling ahoy.track in the host app.
+      #   page_view:  tracked automatically via RubyCms::PageTracking (page_name:, request_path:)
+      #   conversion: tracked by the host app, e.g. ahoy.track "conversion", goal: "contact_form"
+      EVENT_PAGE_VIEW = "page_view"
+      EVENT_CONVERSION = "conversion"
 
       def initialize(start_date:, end_date:, period: nil)
         @start_date = start_date.to_date.beginning_of_day
@@ -84,7 +92,12 @@ module RubyCms
       end
 
       def page_view_events
-        base = Ahoy::Event.where(name: "page_view", time: @range).joins(:visit).merge(visits)
+        base = Ahoy::Event.where(name: EVENT_PAGE_VIEW, time: @range).joins(:visit).merge(visits)
+        apply_event_scope_hook(base)
+      end
+
+      def conversion_events
+        base = Ahoy::Event.where(name: EVENT_CONVERSION, time: @range).joins(:visit).merge(visits)
         apply_event_scope_hook(base)
       end
 
@@ -298,6 +311,102 @@ module RubyCms
         end
       end
 
+      def parse_event_properties(props)
+        return props if props.kind_of?(Hash)
+
+        JSON.parse(props.to_s)
+      rescue StandardError
+        {}
+      end
+
+      def conversion_stats_data
+        limit = RubyCms::Settings.get(:analytics_max_conversions, default: DEFAULT_MAX_CONVERSIONS).to_i
+        total = conversion_events.count
+        grouped = conversion_events.pluck(:properties).each_with_object(Hash.new(0)) do |props, acc|
+          parsed = parse_event_properties(props)
+          goal = parsed["goal"].presence || "unknown"
+          acc[goal] += 1
+        end
+        by_goal = grouped.sort_by {|_, count| -count }.first(limit).to_h
+        { total:, by_goal: }
+      rescue StandardError
+        { total: 0, by_goal: {} }
+      end
+
+      def exit_pages_data
+        limit = RubyCms::Settings.get(:analytics_max_exit_pages, default: DEFAULT_MAX_EXIT_PAGES).to_i
+
+        # Single DB query: subquery finds the latest event time per visit, outer query
+        # counts how often each page_name appears as the last page of a session.
+        last_times_sql = page_view_events
+                         .select(:visit_id, Arel.sql("MAX(ahoy_events.time) AS max_time"))
+                         .group(:visit_id)
+                         .to_sql
+
+        Ahoy::Event
+          .joins("INNER JOIN (#{last_times_sql}) last_pv
+                    ON ahoy_events.visit_id = last_pv.visit_id
+                   AND ahoy_events.time     = last_pv.max_time")
+          .where(name: EVENT_PAGE_VIEW, time: @range)
+          .where.not(page_name: [nil, ""])
+          .group(:page_name)
+          .order(Arel.sql("COUNT(*) DESC"))
+          .limit(limit)
+          .count
+      rescue StandardError
+        {}
+      end
+
+      def previous_period_start
+        @previous_period_start ||= @start_date - days_in_range.days
+      end
+
+      def previous_period_end
+        @previous_period_end ||= @start_date - 1.second
+      end
+
+      def previous_visits
+        base = Ahoy::Visit.where(started_at: previous_period_start..previous_period_end)
+        apply_visit_scope_hook(base)
+      end
+
+      def previous_page_view_events
+        base = Ahoy::Event
+               .where(name: EVENT_PAGE_VIEW, time: previous_period_start..previous_period_end)
+               .joins(:visit)
+               .merge(previous_visits)
+        apply_event_scope_hook(base)
+      end
+
+      def previous_period_totals
+        {
+          total_page_views: previous_page_view_events.count,
+          unique_visitors: previous_visits.distinct.count(:visitor_token),
+          total_sessions: previous_visits.distinct.count(:visit_token)
+        }
+      rescue StandardError
+        {}
+      end
+
+      def compute_delta(current, previous)
+        return nil if previous.to_i.zero?
+
+        ((current.to_f - previous.to_f) / previous.to_f * 100).round(1)
+      end
+
+      def compute_period_deltas(current_views, current_visitors, current_sessions)
+        prev = previous_period_totals
+        return {} if prev.empty?
+
+        {
+          total_page_views: compute_delta(current_views, prev[:total_page_views]),
+          unique_visitors: compute_delta(current_visitors, prev[:unique_visitors]),
+          total_sessions: compute_delta(current_sessions, prev[:total_sessions])
+        }
+      rescue StandardError
+        {}
+      end
+
       def fill_date_gaps(data)
         (@start_date.to_date..@end_date.to_date).each_with_object({}) do |date, acc|
           key = date.strftime("%Y-%m-%d")
@@ -336,12 +445,12 @@ module RubyCms
         total = visits.distinct.count(:visitor_token)
         return 0 unless total.positive?
 
-        returning_tokens = Ahoy::Visit
-                           .where(started_at: ...@start_date)
-                           .distinct
-                           .pluck(:visitor_token)
+        # Subquery keeps everything in the DB; avoids loading all historical tokens into Ruby.
+        returning_subquery = Ahoy::Visit
+                             .where(started_at: ...@start_date)
+                             .select(:visitor_token)
 
-        new_count = visits.where.not(visitor_token: returning_tokens).distinct.count(:visitor_token)
+        new_count = visits.where.not(visitor_token: returning_subquery).distinct.count(:visitor_token)
         ((new_count.to_f / total) * 100).round(0).to_i
       rescue StandardError
         0
@@ -392,7 +501,10 @@ module RubyCms
           os_stats: visits.where.not(os: [nil, ""]).group(:os).count,
           suspicious_activity: suspicious_activity_data,
           recent_page_views: page_view_events.order(time: :desc).limit(recent_page_views_limit),
-          extra_cards: extra_cards_data
+          extra_cards: extra_cards_data,
+          conversions: conversion_stats_data,
+          exit_pages: exit_pages_data,
+          period_deltas: compute_period_deltas(total_views, unique_visitors, total_sessions)
         }
       end
     end

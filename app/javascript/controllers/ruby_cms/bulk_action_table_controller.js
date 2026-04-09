@@ -13,11 +13,38 @@ export default class extends Controller {
     "dialogContent",
     "dialogTitle",
     "dialogMessage",
+    "searchForm",
   ];
   static values = {
     csrfToken: String,
     bulkActionUrl: String,
     itemName: { type: String, default: "item" },
+    processingLabel: { type: String, default: "Processing..." },
+    confirmLabel: { type: String, default: "Confirm" },
+    selectAtLeastOneMessage: {
+      type: String,
+      default: "Please select at least one item.",
+    },
+    itemIdNotFoundMessage: {
+      type: String,
+      default: "Item ID not found for deletion.",
+    },
+    deletePathNotFoundMessage: {
+      type: String,
+      default: "Delete path not found.",
+    },
+    actionUrlNotConfiguredMessage: {
+      type: String,
+      default: "Action URL not configured. Please configure an action URL for this page.",
+    },
+    defaultConfirmMessage: {
+      type: String,
+      default: "Are you sure you want to proceed?",
+    },
+    genericActionErrorMessage: {
+      type: String,
+      default: "An error occurred while performing %{action}.",
+    },
   };
 
   connect() {
@@ -35,12 +62,29 @@ export default class extends Controller {
     // Handle ESC key to close dialog
     this.boundHandleKeydown = this.handleKeydown.bind(this);
     document.addEventListener("keydown", this.boundHandleKeydown);
+    this.searchDebounceTimer = null;
   }
 
   disconnect() {
     if (this.boundHandleKeydown) {
       document.removeEventListener("keydown", this.boundHandleKeydown);
     }
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+      this.searchDebounceTimer = null;
+    }
+  }
+
+  autoSearch() {
+    if (!this.hasSearchFormTarget) return;
+
+    if (this.searchDebounceTimer) {
+      clearTimeout(this.searchDebounceTimer);
+    }
+
+    this.searchDebounceTimer = setTimeout(() => {
+      this.searchFormTarget.requestSubmit();
+    }, 250);
   }
 
   handleKeydown(event) {
@@ -182,7 +226,7 @@ export default class extends Controller {
   showActionDialog(event) {
     const count = this.getSelectedIds().length;
     if (count === 0) {
-      this.showNotification("Please select at least one item.", "error");
+      this.showNotification(this.selectAtLeastOneMessageValue, "error");
       return;
     }
 
@@ -245,13 +289,13 @@ export default class extends Controller {
     if (actionName === "delete") {
       return "Are you sure you want to delete the selected items? This action cannot be undone.";
     }
-    return "Are you sure you want to proceed?";
+    return this.defaultConfirmMessageValue;
   }
 
   redirectToBulkAction(url, actionName) {
     const selectedIds = this.getSelectedIds();
     if (selectedIds.length === 0) {
-      this.showNotification("Please select at least one item.", "error");
+      this.showNotification(this.selectAtLeastOneMessageValue, "error");
       return;
     }
 
@@ -266,9 +310,8 @@ export default class extends Controller {
   }
 
   showDialog() {
-    const label = this.currentActionLabel || "Confirm";
-    const message =
-      this.currentActionConfirm || "Are you sure you want to proceed?";
+    const label = this.currentActionLabel || this.confirmLabelValue;
+    const message = this.currentActionConfirm || this.defaultConfirmMessageValue;
 
     if (this.hasDialogTitleTarget) {
       this.dialogTitleTarget.textContent = label;
@@ -353,7 +396,7 @@ export default class extends Controller {
         event.params.itemId || event.params.rubyCmsBulkActionTableItemIdParam;
 
       if (!itemId) {
-        this.showNotification("Item ID not found for deletion.", "error");
+        this.showNotification(this.itemIdNotFoundMessageValue, "error");
         return;
       }
 
@@ -371,7 +414,7 @@ export default class extends Controller {
           this.getFallbackPath(this.itemNameValue, itemId);
 
         if (!deletePath) {
-          this.showNotification("Delete path not found.", "error");
+          this.showNotification(this.deletePathNotFoundMessageValue, "error");
           return;
         }
 
@@ -424,7 +467,7 @@ export default class extends Controller {
 
     if (this.hasDialogConfirmButtonTarget) {
       this.dialogConfirmButtonTarget.disabled = true;
-      this.dialogConfirmButtonTarget.textContent = "Processing...";
+      this.dialogConfirmButtonTarget.textContent = this.processingLabelValue;
     }
 
     try {
@@ -464,7 +507,7 @@ export default class extends Controller {
     const selectedIds = itemIds || this.getSelectedIds();
 
     if (selectedIds.length === 0) {
-      this.showNotification("Please select at least one item.", "error");
+      this.showNotification(this.selectAtLeastOneMessageValue, "error");
       return;
     }
 
@@ -483,7 +526,7 @@ export default class extends Controller {
 
     if (!actionUrl) {
       this.showNotification(
-        "Action URL not configured. Please configure an action URL for this page.",
+        this.actionUrlNotConfiguredMessageValue,
         "error",
       );
       return;
@@ -522,7 +565,10 @@ export default class extends Controller {
         }
       } else {
         const contentType = response.headers.get("content-type");
-        let errorMessage = `An error occurred while performing ${action}.`;
+        let errorMessage = this.interpolateActionMessage(
+          this.genericActionErrorMessageValue,
+          action,
+        );
 
         if (contentType && contentType.includes("application/json")) {
           try {
@@ -547,10 +593,16 @@ export default class extends Controller {
     } catch (error) {
       console.error(`Error performing bulk action ${action}:`, error);
       this.showNotification(
-        `An error occurred while performing ${action}.`,
+        this.interpolateActionMessage(this.genericActionErrorMessageValue, action),
         "error",
       );
     }
+  }
+
+  interpolateActionMessage(template, action) {
+    const normalizedTemplate =
+      template || "An error occurred while performing %{action}.";
+    return normalizedTemplate.replace("%{action}", action || "action");
   }
 
   showNotification(message, type = "info") {
