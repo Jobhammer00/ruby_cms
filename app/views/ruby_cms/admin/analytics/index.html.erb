@@ -202,8 +202,23 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <%= render "ruby_cms/admin/analytics/partials/exit_pages" %>
-      <%= render "ruby_cms/admin/analytics/partials/conversions" %>
+      <% if lookup_context.exists?("ruby_cms/admin/analytics/partials/exit_pages", [], true) %>
+        <%= render "ruby_cms/admin/analytics/partials/exit_pages" %>
+      <% else %>
+        <div class="rounded-xl border border-border/60 bg-white p-4 shadow-sm">
+          <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.exit_pages", default: "Exit Pages") %></p>
+          <p class="mt-1 text-xs text-muted-foreground"><%= t("ruby_cms.admin.analytics.not_available", default: "Not available in this version.") %></p>
+        </div>
+      <% end %>
+
+      <% if lookup_context.exists?("ruby_cms/admin/analytics/partials/conversions", [], true) %>
+        <%= render "ruby_cms/admin/analytics/partials/conversions" %>
+      <% else %>
+        <div class="rounded-xl border border-border/60 bg-white p-4 shadow-sm">
+          <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.conversions", default: "Conversions") %></p>
+          <p class="mt-1 text-xs text-muted-foreground"><%= t("ruby_cms.admin.analytics.not_available", default: "Not available in this version.") %></p>
+        </div>
+      <% end %>
     </div>
 
     <%# ── Suspicious activity ── %>
