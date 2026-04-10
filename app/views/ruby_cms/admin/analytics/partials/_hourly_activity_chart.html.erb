@@ -13,32 +13,49 @@
     <% if @hourly_activity.present? && @hourly_activity.any? %>
       <%
         hourly_arr = @hourly_activity.is_a?(Hash) ? @hourly_activity.to_a : @hourly_activity
-        labels = hourly_arr.map { |hour, _| "#{hour}:00" }
-        data = hourly_arr.map { |_, count| count.to_i }
-        max_val = data.max || 1
-        colors = data.map { |v| v == max_val ? "rgb(16, 185, 129)" : "rgba(16, 185, 129, 0.5)" }
+        grouped = hourly_arr.each_slice(3).map do |group|
+          hours = group.map(&:first)
+          total = group.sum { |_, c| c.to_i }
+          [hours, total]
+        end
+        max_value = grouped.map { |_, c| c.to_i }.max.to_f
+        max_value = 1.0 unless max_value.positive? && max_value.finite?
+        chart_h = 160
       %>
-      <div style="height: 180px">
-        <canvas
-          data-controller="ruby-cms--chart"
-          data-ruby-cms--chart-type-value="bar"
-          data-ruby-cms--chart-labels-value="<%= labels.to_json %>"
-          data-ruby-cms--chart-datasets-value="<%= [
-            {
-              label: t("ruby_cms.admin.analytics.views", default: "Views"),
-              data: data,
-              backgroundColor: colors,
-              borderRadius: 4,
-              borderSkipped: false,
-              maxBarThickness: 16,
-            }
-          ].to_json %>"
-          data-ruby-cms--chart-options-value="<%= {
-            scales: {
-              y: { ticks: { precision: 0 } }
-            }
-          }.to_json %>"
-        ></canvas>
+
+      <div class="grid grid-cols-[2.75rem_1fr] gap-2">
+        <div class="flex flex-col justify-between text-xs text-muted-foreground tabular-nums" style="height:<%= chart_h %>px">
+          <% [100, 75, 50, 25, 0].each do |pct| %>
+            <div class="text-right"><%= number_with_delimiter((max_value * pct / 100.0).round) %></div>
+          <% end %>
+        </div>
+
+        <div class="relative">
+          <div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
+            <% 5.times do %><div class="h-px bg-border/30"></div><% end %>
+          </div>
+
+          <div class="flex items-end gap-1.5" style="height:<%= chart_h %>px">
+            <% grouped.each do |hours, count| %>
+              <% ratio = count.to_f / max_value %>
+              <% ratio = 0.0 unless ratio.finite? %>
+              <% h = if count.to_i.positive?
+                       [[(ratio * chart_h).round, 2].max, chart_h].min
+                     else
+                       0
+                     end %>
+              <div class="flex flex-col items-center gap-1.5 flex-1 min-w-0 group">
+                <div class="w-full flex items-end justify-center" title="<%= hours.size > 1 ? "#{hours.first}:00–#{hours.last}:00" : "#{hours.first}:00" %> — <%= number_with_delimiter(count) %> views">
+                  <div
+                    class="w-full rounded-t transition-colors group-hover:opacity-90"
+                    style="height:<%= h %>px; max-width:12px; background-color:rgb(16 185 129 / 0.75);"
+                  ></div>
+                </div>
+                <div class="text-[10px] text-muted-foreground truncate w-full text-center"><%= hours.size > 1 ? "#{hours.first}–#{hours.last}h" : "#{hours.first}h" %></div>
+              </div>
+            <% end %>
+          </div>
+        </div>
       </div>
     <% else %>
       <div class="flex flex-col items-center justify-center h-44 gap-2">

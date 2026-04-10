@@ -13,7 +13,6 @@ import AutoSavePreferenceController from "ruby_cms/auto_save_preference_controll
 import NavOrderSortableController from "ruby_cms/nav_order_sortable_controller";
 import ContentBlockHistoryController from "ruby_cms/content_block_history_controller";
 import AdminCommandsController from "ruby_cms/admin_commands_controller";
-import ChartController from "ruby_cms/chart_controller";
 
 
 export {
@@ -29,7 +28,6 @@ export {
   NavOrderSortableController,
   ContentBlockHistoryController,
   AdminCommandsController,
-  ChartController,
 };
 
 // Helper function to register all RubyCms controllers with a Stimulus application
@@ -51,7 +49,6 @@ export function registerRubyCmsControllers(application) {
   application.register("ruby-cms--locale-tabs", LocaleTabsController);
   application.register("ruby-cms--content-block-history", ContentBlockHistoryController);
   application.register("ruby-cms--admin-commands", AdminCommandsController);
-  application.register("ruby-cms--chart", ChartController);
   application.register("clickable-row", ClickableRowController);
   application.register(
     "ruby-cms--auto-save-preference",

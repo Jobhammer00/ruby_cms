@@ -10,36 +10,19 @@
   </div>
 
   <% if @utm_sources.present? && @utm_sources.any? %>
-    <%
-      utm_sorted = @utm_sources.first(6).to_a
-      utm_labels = utm_sorted.map(&:first)
-      utm_data = utm_sorted.map(&:last)
-    %>
-    <div class="px-4 py-3">
-      <div style="height: <%= [utm_sorted.size * 32, 100].max %>px">
-        <canvas
-          data-controller="ruby-cms--chart"
-          data-ruby-cms--chart-type-value="bar"
-          data-ruby-cms--chart-labels-value="<%= utm_labels.to_json %>"
-          data-ruby-cms--chart-datasets-value="<%= [
-            {
-              data: utm_data,
-              backgroundColor: "rgba(249, 115, 22, 0.6)",
-              hoverBackgroundColor: "rgba(249, 115, 22, 0.8)",
-              borderRadius: 4,
-              borderSkipped: false,
-              maxBarThickness: 18,
-            }
-          ].to_json %>"
-          data-ruby-cms--chart-options-value="<%= {
-            indexAxis: "y",
-            scales: {
-              x: { ticks: { precision: 0 } },
-              y: { ticks: { font: { size: 11 } } }
-            }
-          }.to_json %>"
-        ></canvas>
-      </div>
+    <% total = @utm_sources.values.sum.to_f %>
+    <div class="divide-y divide-border/30">
+      <% @utm_sources.first(6).each do |source, count| %>
+        <% pct = total.positive? ? (count / total * 100).round(1) : 0 %>
+        <div class="relative flex items-center justify-between gap-3 px-4 py-2.5">
+          <div class="absolute inset-y-0 left-0 bg-orange-500/5" style="width: <%= pct %>%"></div>
+          <span class="relative z-10 text-sm text-foreground truncate"><%= source %></span>
+          <div class="relative z-10 flex items-center gap-2 flex-shrink-0">
+            <span class="text-xs text-muted-foreground tabular-nums"><%= pct %>%</span>
+            <span class="text-sm font-semibold tabular-nums text-foreground"><%= number_with_delimiter(count) %></span>
+          </div>
+        </div>
+      <% end %>
     </div>
   <% else %>
     <div class="flex flex-col items-center justify-center px-4 py-10 gap-2">

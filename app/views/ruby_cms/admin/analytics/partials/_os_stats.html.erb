@@ -10,44 +10,23 @@
   </div>
 
   <% if @os_stats.present? && @os_stats.any? %>
-    <%
-      os_sorted = @os_stats.sort_by { |_, v| -v }.first(6)
-      os_labels = os_sorted.map(&:first)
-      os_data = os_sorted.map(&:last)
-      os_colors = ["#6366f1", "#818cf8", "#a5b4fc", "#c7d2fe", "#ddd6fe", "#e0e7ff"]
-    %>
-    <div class="px-4 py-3">
-      <div class="flex items-center gap-4">
-        <div style="width: 120px; height: 120px" class="flex-shrink-0">
-          <canvas
-            data-controller="ruby-cms--chart"
-            data-ruby-cms--chart-type-value="doughnut"
-            data-ruby-cms--chart-labels-value="<%= os_labels.to_json %>"
-            data-ruby-cms--chart-datasets-value="<%= [
-              {
-                data: os_data,
-                backgroundColor: os_colors.first(os_sorted.size),
-                borderWidth: 0,
-                hoverOffset: 4,
-              }
-            ].to_json %>"
-            data-ruby-cms--chart-options-value="<%= {
-              cutout: "65%"
-            }.to_json %>"
-          ></canvas>
-        </div>
-        <div class="flex-1 space-y-1.5 min-w-0">
-          <% total = @os_stats.values.sum.to_f %>
-          <% os_sorted.each_with_index do |(os, count), i| %>
-            <% pct = total.positive? ? (count / total * 100).round(1) : 0 %>
-            <div class="flex items-center gap-2 text-sm">
-              <span class="h-2.5 w-2.5 rounded-sm flex-shrink-0" style="background-color: <%= os_colors[i] %>"></span>
-              <span class="text-foreground truncate flex-1"><%= os %></span>
-              <span class="text-muted-foreground tabular-nums text-xs flex-shrink-0"><%= pct %>%</span>
+    <% total = @os_stats.values.sum.to_f %>
+    <div class="px-4 py-3 space-y-2.5">
+      <% @os_stats.sort_by { |_, v| -v }.first(6).each do |os, count| %>
+        <% pct = total.positive? ? (count / total * 100).round(1) : 0 %>
+        <div>
+          <div class="flex items-center justify-between gap-3 mb-1">
+            <span class="text-sm text-foreground"><%= os %></span>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <span class="text-xs text-muted-foreground tabular-nums"><%= pct %>%</span>
+              <span class="text-sm font-semibold tabular-nums text-foreground"><%= number_with_delimiter(count) %></span>
             </div>
-          <% end %>
+          </div>
+          <div class="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+            <div class="h-full bg-indigo-400 rounded-full" style="width: <%= pct %>%"></div>
+          </div>
         </div>
-      </div>
+      <% end %>
     </div>
   <% else %>
     <div class="flex flex-col items-center justify-center px-4 py-10 gap-2">
