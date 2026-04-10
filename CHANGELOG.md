@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.2.1.0] - 2026-04-10
+
+- Analytics rework and dashboard changes
+
 ## [0.2.0.8] - 2026-04-09
 
 - Analytics performance: migration adds `ahoy_events (name, time)`, `ahoy_events (visit_id, time)`, `ahoy_visits (started_at)`, `ahoy_visits (visitor_token)` indexes
