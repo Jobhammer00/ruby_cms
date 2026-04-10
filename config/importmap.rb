@@ -38,3 +38,6 @@ pin "ruby_cms/content_block_history_controller",
     to: "controllers/ruby_cms/content_block_history_controller.js"
 pin "ruby_cms/admin_commands_controller",
     to: "controllers/ruby_cms/admin_commands_controller.js"
+pin "ruby_cms/chart_controller", to: "controllers/ruby_cms/chart_controller.js"
+
+pin "chart.js", to: "https://cdn.jsdelivr.net/npm/chart.js@4/+esm"

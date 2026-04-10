@@ -10,7 +10,7 @@
       </div>
     </div>
     <div class="flex items-center gap-4 text-xs text-muted-foreground flex-shrink-0">
-      <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-primary"></span><%= t("ruby_cms.admin.analytics.views", default: "Views") %></span>
+      <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full" style="background-color: hsl(var(--primary))"></span><%= t("ruby_cms.admin.analytics.views", default: "Views") %></span>
       <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-emerald-500"></span><%= t("ruby_cms.admin.analytics.visitors", default: "Visitors") %></span>
     </div>
   </div>
@@ -19,54 +19,56 @@
     <% if @daily_activity.present? && @daily_activity.any? %>
       <%
         daily_arr = @daily_activity.is_a?(Hash) ? @daily_activity.to_a : @daily_activity
-        max_views = daily_arr.map { |_k, v| v.to_i }.max || 0
-        max_visitors = (@daily_visitors || {}).values.map(&:to_i).max || 0
-        max_value = [max_views, max_visitors].max
-        max_value = 1 if max_value.zero?
-        chart_h = 160
+        labels = daily_arr.map { |date, _| format_chart_date_short(date) }
+        views_data = daily_arr.map { |_, v| v.to_i }
+        visitors_data = daily_arr.map { |date, _| (@daily_visitors || {})[date].to_i }
       %>
-
-      <div class="grid grid-cols-[2.75rem_1fr] gap-2">
-        <div class="flex flex-col justify-between text-xs text-muted-foreground tabular-nums" style="height:<%= chart_h %>px">
-          <% [100, 75, 50, 25, 0].each do |pct| %>
-            <div class="text-right"><%= number_with_delimiter((max_value * pct / 100.0).round) %></div>
-          <% end %>
-        </div>
-
-        <div class="relative">
-          <div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
-            <% 5.times do %><div class="h-px bg-border/30"></div><% end %>
-          </div>
-
-          <div class="flex items-end gap-1" style="height:<%= chart_h %>px">
-            <% daily_arr.each do |date, views_count| %>
-              <% visitors_count = (@daily_visitors || {})[date] || 0 %>
-              <% views_h = if views_count.to_i.positive?
-                             [((views_count.to_f / max_value) * chart_h).round, 2].max
-                           else
-                             0
-                           end %>
-              <% visitors_h = if visitors_count.to_i.positive?
-                                [((visitors_count.to_f / max_value) * chart_h).round, 2].max
-                              else
-                                0
-                              end %>
-              <div class="flex flex-col items-center gap-1.5 flex-1 min-w-0 group">
-                <div class="w-full flex items-end justify-center gap-px" title="<%= format_chart_date(date) %> — Views: <%= number_with_delimiter(views_count) %>, Visitors: <%= number_with_delimiter(visitors_count) %>">
-                  <div
-                    class="flex-1 rounded-t transition-colors group-hover:opacity-90"
-                    style="height:<%= views_h %>px; max-width:8px; background-color:hsl(var(--primary) / 0.75);"
-                  ></div>
-                  <div
-                    class="flex-1 rounded-t transition-colors group-hover:opacity-90"
-                    style="height:<%= visitors_h %>px; max-width:8px; background-color:rgb(16 185 129 / 0.75);"
-                  ></div>
-                </div>
-                <div class="text-[10px] text-muted-foreground truncate w-full text-center"><%= format_chart_date_short(date) %></div>
-              </div>
-            <% end %>
-          </div>
-        </div>
+      <div style="height: 200px">
+        <canvas
+          data-controller="ruby-cms--chart"
+          data-ruby-cms--chart-type-value="line"
+          data-ruby-cms--chart-labels-value="<%= labels.to_json %>"
+          data-ruby-cms--chart-datasets-value="<%= [
+            {
+              label: t("ruby_cms.admin.analytics.views", default: "Views"),
+              data: views_data,
+              borderColor: "hsl(210, 85%, 36%)",
+              backgroundColor: "hsla(210, 85%, 36%, 0.08)",
+              borderWidth: 2,
+              fill: true,
+              tension: 0.35,
+              pointRadius: 0,
+              pointHitRadius: 20,
+              pointHoverRadius: 4,
+              pointHoverBackgroundColor: "hsl(210, 85%, 36%)",
+            },
+            {
+              label: t("ruby_cms.admin.analytics.visitors", default: "Visitors"),
+              data: visitors_data,
+              borderColor: "rgb(16, 185, 129)",
+              backgroundColor: "rgba(16, 185, 129, 0.06)",
+              borderWidth: 2,
+              fill: true,
+              tension: 0.35,
+              pointRadius: 0,
+              pointHitRadius: 20,
+              pointHoverRadius: 4,
+              pointHoverBackgroundColor: "rgb(16, 185, 129)",
+            }
+          ].to_json %>"
+          data-ruby-cms--chart-options-value="<%= {
+            plugins: {
+              tooltip: {
+                callbacks: {}
+              }
+            },
+            scales: {
+              y: {
+                ticks: { precision: 0 }
+              }
+            }
+          }.to_json %>"
+        ></canvas>
       </div>
     <% else %>
       <div class="flex flex-col items-center justify-center h-44 gap-2">

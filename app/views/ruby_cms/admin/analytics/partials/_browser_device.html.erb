@@ -11,41 +11,92 @@
 
   <div class="px-4 py-3 space-y-4">
     <% if @browser_stats.present? && @browser_stats.any? %>
+      <%
+        browser_sorted = @browser_stats.sort_by { |_, v| -v }.first(5)
+        browser_labels = browser_sorted.map(&:first)
+        browser_data = browser_sorted.map(&:last)
+        browser_colors = ["#6366f1", "#8b5cf6", "#a78bfa", "#c4b5fd", "#ddd6fe"]
+      %>
       <div>
         <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">Browsers</p>
-        <% total = @browser_stats.values.sum.to_f %>
-        <div class="space-y-2.5">
-          <% @browser_stats.sort_by { |_, v| -v }.first(4).each do |browser, count| %>
-            <% pct = total.positive? ? (count / total * 100).round(1) : 0 %>
-            <div>
-              <div class="flex items-center justify-between gap-3 mb-1">
-                <span class="text-sm text-foreground"><%= browser %></span>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                  <span class="text-xs text-muted-foreground tabular-nums"><%= pct %>%</span>
-                  <span class="text-sm font-semibold tabular-nums text-foreground"><%= number_with_delimiter(count) %></span>
-                </div>
+        <div class="flex items-center gap-4">
+          <div style="width: 120px; height: 120px" class="flex-shrink-0">
+            <canvas
+              data-controller="ruby-cms--chart"
+              data-ruby-cms--chart-type-value="doughnut"
+              data-ruby-cms--chart-labels-value="<%= browser_labels.to_json %>"
+              data-ruby-cms--chart-datasets-value="<%= [
+                {
+                  data: browser_data,
+                  backgroundColor: browser_colors.first(browser_sorted.size),
+                  borderWidth: 0,
+                  hoverOffset: 4,
+                }
+              ].to_json %>"
+              data-ruby-cms--chart-options-value="<%= {
+                cutout: "65%",
+                plugins: {
+                  tooltip: {
+                    callbacks: {}
+                  }
+                }
+              }.to_json %>"
+            ></canvas>
+          </div>
+          <div class="flex-1 space-y-1.5 min-w-0">
+            <% total = @browser_stats.values.sum.to_f %>
+            <% browser_sorted.each_with_index do |(browser, count), i| %>
+              <% pct = total.positive? ? (count / total * 100).round(1) : 0 %>
+              <div class="flex items-center gap-2 text-sm">
+                <span class="h-2.5 w-2.5 rounded-sm flex-shrink-0" style="background-color: <%= browser_colors[i] %>"></span>
+                <span class="text-foreground truncate flex-1"><%= browser %></span>
+                <span class="text-muted-foreground tabular-nums text-xs flex-shrink-0"><%= pct %>%</span>
               </div>
-              <div class="w-full h-1.5 bg-muted rounded-full overflow-hidden">
-                <div class="h-full bg-slate-400 rounded-full" style="width: <%= pct %>%"></div>
-              </div>
-            </div>
-          <% end %>
+            <% end %>
+          </div>
         </div>
       </div>
     <% end %>
 
     <% if @device_stats.present? && @device_stats.any? %>
+      <%
+        device_sorted = @device_stats.sort_by { |_, v| -v }.first(3)
+        device_labels = device_sorted.map(&:first)
+        device_data = device_sorted.map(&:last)
+        device_colors = ["#0ea5e9", "#38bdf8", "#7dd3fc"]
+      %>
       <div>
         <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2.5">Devices</p>
-        <% total = @device_stats.values.sum.to_f %>
-        <div class="grid grid-cols-3 gap-2">
-          <% @device_stats.sort_by { |_, v| -v }.first(3).each do |device, count| %>
-            <% pct = total.positive? ? (count / total * 100).round(0) : 0 %>
-            <div class="rounded-lg border border-border/40 bg-muted/30 p-2.5 text-center">
-              <p class="text-lg font-bold text-foreground tabular-nums"><%= pct %>%</p>
-              <p class="text-xs text-muted-foreground mt-0.5 truncate"><%= device %></p>
-            </div>
-          <% end %>
+        <div class="flex items-center gap-4">
+          <div style="width: 120px; height: 120px" class="flex-shrink-0">
+            <canvas
+              data-controller="ruby-cms--chart"
+              data-ruby-cms--chart-type-value="doughnut"
+              data-ruby-cms--chart-labels-value="<%= device_labels.to_json %>"
+              data-ruby-cms--chart-datasets-value="<%= [
+                {
+                  data: device_data,
+                  backgroundColor: device_colors.first(device_sorted.size),
+                  borderWidth: 0,
+                  hoverOffset: 4,
+                }
+              ].to_json %>"
+              data-ruby-cms--chart-options-value="<%= {
+                cutout: "65%"
+              }.to_json %>"
+            ></canvas>
+          </div>
+          <div class="flex-1 space-y-1.5 min-w-0">
+            <% total = @device_stats.values.sum.to_f %>
+            <% device_sorted.each_with_index do |(device, count), i| %>
+              <% pct = total.positive? ? (count / total * 100).round(0) : 0 %>
+              <div class="flex items-center gap-2 text-sm">
+                <span class="h-2.5 w-2.5 rounded-sm flex-shrink-0" style="background-color: <%= device_colors[i] %>"></span>
+                <span class="text-foreground truncate flex-1"><%= device %></span>
+                <span class="text-muted-foreground tabular-nums text-xs flex-shrink-0"><%= pct %>%</span>
+              </div>
+            <% end %>
+          </div>
         </div>
       </div>
     <% end %>
