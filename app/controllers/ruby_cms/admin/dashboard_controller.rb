@@ -26,9 +26,8 @@ module RubyCms
 
       def assign_dashboard_blocks
         visible = RubyCms.visible_dashboard_blocks(user: current_user_cms)
-        @stats_blocks = visible
-                        .select {|b| b[:section] == :stats }
-                        .map {|b| prepare_dashboard_block(b) }
+        # Top :stats row (pages, users, permissions, errors) is not rendered on the dashboard layout.
+        @stats_blocks = []
         main = visible
                .select {|b| b[:section] == :main }
                .map {|b| prepare_dashboard_block(b) }

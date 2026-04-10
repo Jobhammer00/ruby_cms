@@ -1,65 +1,313 @@
-<div class="rounded-xl border border-border/60 bg-white shadow-sm overflow-hidden">
-  <div class="flex items-center gap-3 px-4 py-3 border-b border-border/40">
-    <div class="rounded-md bg-emerald-50 p-1.5 flex-shrink-0">
-      <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+<%
+  chart_id   = "rcms-hourly-#{SecureRandom.hex(4)}"
+  hourly_arr = @hourly_activity.is_a?(Hash) ? @hourly_activity.to_a : (@hourly_activity || [])
+  has_data   = hourly_arr.present? && hourly_arr.any?
+
+  grouped = hourly_arr.each_slice(3).map do |group|
+    hours = group.map(&:first)
+    total = group.sum { |_, c| c.to_i }
+    [hours, total]
+  end
+
+  max_value  = grouped.map { |_, c| c.to_i }.max.to_f
+  max_value  = 1.0 unless max_value.positive? && max_value.finite?
+  chart_h    = 180
+  bar_area_h = chart_h - 20
+
+  peak       = grouped.max_by { |_, c| c }
+  peak_label = peak ? "#{peak[0].first}:00–#{peak[0].last}:59" : nil
+  peak_count = peak ? peak[1] : 0
+  n_slots    = [grouped.size.to_f, 1.0].max
+  total_slot_views = grouped.sum { |_, c| c.to_i }
+  line_pts_hourly = grouped.each_with_index.map { |(hours, count), i|
+    vx = ((i + 0.5) / n_slots) * 100.0
+    vy = 100.0 - (max_value.positive? ? (count.to_f / max_value * 100.0) : 0.0)
+    "#{vx.round(4)},#{vy.round(4)}"
+  }.join(" ")
+  plot_scroll_min_w = [grouped.size * 32 + 56, 280].max
+%>
+
+<div class="min-w-0 rounded-xl border border-border/60 bg-white shadow-sm">
+
+  <%# ── Header ── %>
+  <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-border/40">
+    <div class="flex items-center gap-3">
+      <div class="rounded-md bg-sky-50 p-1.5 flex-shrink-0">
+        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </div>
+      <div>
+        <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.hourly_activity", default: "Hourly Activity") %></p>
+        <p class="text-xs text-muted-foreground"><%= t("ruby_cms.admin.analytics.views_by_hour", default: "Views by hour of day") %></p>
+      </div>
     </div>
-    <div>
-      <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.hourly_activity", default: "Hourly Activity") %></p>
-      <p class="text-xs text-muted-foreground"><%= t("ruby_cms.admin.analytics.views_by_hour", default: "Views by hour of day") %></p>
+
+    <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0 flex-wrap justify-end">
+      <% if has_data && peak_label %>
+        <div class="hidden sm:flex items-center gap-1.5 rounded-full bg-sky-50 border border-sky-100 px-2.5 py-1">
+          <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+          </svg>
+          <span class="text-xs font-medium text-sky-800">Peak <%= peak_label %></span>
+          <span class="text-xs font-semibold tabular-nums text-blue-900"><%= number_with_delimiter(peak_count) %></span>
+        </div>
+      <% end %>
+      <% if has_data %>
+        <div class="rcms-chart-mode-toggle inline-flex rounded-lg border border-border/60 bg-muted/30 p-0.5 text-[11px] font-medium"
+             role="group"
+             data-rcms-chart="<%= chart_id %>"
+             aria-label="<%= t('ruby_cms.admin.analytics.chart_display', default: 'Chart display') %>">
+          <button type="button"
+                  class="rcms-mode-btn px-2 py-1 rounded-md transition-colors text-muted-foreground hover:text-foreground"
+                  data-mode="bars"
+                  aria-pressed="true">
+            <%= t("ruby_cms.admin.analytics.chart_bars", default: "Bars") %>
+          </button>
+          <button type="button"
+                  class="rcms-mode-btn px-2 py-1 rounded-md transition-colors text-muted-foreground hover:text-foreground"
+                  data-mode="line"
+                  aria-pressed="false">
+            <%= t("ruby_cms.admin.analytics.chart_line", default: "Line") %>
+          </button>
+        </div>
+      <% end %>
     </div>
   </div>
 
-  <div class="px-4 py-4">
-    <% if @hourly_activity.present? && @hourly_activity.any? %>
-      <%
-        hourly_arr = @hourly_activity.is_a?(Hash) ? @hourly_activity.to_a : @hourly_activity
-        grouped = hourly_arr.each_slice(3).map do |group|
-          hours = group.map(&:first)
-          total = group.sum { |_, c| c.to_i }
-          [hours, total]
-        end
-        max_value = grouped.map { |_, c| c.to_i }.max.to_f
-        max_value = 1.0 unless max_value.positive? && max_value.finite?
-        chart_h = 160
-      %>
+  <%# ── Chart body ── %>
+  <div class="min-w-0 px-4 py-4">
+    <% if has_data %>
+      <div id="<%= chart_id %>" class="relative min-w-0 select-none">
 
-      <div class="grid grid-cols-[2.75rem_1fr] gap-2">
-        <div class="flex flex-col justify-between text-xs text-muted-foreground tabular-nums" style="height:<%= chart_h %>px">
-          <% [100, 75, 50, 25, 0].each do |pct| %>
-            <div class="text-right"><%= number_with_delimiter((max_value * pct / 100.0).round) %></div>
-          <% end %>
+        <%# Hover info card %>
+        <div id="<%= chart_id %>-tip"
+             role="tooltip"
+             class="pointer-events-none absolute z-[100] hidden min-w-[10rem] max-w-[16rem]">
         </div>
 
-        <div class="relative">
-          <div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
-            <% 5.times do %><div class="h-px bg-border/30"></div><% end %>
+        <div class="w-full min-w-0 overflow-x-auto overflow-y-visible overscroll-x-contain">
+          <div class="min-w-0" style="width:max(100%,<%= plot_scroll_min_w %>px)">
+            <div class="grid min-w-0 gap-2" style="grid-template-columns:2.75rem minmax(0,1fr);">
+
+          <%# Y-axis %>
+          <div class="flex flex-col justify-between text-right text-xs text-muted-foreground tabular-nums" style="height:<%= chart_h %>px; padding-bottom:20px;">
+            <% [100, 75, 50, 25, 0].each do |pct| %>
+              <div class="leading-none"><%= number_with_delimiter((max_value * pct / 100.0).round) %></div>
+            <% end %>
           </div>
 
-          <div class="flex items-end gap-1.5" style="height:<%= chart_h %>px">
-            <% grouped.each do |hours, count| %>
-              <% ratio = count.to_f / max_value %>
-              <% ratio = 0.0 unless ratio.finite? %>
-              <% h = if count.to_i.positive?
-                       [[(ratio * chart_h).round, 2].max, chart_h].min
-                     else
-                       0
-                     end %>
-              <div class="flex flex-col items-center gap-1.5 flex-1 min-w-0 group">
-                <div class="w-full flex items-end justify-center" title="<%= hours.size > 1 ? "#{hours.first}:00–#{hours.last}:00" : "#{hours.first}:00" %> — <%= number_with_delimiter(count) %> views">
-                  <div
-                    class="w-full rounded-t transition-colors group-hover:opacity-90"
-                    style="height:<%= h %>px; max-width:12px; background-color:rgb(16 185 129 / 0.75);"
-                  ></div>
+          <%# Plot area %>
+          <div class="relative min-w-0" style="height:<%= chart_h %>px;">
+
+            <%# Grid lines %>
+            <div class="absolute inset-0 flex flex-col justify-between pointer-events-none" style="padding-bottom:20px;">
+              <% 5.times do %><div style="border-top:1px solid hsl(var(--border,214 32% 91%) / 0.3);"></div><% end %>
+            </div>
+
+            <%# Line chart %>
+            <div class="rcms-line-layer absolute left-0 right-0 pointer-events-none z-[1] hidden"
+                 style="height:<%= bar_area_h %>px; top:0;"
+                 aria-hidden="true">
+              <svg class="w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <polyline class="rcms-line-hourly" fill="none" stroke="rgb(37 99 235)" stroke-width="1.25" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round" points="<%= line_pts_hourly %>"/>
+              </svg>
+            </div>
+
+            <%# Bars %>
+            <div class="rcms-bars-layer flex items-end gap-1 relative z-[2]" style="height:<%= chart_h %>px;">
+              <% grouped.each do |hours, count| %>
+                <%
+                  ratio = count.to_f / max_value
+                  ratio = 0.0 unless ratio.finite?
+                  h     = count.to_i.positive? ? [[(ratio * bar_area_h).round, 2].max, bar_area_h].min : 0
+                  range = hours.size > 1 ? "#{hours.first}:00 – #{hours.last}:59" : "#{hours.first}:00"
+                  short = hours.size > 1 ? "#{hours.first}–#{hours.last}h" : "#{hours.first}h"
+                  is_peak = peak && hours == peak[0]
+                  pct_of_day = total_slot_views.positive? ? (100.0 * count.to_i / total_slot_views) : 0.0
+                %>
+                <div class="rcms-bar-group flex flex-col items-center flex-1 min-w-0 cursor-default"
+                     data-label="<%= range %>"
+                     data-views="<%= number_with_delimiter(count) %>"
+                     data-pct-of-day="<%= sprintf('%.1f', pct_of_day) %>"
+                     data-is-peak="<%= is_peak ? '1' : '0' %>"
+                     data-max-scale="<%= number_with_delimiter(max_value.round) %>"
+                     data-total-views="<%= number_with_delimiter(total_slot_views) %>">
+                  <div class="w-full flex items-end justify-center rcms-bar-stack" style="height:<%= bar_area_h %>px;">
+                    <div class="rcms-bar w-full rounded-t-sm"
+                         style="height:<%= h %>px; max-width:14px; background:rgb(37 99 235 / <%= is_peak ? '1' : '0.82' %>); transition:opacity .12s,filter .12s;"></div>
+                  </div>
+                  <div class="text-muted-foreground truncate w-full text-center leading-none"
+                       style="font-size:10px; height:20px; padding-top:5px;"><%= short %></div>
                 </div>
-                <div class="text-[10px] text-muted-foreground truncate w-full text-center"><%= hours.size > 1 ? "#{hours.first}–#{hours.last}h" : "#{hours.first}h" %></div>
-              </div>
-            <% end %>
+              <% end %>
+            </div>
+
+          </div>
+            </div>
           </div>
         </div>
       </div>
+
+      <script>
+      (function() {
+        var BLUE = "rgb(37 99 235)";
+        var MODE_KEY = "ruby_cms.analytics.hourlyChartMode";
+
+        function escapeHtml(s) {
+          return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+        }
+
+        function init() {
+          var chart = document.getElementById("<%= chart_id %>");
+          if (!chart || chart.__rcmsInit) return;
+          chart.__rcmsInit = true;
+
+          var tip       = document.getElementById("<%= chart_id %>-tip");
+          var groups    = chart.querySelectorAll(".rcms-bar-group");
+          var allBars   = chart.querySelectorAll(".rcms-bar");
+          var lineLayer = chart.querySelector(".rcms-line-layer");
+          var barsLayer = chart.querySelector(".rcms-bars-layer");
+          var linePolys = lineLayer ? lineLayer.querySelectorAll("polyline") : [];
+          var toggles   = document.querySelectorAll('.rcms-chart-mode-toggle[data-rcms-chart="<%= chart_id %>"] .rcms-mode-btn');
+
+          function setMode(mode) {
+            var isLine = mode === "line";
+            if (lineLayer) lineLayer.classList.toggle("hidden", !isLine);
+            if (barsLayer) {
+              barsLayer.querySelectorAll(".rcms-bar-stack").forEach(function(el) {
+                el.style.visibility = isLine ? "hidden" : "visible";
+              });
+            }
+            linePolys.forEach(function(p) {
+              p.style.opacity = isLine ? "1" : "0";
+            });
+            toggles.forEach(function(btn) {
+              var active = btn.getAttribute("data-mode") === mode;
+              btn.setAttribute("aria-pressed", active ? "true" : "false");
+              btn.classList.toggle("bg-background", active);
+              btn.classList.toggle("text-foreground", active);
+              btn.classList.toggle("shadow-sm", active);
+            });
+            try { localStorage.setItem(MODE_KEY, mode); } catch (e) {}
+          }
+
+          try {
+            var saved = localStorage.getItem(MODE_KEY);
+            if (saved === "line" || saved === "bars") setMode(saved);
+            else setMode("bars");
+          } catch (e) {
+            setMode("bars");
+          }
+
+          toggles.forEach(function(btn) {
+            btn.addEventListener("click", function() {
+              setMode(btn.getAttribute("data-mode") || "bars");
+            });
+          });
+
+          groups.forEach(function(group) {
+            group.addEventListener("mouseenter", function() {
+              var isLine = lineLayer && !lineLayer.classList.contains("hidden");
+              if (!isLine) {
+                allBars.forEach(function(b) { b.style.opacity = "0.35"; b.style.filter = ""; });
+                group.querySelectorAll(".rcms-bar").forEach(function(b) {
+                  b.style.opacity = "1";
+                  b.style.filter  = "brightness(1.08)";
+                });
+              } else {
+                linePolys.forEach(function(p) { p.style.opacity = "0.35"; });
+              }
+
+              var label = group.dataset.label || "";
+              var views = group.dataset.views || "0";
+              var pct   = group.dataset.pctOfDay || "0";
+              var isPk  = group.dataset.isPeak === "1";
+              var scale = group.dataset.maxScale || "";
+              var total = group.dataset.totalViews || "";
+              var modeLabel = isLine ? "Line chart" : "Bar chart";
+
+              tip.innerHTML =
+                '<div class="overflow-hidden rounded-xl border border-slate-200/90 bg-white text-xs text-slate-800 shadow-[0_10px_38px_-12px_rgba(15,23,42,0.28)]">' +
+                  '<div class="border-b border-slate-100 bg-gradient-to-br from-sky-50 via-white to-white px-3 py-2">' +
+                    '<p class="text-[13px] font-semibold leading-snug tracking-tight text-slate-900">' + escapeHtml(label) + "</p>" +
+                    '<p class="mt-1 text-[10px] leading-relaxed text-slate-500">' +
+                      "Scale 0–" + escapeHtml(scale) + " · " + modeLabel + " · Day total " + escapeHtml(total) + " views" +
+                    "</p>" +
+                  "</div>" +
+                  '<div class="bg-white px-3 py-2.5">' +
+                    '<div class="flex gap-2.5">' +
+                      '<span class="mt-0.5 h-2 w-2 shrink-0 rounded-full shadow-sm ring-2 ring-white" style="background:' + BLUE + ';box-shadow:0 0 0 1px rgba(15,23,42,0.06)"></span>' +
+                      '<div class="min-w-0 flex-1">' +
+                        '<p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">This block</p>' +
+                        '<p class="mt-0.5 text-sm font-semibold tabular-nums text-slate-900">' + escapeHtml(views) +
+                        ' <span class="text-[11px] font-medium text-slate-400">(' + escapeHtml(pct) + "% of day)</span></p>" +
+                      "</div>" +
+                    "</div>" +
+                  "</div>" +
+                  (isPk
+                    ? '<div class="border-t border-sky-100/80 bg-gradient-to-r from-sky-50/90 to-blue-50/50 px-3 py-1.5 text-center text-[10px] font-semibold text-sky-900">Peak interval for this period</div>'
+                    : "") +
+                "</div>";
+
+              tip.classList.remove("hidden");
+              requestAnimationFrame(function() {
+                position(group, tip, chart);
+              });
+            });
+
+            group.addEventListener("mouseleave", function() {
+              allBars.forEach(function(b) { b.style.opacity = ""; b.style.filter = ""; });
+              var lineOn = lineLayer && !lineLayer.classList.contains("hidden");
+              linePolys.forEach(function(p) {
+                p.style.opacity = lineOn ? "1" : "0";
+              });
+              tip.classList.add("hidden");
+            });
+          });
+        }
+
+        function position(group, tip, container) {
+          var cr  = container.getBoundingClientRect();
+          var gr  = group.getBoundingClientRect();
+          var gap = 6;
+          var pad = 4;
+          var tw  = tip.offsetWidth  || 140;
+          var th  = tip.offsetHeight || 64;
+          var cx  = gr.left - cr.left + gr.width / 2;
+          var top = gr.top - cr.top - th - gap;
+
+          if (top < pad) {
+            top = gr.bottom - cr.top + gap;
+          }
+          var maxTop = container.clientHeight - th - pad;
+          if (top > maxTop) {
+            top = Math.max(pad, maxTop);
+          }
+
+          var left = Math.round(cx - tw / 2);
+          left = Math.max(pad, Math.min(left, container.clientWidth - tw - pad));
+
+          tip.style.position = "absolute";
+          tip.style.left = left + "px";
+          tip.style.top = Math.round(top) + "px";
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init);
+        } else {
+          init();
+        }
+        document.addEventListener("turbo:load",  init);
+        document.addEventListener("turbo:render", init);
+      })();
+      </script>
+
     <% else %>
       <div class="flex flex-col items-center justify-center h-44 gap-2">
-        <svg class="w-8 h-8 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <svg class="w-8 h-8 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
         <p class="text-sm text-muted-foreground"><%= t("ruby_cms.admin.analytics.no_hourly_data", default: "No hourly activity data") %></p>
       </div>
     <% end %>

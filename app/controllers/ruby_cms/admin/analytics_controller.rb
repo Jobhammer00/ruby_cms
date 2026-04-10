@@ -117,7 +117,7 @@ module RubyCms
         nil
       end
 
-      helper_method :format_chart_date, :format_chart_date_short
+      helper_method :format_chart_date, :format_chart_date_short, :format_chart_date_axis
 
       def format_chart_date(date_string)
         format_chart_date_by_granularity(date_string, long: true)
@@ -127,6 +127,16 @@ module RubyCms
 
       def format_chart_date_short(date_string)
         format_chart_date_by_granularity(date_string, long: false)
+      rescue Date::Error
+        date_string.to_s
+      end
+
+      # Compact x-axis tick for daily chart (month view: day number only to avoid crowded labels)
+      def format_chart_date_axis(date_string)
+        date = Date.parse(date_string.to_s)
+        return date.day.to_s if @period == "month"
+
+        format_chart_date_short(date_string)
       rescue Date::Error
         date_string.to_s
       end

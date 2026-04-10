@@ -37,23 +37,23 @@
       <% end %>
     </div>
 
-    <%# ── Activity charts (3/4) + KPI summary card (1/4) ── %>
-    <div class="grid gap-4 items-start" style="grid-template-columns: 3fr 1fr;">
+    <%# ── Activity charts (3/4) + KPI summary card (1/4), same row height ── %>
+    <div class="grid gap-4 items-stretch" style="grid-template-columns: 3fr 1fr;">
 
       <%# Left: activity charts stacked %>
-      <div class="space-y-4 min-w-0">
+      <div class="flex min-h-0 min-w-0 flex-col gap-4">
         <%= render "ruby_cms/admin/analytics/partials/daily_activity_chart" %>
         <%= render "ruby_cms/admin/analytics/partials/hourly_activity_chart" %>
       </div>
 
-      <%# Right: single KPI summary card %>
-      <div class="rounded-xl border border-border/60 bg-white shadow-sm overflow-hidden">
-        <div class="px-4 py-3 border-b border-border/60">
+      <%# Right: KPI summary — stretches to match combined chart column height %>
+      <div class="flex h-full min-h-0 min-w-0 flex-col rounded-xl border border-border/60 bg-white shadow-sm overflow-hidden">
+        <div class="shrink-0 px-4 py-3 border-b border-border/60">
           <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Overview</p>
         </div>
 
         <%# Active users now %>
-        <div class="px-4 py-3 bg-emerald-50/60 border-b border-emerald-100">
+        <div class="shrink-0 px-4 py-3 bg-emerald-50/60 border-b border-emerald-100">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-xs font-medium text-emerald-700">Nu actief</p>
@@ -73,7 +73,7 @@
           </div>
         </div>
 
-        <div class="divide-y divide-border/50">
+        <div class="min-h-0 flex-1 divide-y divide-border/50 overflow-y-auto">
 
           <%# Page Views %>
           <div class="px-4 py-3">

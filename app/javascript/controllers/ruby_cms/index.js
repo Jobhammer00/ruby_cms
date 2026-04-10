@@ -58,7 +58,6 @@ export function registerRubyCmsControllers(application) {
     "ruby-cms--nav-order-sortable",
     NavOrderSortableController,
   );
-
   registeredApplications.add(application);
 }
 

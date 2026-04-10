@@ -5,18 +5,9 @@
 ) do %>
   <div class="space-y-5">
 
-    <%# Stats — compact, all four on one row from md upward %>
-    <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
-      <% @stats_blocks.each do |block| %>
-        <div class="flex flex-col">
-          <%= render_dashboard_block(block) %>
-        </div>
-      <% end %>
-    </div>
-
-    <%# Built-in row: quick actions | recent errors | analytics — always equal-width columns %>
+    <%# Main row: three equal columns — quick actions | recent errors | analytics %>
     <% if @primary_main_blocks.any? %>
-      <div class="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-3 my-4">
+      <div class="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-3">
         <% @primary_main_blocks.each do |block| %>
           <div class="flex min-w-0 flex-col">
             <%= render_dashboard_block(block) %>

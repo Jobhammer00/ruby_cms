@@ -1,76 +1,331 @@
-<div class="rounded-xl border border-border/60 bg-white shadow-sm overflow-hidden">
+<%
+  chart_id     = "rcms-daily-#{SecureRandom.hex(4)}"
+  daily_arr    = @daily_activity.is_a?(Hash) ? @daily_activity.to_a : (@daily_activity || [])
+  has_data     = daily_arr.present? && daily_arr.any?
+  max_views    = daily_arr.map { |_k, v| v.to_i }.max.to_i
+  max_visitors = (@daily_visitors || {}).values.map(&:to_i).max.to_i
+  max_value    = [max_views, max_visitors, 1].max
+  # Plot height + x-axis band (month view labels like "03/12–03/14" need ~32–36px; 20px was too tight and clipped)
+  bar_area_h   = 160
+  x_axis_h     = 40
+  chart_h      = bar_area_h + x_axis_h
+  total_views    = daily_arr.sum { |_k, v| v.to_i }
+  total_visitors = (@daily_visitors || {}).values.sum(&:to_i)
+  n_days         = [daily_arr.size.to_f, 1.0].max
+  line_pts_views = daily_arr.each_with_index.map { |(d, vc), i|
+    vx = ((i + 0.5) / n_days) * 100.0
+    vy = 100.0 - (max_value.positive? ? (vc.to_f / max_value * 100.0) : 0.0)
+    "#{vx.round(4)},#{vy.round(4)}"
+  }.join(" ")
+  line_pts_visitors = daily_arr.each_with_index.map { |(d, _vc), i|
+    vc = (@daily_visitors || {})[d].to_i
+    vx = ((i + 0.5) / n_days) * 100.0
+    vy = 100.0 - (max_value.positive? ? (vc.to_f / max_value * 100.0) : 0.0)
+    "#{vx.round(4)},#{vy.round(4)}"
+  }.join(" ")
+  # Month view: compact day-number ticks + scroll; ~14px per slot is enough when labels are "3".."31"
+  plot_scroll_min_w = [daily_arr.size * 14 + 56, 280].max
+%>
+
+<div class="min-w-0 rounded-xl border border-border/60 bg-white shadow-sm">
+
+  <%# ── Header ── %>
   <div class="flex items-center justify-between gap-3 px-4 py-3 border-b border-border/40">
     <div class="flex items-center gap-3">
       <div class="rounded-md bg-sky-50 p-1.5 flex-shrink-0">
-        <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+        <svg class="w-4 h-4 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+        </svg>
       </div>
       <div>
         <p class="text-sm font-semibold text-foreground"><%= t("ruby_cms.admin.analytics.daily_activity", default: "Daily Activity") %></p>
         <p class="text-xs text-muted-foreground"><%= t("ruby_cms.admin.analytics.page_views_visitors_over_time", default: "Page views and visitors over time") %></p>
       </div>
     </div>
-    <div class="flex items-center gap-4 text-xs text-muted-foreground flex-shrink-0">
-      <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-primary"></span><%= t("ruby_cms.admin.analytics.views", default: "Views") %></span>
-      <span class="inline-flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-emerald-500"></span><%= t("ruby_cms.admin.analytics.visitors", default: "Visitors") %></span>
+
+    <div class="flex items-center gap-3 sm:gap-4 flex-shrink-0 flex-wrap justify-end">
+      <% if has_data %>
+        <div class="hidden sm:flex items-center gap-3 text-xs text-muted-foreground">
+          <span class="tabular-nums"><strong class="text-foreground font-semibold"><%= number_with_delimiter(total_views) %></strong> views</span>
+          <span class="tabular-nums"><strong class="text-foreground font-semibold"><%= number_with_delimiter(total_visitors) %></strong> visitors</span>
+        </div>
+      <% end %>
+      <div class="flex items-center gap-3 text-xs text-muted-foreground">
+        <span class="inline-flex items-center gap-1.5">
+          <span class="inline-block h-2 w-2 shrink-0 rounded-full" style="background:rgb(37 99 235)" aria-hidden="true"></span>
+          <%= t("ruby_cms.admin.analytics.views", default: "Views") %>
+        </span>
+        <span class="inline-flex items-center gap-1.5">
+          <span class="inline-block h-2 w-2 shrink-0 rounded-full" style="background:rgb(96 165 250)" aria-hidden="true"></span>
+          <%= t("ruby_cms.admin.analytics.visitors", default: "Visitors") %>
+        </span>
+      </div>
+      <% if has_data %>
+        <div class="rcms-chart-mode-toggle inline-flex rounded-lg border border-border/60 bg-muted/30 p-0.5 text-[11px] font-medium"
+             role="group"
+             data-rcms-chart="<%= chart_id %>"
+             aria-label="<%= t('ruby_cms.admin.analytics.chart_display', default: 'Chart display') %>">
+          <button type="button"
+                  class="rcms-mode-btn px-2 py-1 rounded-md transition-colors text-muted-foreground hover:text-foreground"
+                  data-mode="bars"
+                  aria-pressed="true">
+            <%= t("ruby_cms.admin.analytics.chart_bars", default: "Bars") %>
+          </button>
+          <button type="button"
+                  class="rcms-mode-btn px-2 py-1 rounded-md transition-colors text-muted-foreground hover:text-foreground"
+                  data-mode="line"
+                  aria-pressed="false">
+            <%= t("ruby_cms.admin.analytics.chart_line", default: "Line") %>
+          </button>
+        </div>
+      <% end %>
     </div>
   </div>
 
-  <div class="px-4 py-4">
-    <% if @daily_activity.present? && @daily_activity.any? %>
-      <%
-        daily_arr = @daily_activity.is_a?(Hash) ? @daily_activity.to_a : @daily_activity
-        max_views = daily_arr.map { |_k, v| v.to_i }.max || 0
-        max_visitors = (@daily_visitors || {}).values.map(&:to_i).max || 0
-        max_value = [max_views, max_visitors].max
-        max_value = 1 if max_value.zero?
-        chart_h = 160
-      %>
+  <%# ── Chart body ── %>
+  <div class="min-w-0 px-4 py-4">
+    <% if has_data %>
+      <div id="<%= chart_id %>" class="relative min-w-0 select-none">
 
-      <div class="grid grid-cols-[2.75rem_1fr] gap-2">
-        <div class="flex flex-col justify-between text-xs text-muted-foreground tabular-nums" style="height:<%= chart_h %>px">
-          <% [100, 75, 50, 25, 0].each do |pct| %>
-            <div class="text-right"><%= number_with_delimiter((max_value * pct / 100.0).round) %></div>
-          <% end %>
+        <%# Hover info card %>
+        <div id="<%= chart_id %>-tip"
+             role="tooltip"
+             class="pointer-events-none absolute z-[100] hidden min-w-[10rem] max-w-[16rem]">
         </div>
 
-        <div class="relative">
-          <div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
-            <% 5.times do %><div class="h-px bg-border/30"></div><% end %>
+        <div class="w-full min-w-0 overflow-x-auto overflow-y-visible overscroll-x-contain">
+          <div class="min-w-0" style="width:max(100%,<%= plot_scroll_min_w %>px)">
+            <div class="grid min-w-0 gap-2" style="grid-template-columns:2.75rem minmax(0,1fr);">
+
+          <%# Y-axis %>
+          <div class="flex flex-col justify-between text-right text-xs text-muted-foreground tabular-nums" style="height:<%= chart_h %>px; padding-bottom:<%= x_axis_h %>px;">
+            <% [100, 75, 50, 25, 0].each do |pct| %>
+              <div class="leading-none"><%= number_with_delimiter((max_value * pct / 100.0).round) %></div>
+            <% end %>
           </div>
 
-          <div class="flex items-end gap-1" style="height:<%= chart_h %>px">
-            <% daily_arr.each do |date, views_count| %>
-              <% visitors_count = (@daily_visitors || {})[date] || 0 %>
-              <% views_h = if views_count.to_i.positive?
-                             [((views_count.to_f / max_value) * chart_h).round, 2].max
-                           else
-                             0
-                           end %>
-              <% visitors_h = if visitors_count.to_i.positive?
-                                [((visitors_count.to_f / max_value) * chart_h).round, 2].max
-                              else
-                                0
-                              end %>
-              <div class="flex flex-col items-center gap-1.5 flex-1 min-w-0 group">
-                <div class="w-full flex items-end justify-center gap-px" title="<%= format_chart_date(date) %> — Views: <%= number_with_delimiter(views_count) %>, Visitors: <%= number_with_delimiter(visitors_count) %>">
-                  <div
-                    class="flex-1 rounded-t transition-colors group-hover:opacity-90"
-                    style="height:<%= views_h %>px; max-width:8px; background-color:hsl(var(--primary) / 0.75);"
-                  ></div>
-                  <div
-                    class="flex-1 rounded-t transition-colors group-hover:opacity-90"
-                    style="height:<%= visitors_h %>px; max-width:8px; background-color:rgb(16 185 129 / 0.75);"
-                  ></div>
+          <%# Plot area %>
+          <div class="relative min-w-0" style="height:<%= chart_h %>px;">
+
+            <%# Grid lines %>
+            <div class="absolute inset-0 flex flex-col justify-between pointer-events-none" style="padding-bottom:<%= x_axis_h %>px;">
+              <% 5.times do %><div style="border-top:1px solid hsl(var(--border,214 32% 91%) / 0.3);"></div><% end %>
+            </div>
+
+            <%# Line chart (toggled) %>
+            <div class="rcms-line-layer absolute left-0 right-0 pointer-events-none z-[1] hidden"
+                 style="height:<%= bar_area_h %>px; top:0;"
+                 aria-hidden="true">
+              <svg class="w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <polyline class="rcms-line-views" fill="none" stroke="rgb(37 99 235)" stroke-width="1.25" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round" points="<%= line_pts_views %>"/>
+                <polyline class="rcms-line-visitors" fill="none" stroke="rgb(96 165 250)" stroke-width="1.25" vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round" points="<%= line_pts_visitors %>"/>
+              </svg>
+            </div>
+
+            <%# Bars %>
+            <div class="rcms-bars-layer flex items-end gap-px relative z-[2]" style="height:<%= chart_h %>px;">
+              <% daily_arr.each do |date, views_count| %>
+                <%
+                  visitors_count = (@daily_visitors || {})[date].to_i
+                  vh = views_count.to_i.positive? ? [((views_count.to_f / max_value) * bar_area_h).round, 2].max : 0
+                  uh = visitors_count.positive?   ? [((visitors_count.to_f / max_value) * bar_area_h).round, 2].max : 0
+                  label = format_chart_date(date)
+                  short = format_chart_date_axis(date)
+                  v_pct = total_views.positive? ? (100.0 * views_count.to_i / total_views) : 0.0
+                  u_pct = total_visitors.positive? ? (100.0 * visitors_count / total_visitors) : 0.0
+                %>
+                <div class="rcms-bar-group flex flex-col items-center flex-1 min-w-0 cursor-default"
+                     data-label="<%= label %>"
+                     data-views="<%= number_with_delimiter(views_count.to_i) %>"
+                     data-visitors="<%= number_with_delimiter(visitors_count) %>"
+                     data-views-pct="<%= sprintf('%.1f', v_pct) %>"
+                     data-visitors-pct="<%= sprintf('%.1f', u_pct) %>"
+                     data-max-scale="<%= number_with_delimiter(max_value) %>">
+                  <%# Bar pair %>
+                  <div class="w-full flex items-end justify-center gap-px rcms-bar-stack" style="height:<%= bar_area_h %>px;">
+                    <div class="rcms-bar flex-1 rounded-t-sm"
+                         style="height:<%= vh %>px; max-width:10px; background:rgb(37 99 235 / 0.88); transition:opacity .12s,filter .12s;"></div>
+                    <div class="rcms-bar flex-1 rounded-t-sm"
+                         style="height:<%= uh %>px; max-width:10px; background:rgb(96 165 250 / 0.88); transition:opacity .12s,filter .12s;"></div>
+                  </div>
+                  <%# X label (month view uses single day number via format_chart_date_axis) %>
+                  <div class="text-muted-foreground w-full px-px text-center leading-none rcms-x-label tabular-nums"
+                       style="font-size:10px; min-height:<%= x_axis_h %>px; max-height:<%= x_axis_h %>px; padding-top:6px;"><%= short %></div>
                 </div>
-                <div class="text-[10px] text-muted-foreground truncate w-full text-center"><%= format_chart_date_short(date) %></div>
-              </div>
-            <% end %>
+              <% end %>
+            </div>
+
+          </div>
+            </div>
           </div>
         </div>
       </div>
+
+      <script>
+      (function() {
+        var BLUE600 = "rgb(37 99 235)";
+        var BLUE400 = "rgb(96 165 250)";
+        var MODE_KEY = "ruby_cms.analytics.dailyChartMode";
+
+        function init() {
+          var chart = document.getElementById("<%= chart_id %>");
+          if (!chart || chart.__rcmsInit) return;
+          chart.__rcmsInit = true;
+
+          var tip       = document.getElementById("<%= chart_id %>-tip");
+          var groups    = chart.querySelectorAll(".rcms-bar-group");
+          var allBars   = chart.querySelectorAll(".rcms-bar");
+          var lineLayer = chart.querySelector(".rcms-line-layer");
+          var barsLayer = chart.querySelector(".rcms-bars-layer");
+          var linePolys = lineLayer ? lineLayer.querySelectorAll("polyline") : [];
+          var toggles   = document.querySelectorAll('.rcms-chart-mode-toggle[data-rcms-chart="<%= chart_id %>"] .rcms-mode-btn');
+
+          function setMode(mode) {
+            var isLine = mode === "line";
+            if (lineLayer) lineLayer.classList.toggle("hidden", !isLine);
+            if (barsLayer) {
+              barsLayer.querySelectorAll(".rcms-bar-stack").forEach(function(el) {
+                el.style.visibility = isLine ? "hidden" : "visible";
+              });
+            }
+            linePolys.forEach(function(p) {
+              p.style.opacity = isLine ? "1" : "0";
+            });
+            toggles.forEach(function(btn) {
+              var active = btn.getAttribute("data-mode") === mode;
+              btn.setAttribute("aria-pressed", active ? "true" : "false");
+              btn.classList.toggle("bg-background", active);
+              btn.classList.toggle("text-foreground", active);
+              btn.classList.toggle("shadow-sm", active);
+            });
+            try { localStorage.setItem(MODE_KEY, mode); } catch (e) {}
+          }
+
+          try {
+            var saved = localStorage.getItem(MODE_KEY);
+            if (saved === "line" || saved === "bars") setMode(saved);
+            else setMode("bars");
+          } catch (e) {
+            setMode("bars");
+          }
+
+          toggles.forEach(function(btn) {
+            btn.addEventListener("click", function() {
+              setMode(btn.getAttribute("data-mode") || "bars");
+            });
+          });
+
+          groups.forEach(function(group) {
+            group.addEventListener("mouseenter", function() {
+              var activeMode = lineLayer && !lineLayer.classList.contains("hidden") ? "line" : "bars";
+              if (activeMode === "bars") {
+                allBars.forEach(function(b) { b.style.opacity = "0.35"; b.style.filter = ""; });
+                group.querySelectorAll(".rcms-bar").forEach(function(b) {
+                  b.style.opacity = "1";
+                  b.style.filter  = "brightness(1.08)";
+                });
+              } else {
+                linePolys.forEach(function(p) { p.style.opacity = "0.35"; });
+              }
+
+              var label    = group.dataset.label    || "";
+              var views    = group.dataset.views    || "0";
+              var visitors = group.dataset.visitors || "0";
+              var vp       = group.dataset.viewsPct    || "0";
+              var up       = group.dataset.visitorsPct || "0";
+              var scale    = group.dataset.maxScale  || "";
+
+              var modeStr = activeMode === "line" ? "Line chart" : "Bar chart";
+              tip.innerHTML =
+                '<div class="overflow-hidden rounded-xl border border-slate-200/90 bg-white text-xs text-slate-800 shadow-[0_10px_38px_-12px_rgba(15,23,42,0.28)]">' +
+                  '<div class="border-b border-slate-100 bg-gradient-to-br from-sky-50 via-white to-white px-3 py-2">' +
+                    '<p class="text-[13px] font-semibold leading-snug tracking-tight text-slate-900">' + escapeHtml(label) + "</p>" +
+                    '<p class="mt-1 text-[10px] leading-relaxed text-slate-500">' +
+                      "Scale 0–" + escapeHtml(scale) + " · " + modeStr +
+                    "</p>" +
+                  "</div>" +
+                  '<div class="divide-y divide-slate-100/90 bg-white">' +
+                    '<div class="flex gap-2.5 px-3 py-2">' +
+                      '<span class="mt-0.5 h-2 w-2 shrink-0 rounded-full shadow-sm ring-2 ring-white" style="background:' + BLUE600 + ';box-shadow:0 0 0 1px rgba(15,23,42,0.06)"></span>' +
+                      '<div class="min-w-0 flex-1">' +
+                        '<p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Views</p>' +
+                        '<p class="mt-0.5 text-sm font-semibold tabular-nums text-slate-900">' + escapeHtml(views) +
+                        ' <span class="text-[11px] font-medium text-slate-400">(' + escapeHtml(vp) + "%)</span></p>" +
+                      "</div>" +
+                    "</div>" +
+                    '<div class="flex gap-2.5 px-3 py-2">' +
+                      '<span class="mt-0.5 h-2 w-2 shrink-0 rounded-full shadow-sm ring-2 ring-white" style="background:' + BLUE400 + ';box-shadow:0 0 0 1px rgba(15,23,42,0.06)"></span>' +
+                      '<div class="min-w-0 flex-1">' +
+                        '<p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400">Visitors</p>' +
+                        '<p class="mt-0.5 text-sm font-semibold tabular-nums text-slate-900">' + escapeHtml(visitors) +
+                        ' <span class="text-[11px] font-medium text-slate-400">(' + escapeHtml(up) + "%)</span></p>" +
+                      "</div>" +
+                    "</div>" +
+                  "</div>" +
+                "</div>";
+
+              tip.classList.remove("hidden");
+              requestAnimationFrame(function() {
+                position(group, tip, chart);
+              });
+            });
+
+            group.addEventListener("mouseleave", function() {
+              allBars.forEach(function(b) { b.style.opacity = ""; b.style.filter = ""; });
+              var isLine = lineLayer && !lineLayer.classList.contains("hidden");
+              linePolys.forEach(function(p) {
+                p.style.opacity = isLine ? "1" : "0";
+              });
+              tip.classList.add("hidden");
+            });
+          });
+        }
+
+        function escapeHtml(s) {
+          return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+        }
+
+        function position(group, tip, container) {
+          var cr  = container.getBoundingClientRect();
+          var gr  = group.getBoundingClientRect();
+          var gap = 6;
+          var pad = 4;
+          var tw  = tip.offsetWidth  || 160;
+          var th  = tip.offsetHeight || 72;
+          var cx  = gr.left - cr.left + gr.width / 2;
+          var top = gr.top - cr.top - th - gap;
+
+          if (top < pad) {
+            top = gr.bottom - cr.top + gap;
+          }
+          var maxTop = container.clientHeight - th - pad;
+          if (top > maxTop) {
+            top = Math.max(pad, maxTop);
+          }
+
+          var left = Math.round(cx - tw / 2);
+          left = Math.max(pad, Math.min(left, container.clientWidth - tw - pad));
+
+          tip.style.position = "absolute";
+          tip.style.left = left + "px";
+          tip.style.top = Math.round(top) + "px";
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init);
+        } else {
+          init();
+        }
+        document.addEventListener("turbo:load",   init);
+        document.addEventListener("turbo:render",  init);
+      })();
+      </script>
+
     <% else %>
       <div class="flex flex-col items-center justify-center h-44 gap-2">
-        <svg class="w-8 h-8 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/></svg>
+        <svg class="w-8 h-8 text-muted-foreground/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+        </svg>
         <p class="text-sm text-muted-foreground"><%= t("ruby_cms.admin.analytics.no_daily_data", default: "No daily activity data") %></p>
       </div>
     <% end %>
