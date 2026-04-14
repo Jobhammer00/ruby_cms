@@ -75,6 +75,7 @@ module RubyCms
     resolved_path = path.kind_of?(Symbol) ? ->(v) { v.main_app.send(path) } : path
     resolved_icon = icon.nil? ? nil : RubyCms::Icons.resolve(icon)
     entry = {
+      type: :link,
       key: normalized_key,
       label: label.to_s,
       path: resolved_path,
@@ -83,6 +84,49 @@ module RubyCms
       order: order,
       permission: permission&.to_s,
       default_visible: default_visible ? true : false,
+      if: options[:if]
+    }
+
+    self.nav_registry = nav_registry.reject {|e| e[:key] == normalized_key }
+    self.nav_registry += [entry]
+
+    register_navigation_setting!(entry)
+
+    entry
+  end
+
+  # Register a navigation group (accordion) in the sidebar.
+  #
+  # A group can optionally have its own page (`path:`) and can contain child pages
+  # (registered via `register_page` / `nav_register`) referenced by their keys.
+  #
+  # Notes:
+  # - `children:` is an array of nav keys (Symbol/String) that will be rendered under the group.
+  # - Children are filtered by the same visibility rules as regular nav links.
+  # - A group is hidden if it has no visible children and no `path`.
+  def self.nav_group(
+    key:, label:, children:,
+    path: nil, icon: nil, section: nil, order: nil,
+    permission: nil, default_visible: true, default_open: true, **options
+  )
+    normalized_key = key.to_sym
+    normalized_section = section.presence || NAV_SECTION_MAIN
+    resolved_path = path.nil? ? nil : (path.kind_of?(Symbol) ? ->(v) { v.main_app.send(path) } : path)
+    resolved_icon = icon.nil? ? nil : RubyCms::Icons.resolve(icon)
+    normalized_children = Array(children).map(&:to_s).map(&:strip).reject(&:blank?).map(&:to_sym)
+
+    entry = {
+      type: :group,
+      key: normalized_key,
+      label: label.to_s,
+      path: resolved_path,
+      icon: resolved_icon,
+      section: normalized_section,
+      order: order,
+      permission: permission&.to_s,
+      default_visible: default_visible ? true : false,
+      default_open: default_open ? true : false,
+      children: normalized_children,
       if: options[:if]
     }
 
@@ -131,6 +175,45 @@ module RubyCms
   rescue StandardError => e
     Rails.logger.error("[RubyCMS] Error filtering navigation: #{e.message}") if defined?(Rails.logger)
     []
+  end
+
+  # Sidebar rows for a given section. Includes groups (accordions) and top-level links.
+  # Returns an array of:
+  # - { type: :link, entry: <nav entry hash> }
+  # - { type: :group, group: <group entry hash>, children: [<nav entry hash>...] }
+  def self.visible_nav_sidebar_rows(section:, view_context: nil, user: nil)
+    visible = visible_nav_registry(view_context:, user:)
+    links = visible.select {|e| e[:type].to_s == "link" }
+    groups = visible.select {|e| e[:type].to_s == "group" }
+
+    links_by_key = links.index_by {|e| e[:key].to_sym }
+    nested_keys = groups.flat_map {|g| Array(g[:children]) }.map(&:to_sym).to_set
+
+    section_key = section.to_s
+    section_name = (section_key == "settings" ? NAV_SECTION_BOTTOM : NAV_SECTION_MAIN)
+
+    # groups first; children order uses their own order/label.
+    group_rows = groups
+      .select {|g| g[:section].to_s == section_name }
+      .sort_by {|g| nav_sort_tuple(g) }
+      .filter_map do |g|
+        child_entries = Array(g[:children]).map {|k| links_by_key[k.to_sym] }.compact
+        child_entries = child_entries.sort_by {|c| [c[:order] || 1000, c[:label].to_s] }
+        next if child_entries.empty? && g[:path].blank?
+        { type: :group, group: g, children: child_entries }
+      end
+
+    link_rows = links
+      .select {|e| e[:section].to_s == section_name }
+      .reject {|e| nested_keys.include?(e[:key].to_sym) }
+      .sort_by {|e| nav_sort_tuple(e) }
+      .map {|e| { type: :link, entry: e } }
+
+    merged = (group_rows.map {|r| [r, nav_sort_tuple(r[:group])] } +
+              link_rows.map {|r| [r, nav_sort_tuple(r[:entry])] })
+             .sort_by {|(_, tuple)| tuple }
+             .map(&:first)
+    merged
   end
 
   module Nav

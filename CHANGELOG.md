@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+## [0.2.1.1] - 2026-04-14
+- Navigation: add `RubyCms.nav_group(...)` to define sidebar accordion groups in config (optional group page + child pages).
+
 ## [0.2.1.0] - 2026-04-10
 
 - Analytics rework and dashboard changes

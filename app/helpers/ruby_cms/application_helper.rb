@@ -25,6 +25,14 @@ module RubyCms
       )
     end
 
+    def ruby_cms_nav_sidebar_rows(section: :main)
+      RubyCms.visible_nav_sidebar_rows(
+        section:,
+        view_context: self,
+        user: (current_user_cms if respond_to?(:current_user_cms))
+      )
+    end
+
     # Render an SVG fragment (typically <path ...>) safely.
     # Used for nav icons which may come from host app configuration.
     def ruby_cms_safe_svg_fragment(fragment)

@@ -229,6 +229,26 @@ RubyCms.nav_register(
 )
 ```
 
+### nav_group (accordion)
+
+Define a sidebar accordion group in the same config file as your pages:
+
+```ruby
+RubyCms.nav_group(
+  key: :operations,
+  label: "Operations",
+  icon: :folder,
+  section: "main",
+  order: 20,
+  # Optional: the group can have its own page
+  path: ->(view) { view.main_app.admin_operations_path },
+  # Child pages are referenced by the keys you used in register_page/nav_register
+  children: %i[backups reports]
+)
+```
+
+Groups are hidden automatically when they have no visible children and no `path`.
+
 ### Path Options
 
 | Format | Example | Behavior |

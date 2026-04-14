@@ -40,22 +40,22 @@ module RubyCms
         order: 1
       )
       RubyCms.register_page(
-        key: :permissions,
-        label: "Permissions",
-        path: lambda(&:ruby_cms_admin_permissions_path),
-        icon: :shield_check,
-        section: :settings,
-        permission: :manage_permissions,
-        order: 2
-      )
-      RubyCms.register_page(
         key: :visitor_errors,
         label: "Visitor errors",
         path: lambda(&:ruby_cms_admin_visitor_errors_path),
         icon: :exclamation_triangle,
         section: :settings,
         permission: :manage_visitor_errors,
-        order: 3
+        order: 2
+      )
+      RubyCms.register_page(
+        key: :permissions,
+        label: "Permissions",
+        path: lambda(&:ruby_cms_admin_permissions_path),
+        icon: :shield_check,
+        section: :settings,
+        permission: :manage_permissions,
+        order: 10
       )
       RubyCms.register_page(
         key: :users,
@@ -64,7 +64,7 @@ module RubyCms
         icon: :user_group,
         section: :settings,
         permission: :manage_permissions,
-        order: 4
+        order: 20
       )
       RubyCms.register_page(
         key: :commands,
@@ -73,16 +73,17 @@ module RubyCms
         icon: :wrench,
         section: :settings,
         permission: :manage_admin,
-        order: 5
+        order: 30
       )
-      RubyCms.register_page(
+      RubyCms.nav_group(
         key: :settings,
         label: "Settings",
         path: lambda(&:ruby_cms_admin_settings_path),
         icon: :cog_6_tooth,
-        section: :settings,
-        permission: :manage_admin,
-        order: 6
+        section: RubyCms::NAV_SECTION_BOTTOM,
+        children: %i[permissions users commands],
+        default_open: false,
+        order: 3
       )
     end
   end
